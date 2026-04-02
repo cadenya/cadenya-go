@@ -1,10 +1,10 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya
+package gocadenyacomcadenyago
 
 import (
-	"github.com/cadenya/cadenya-sdk-go/internal/apierror"
-	"github.com/cadenya/cadenya-sdk-go/shared"
+	"github.com/cadenya/cadenya-go/internal/apierror"
+	"github.com/cadenya/cadenya-go/shared"
 )
 
 type Error = apierror.Error

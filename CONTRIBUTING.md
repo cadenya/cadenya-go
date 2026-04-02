@@ -41,7 +41,7 @@ To use a local version of this library from source in another project, edit the 
 directive. This can be done through the CLI with the following:
 
 ```sh
-$ go mod edit -replace github.com/cadenya/cadenya-sdk-go=/path/to/cadenya-sdk-go
+$ go mod edit -replace github.com/cadenya/cadenya-go=/path/to/cadenya-go
 ```
 
 ## Running tests

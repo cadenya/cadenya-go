@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
+	"github.com/cadenya/cadenya-go/internal/apijson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is

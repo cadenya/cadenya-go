@@ -1,15 +1,15 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya_test
+package gocadenyacomcadenyago_test
 
 import (
 	"context"
 	"os"
 	"testing"
 
-	"github.com/cadenya/cadenya-sdk-go"
-	"github.com/cadenya/cadenya-sdk-go/internal/testutil"
-	"github.com/cadenya/cadenya-sdk-go/option"
+	"github.com/cadenya/cadenya-go"
+	"github.com/cadenya/cadenya-go/internal/testutil"
+	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAutoPagination(t *testing.T) {
@@ -21,11 +21,11 @@ func TestAutoPagination(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	iter := client.Agents.ListAutoPaging(context.TODO(), cadenya.AgentListParams{})
+	iter := client.Agents.ListAutoPaging(context.TODO(), gocadenyacomcadenyago.AgentListParams{})
 	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
 		agent := iter.Current()

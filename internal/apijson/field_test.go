@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/param"
+	"github.com/cadenya/cadenya-go/internal/param"
 )
 
 type Struct struct {
