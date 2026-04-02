@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -21,11 +21,11 @@ func TestManualPagination(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	page, err := client.Agents.List(context.TODO(), gocadenyacomcadenyasdkgo.AgentListParams{})
+	page, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}

@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,22 +22,22 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.WebhookDeliveries.List(
 		context.TODO(),
 		"agentId",
-		gocadenyacomcadenyasdkgo.AgentWebhookDeliveryListParams{
-			Cursor:      gocadenyacomcadenyasdkgo.F("cursor"),
-			EventType:   gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
-			Limit:       gocadenyacomcadenyasdkgo.F(int64(0)),
-			ObjectiveID: gocadenyacomcadenyasdkgo.F("objectiveId"),
+		cadenya.AgentWebhookDeliveryListParams{
+			Cursor:      cadenya.F("cursor"),
+			EventType:   cadenya.F(cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
+			Limit:       cadenya.F(int64(0)),
+			ObjectiveID: cadenya.F("objectiveId"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

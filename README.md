@@ -22,7 +22,7 @@ Use the Cadenya MCP Server to enable AI assistants to interact with this API, al
 
 ```go
 import (
-	"github.com/cadenya/cadenya-sdk-go" // imported as gocadenyacomcadenyasdkgo
+	"github.com/cadenya/cadenya-sdk-go" // imported as cadenya
 )
 ```
 
@@ -33,7 +33,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/cadenya/cadenya-sdk-go@v0.0.1'
+go get -u 'github.com/cadenya/cadenya-sdk-go@v0.1.0'
 ```
 
 <!-- x-release-please-end -->
@@ -58,9 +58,8 @@ import (
 )
 
 func main() {
-	client := gocadenyacomcadenyasdkgo.NewClient(
-		option.WithAPIKey("My API Key"),    // defaults to os.LookupEnv("CADENYA_API_KEY")
-		option.WithEnvironmentProduction(), // defaults to option.WithEnvironmentStaging()
+	client := cadenya.NewClient(
+		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("CADENYA_API_KEY")
 	)
 	account, err := client.Account.Get(context.TODO())
 	if err != nil {
@@ -85,18 +84,18 @@ To send a null, use `Null[T]()`, and to send a nonconforming value, use `Raw[T](
 
 ```go
 params := FooParams{
-	Name: gocadenyacomcadenyasdkgo.F("hello"),
+	Name: cadenya.F("hello"),
 
 	// Explicitly send `"description": null`
-	Description: gocadenyacomcadenyasdkgo.Null[string](),
+	Description: cadenya.Null[string](),
 
-	Point: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.Point{
-		X: gocadenyacomcadenyasdkgo.Int(0),
-		Y: gocadenyacomcadenyasdkgo.Int(1),
+	Point: cadenya.F(cadenya.Point{
+		X: cadenya.Int(0),
+		Y: cadenya.Int(1),
 
 		// In cases where the API specifies a given type,
 		// but you want to send something else, use `Raw`:
-		Z: gocadenyacomcadenyasdkgo.Raw[int64](0.01), // sends a float
+		Z: cadenya.Raw[int64](0.01), // sends a float
 	}),
 }
 ```
@@ -150,7 +149,7 @@ This library uses the functional options pattern. Functions defined in the
 requests. For example:
 
 ```go
-client := gocadenyacomcadenyasdkgo.NewClient(
+client := cadenya.NewClient(
 	// Adds a header to every request made by the client
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
@@ -172,7 +171,7 @@ This library provides some conveniences for working with paginated list endpoint
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
 ```go
-iter := client.Agents.ListAutoPaging(context.TODO(), gocadenyacomcadenyasdkgo.AgentListParams{})
+iter := client.Agents.ListAutoPaging(context.TODO(), cadenya.AgentListParams{})
 // Automatically fetches more pages as needed.
 for iter.Next() {
 	agent := iter.Current()
@@ -187,7 +186,7 @@ Or you can use simple `.List()` methods to fetch a single page and receive a sta
 with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
-page, err := client.Agents.List(context.TODO(), gocadenyacomcadenyasdkgo.AgentListParams{})
+page, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{})
 for page != nil {
 	for _, agent := range page.Items {
 		fmt.Printf("%+v\n", agent)
@@ -202,7 +201,7 @@ if err != nil {
 ### Errors
 
 When the API returns a non-success status code, we return an error with type
-`*gocadenyacomcadenyasdkgo.Error`. This contains the `StatusCode`, `*http.Request`, and
+`*cadenya.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
 (much like other response objects in the SDK).
 
@@ -211,7 +210,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Account.Get(context.TODO())
 if err != nil {
-	var apierr *gocadenyacomcadenyasdkgo.Error
+	var apierr *cadenya.Error
 	if errors.As(err, &apierr) {
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
@@ -251,7 +250,7 @@ The file name and content-type can be customized by implementing `Name() string`
 string` on the run-time type of `io.Reader`. Note that `os.File` implements `Name() string`, so a
 file returned by `os.Open` will be sent with the file name on disk.
 
-We also provide a helper `gocadenyacomcadenyasdkgo.FileParam(reader io.Reader, filename string, contentType string)`
+We also provide a helper `cadenya.FileParam(reader io.Reader, filename string, contentType string)`
 which can be used to wrap any `io.Reader` with the appropriate file name and content type.
 
 ### Retries
@@ -264,7 +263,7 @@ You can use the `WithMaxRetries` option to configure or disable this:
 
 ```go
 // Configure the default for all requests:
-client := gocadenyacomcadenyasdkgo.NewClient(
+client := cadenya.NewClient(
 	option.WithMaxRetries(0), // default is 2
 )
 
@@ -323,9 +322,9 @@ or the `option.WithJSONSet()` methods.
 
 ```go
 params := FooNewParams{
-    ID:   gocadenyacomcadenyasdkgo.F("id_xxxx"),
-    Data: gocadenyacomcadenyasdkgo.F(FooNewParamsData{
-        FirstName: gocadenyacomcadenyasdkgo.F("John"),
+    ID:   cadenya.F("id_xxxx"),
+    Data: cadenya.F(FooNewParamsData{
+        FirstName: cadenya.F("John"),
     }),
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
@@ -360,7 +359,7 @@ func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, 
     return res, err
 }
 
-client := gocadenyacomcadenyasdkgo.NewClient(
+client := cadenya.NewClient(
 	option.WithMiddleware(Logger),
 )
 ```

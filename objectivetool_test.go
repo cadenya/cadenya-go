@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,20 +22,20 @@ func TestObjectiveToolListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.Tools.List(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyasdkgo.ObjectiveToolListParams{
-			Cursor: gocadenyacomcadenyasdkgo.F("cursor"),
-			Limit:  gocadenyacomcadenyasdkgo.F(int64(0)),
+		cadenya.ObjectiveToolListParams{
+			Cursor: cadenya.F("cursor"),
+			Limit:  cadenya.F(int64(0)),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

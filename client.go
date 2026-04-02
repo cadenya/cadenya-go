@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo
+package cadenya
 
 import (
 	"context"
@@ -65,7 +65,7 @@ type Client struct {
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
 // CADENYA_BASE_URL). This should be used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
-	defaults := []option.RequestOption{option.WithEnvironmentStaging()}
+	defaults := []option.RequestOption{option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("CADENYA_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
