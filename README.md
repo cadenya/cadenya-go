@@ -59,8 +59,7 @@ import (
 
 func main() {
 	client := cadenya.NewClient(
-		option.WithAPIKey("My API Key"),    // defaults to os.LookupEnv("CADENYA_API_KEY")
-		option.WithEnvironmentProduction(), // defaults to option.WithEnvironmentStaging()
+		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("CADENYA_API_KEY")
 	)
 	account, err := client.Account.Get(context.TODO())
 	if err != nil {
