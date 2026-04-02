@@ -30,6 +30,7 @@ type ObjectiveService struct {
 	Tools     *ObjectiveToolService
 	ToolCalls *ObjectiveToolCallService
 	Tasks     *ObjectiveTaskService
+	Feedback  *ObjectiveFeedbackService
 }
 
 // NewObjectiveService generates a new service that applies the given options to
@@ -41,6 +42,7 @@ func NewObjectiveService(opts ...option.RequestOption) (r *ObjectiveService) {
 	r.Tools = NewObjectiveToolService(opts...)
 	r.ToolCalls = NewObjectiveToolCallService(opts...)
 	r.Tasks = NewObjectiveTaskService(opts...)
+	r.Feedback = NewObjectiveFeedbackService(opts...)
 	return
 }
 
