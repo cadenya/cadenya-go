@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,22 +22,22 @@ func TestObjectiveToolCallListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.ToolCalls.List(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveToolCallListParams{
-			Cursor:      gocadenyacomcadenyago.F("cursor"),
-			IncludeInfo: gocadenyacomcadenyago.F(true),
-			Limit:       gocadenyacomcadenyago.F(int64(0)),
-			Status:      gocadenyacomcadenyago.F(gocadenyacomcadenyago.ObjectiveToolCallListParamsStatusToolCallStatusUnspecified),
+		cadenya.ObjectiveToolCallListParams{
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			Status:      cadenya.F(cadenya.ObjectiveToolCallListParamsStatusToolCallStatusUnspecified),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -54,7 +54,7 @@ func TestObjectiveToolCallApprove(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -62,10 +62,10 @@ func TestObjectiveToolCallApprove(t *testing.T) {
 		context.TODO(),
 		"objectiveId",
 		"toolCallId",
-		gocadenyacomcadenyago.ObjectiveToolCallApproveParams{},
+		cadenya.ObjectiveToolCallApproveParams{},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -82,7 +82,7 @@ func TestObjectiveToolCallDenyWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -90,12 +90,12 @@ func TestObjectiveToolCallDenyWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"objectiveId",
 		"toolCallId",
-		gocadenyacomcadenyago.ObjectiveToolCallDenyParams{
-			Memo: gocadenyacomcadenyago.F("memo"),
+		cadenya.ObjectiveToolCallDenyParams{
+			Memo: cadenya.F("memo"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

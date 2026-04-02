@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago_test
+package cadenya_test
 
 import (
 	"context"
@@ -23,24 +23,24 @@ func TestWorkspaceSecretNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceSecrets.New(context.TODO(), gocadenyacomcadenyago.WorkspaceSecretNewParams{
-		Metadata: gocadenyacomcadenyago.F(shared.CreateResourceMetadataParam{
-			Name:       gocadenyacomcadenyago.F("name"),
-			ExternalID: gocadenyacomcadenyago.F("externalId"),
-			Labels: gocadenyacomcadenyago.F(map[string]string{
+	_, err := client.WorkspaceSecrets.New(context.TODO(), cadenya.WorkspaceSecretNewParams{
+		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
 				"foo": "string",
 			}),
 		}),
-		Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.WorkspaceSecretSpecParam{
-			Value: gocadenyacomcadenyago.F("value"),
+		Spec: cadenya.F(cadenya.WorkspaceSecretSpecParam{
+			Value: cadenya.F("value"),
 		}),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -57,13 +57,13 @@ func TestWorkspaceSecretGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceSecrets.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -80,29 +80,29 @@ func TestWorkspaceSecretUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceSecrets.Update(
 		context.TODO(),
 		"id",
-		gocadenyacomcadenyago.WorkspaceSecretUpdateParams{
-			Metadata: gocadenyacomcadenyago.F(shared.UpdateResourceMetadataParam{
-				Name:       gocadenyacomcadenyago.F("name"),
-				ExternalID: gocadenyacomcadenyago.F("externalId"),
-				Labels: gocadenyacomcadenyago.F(map[string]string{
+		cadenya.WorkspaceSecretUpdateParams{
+			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.WorkspaceSecretSpecParam{
-				Value: gocadenyacomcadenyago.F("value"),
+			Spec: cadenya.F(cadenya.WorkspaceSecretSpecParam{
+				Value: cadenya.F("value"),
 			}),
-			UpdateMask: gocadenyacomcadenyago.F("updateMask"),
+			UpdateMask: cadenya.F("updateMask"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -119,19 +119,19 @@ func TestWorkspaceSecretListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceSecrets.List(context.TODO(), gocadenyacomcadenyago.WorkspaceSecretListParams{
-		Cursor:      gocadenyacomcadenyago.F("cursor"),
-		IncludeInfo: gocadenyacomcadenyago.F(true),
-		Limit:       gocadenyacomcadenyago.F(int64(0)),
-		Prefix:      gocadenyacomcadenyago.F("prefix"),
-		SortOrder:   gocadenyacomcadenyago.F("sortOrder"),
+	_, err := client.WorkspaceSecrets.List(context.TODO(), cadenya.WorkspaceSecretListParams{
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		Prefix:      cadenya.F("prefix"),
+		SortOrder:   cadenya.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -148,13 +148,13 @@ func TestWorkspaceSecretDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.WorkspaceSecrets.Delete(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

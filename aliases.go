@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago
+package cadenya
 
 import (
 	"github.com/cadenya/cadenya-go/internal/apierror"

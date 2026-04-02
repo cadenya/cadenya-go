@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago_test
+package cadenya_test
 
 import (
 	"context"
@@ -23,24 +23,24 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.New(context.TODO(), gocadenyacomcadenyago.APIKeyNewParams{
-		Metadata: gocadenyacomcadenyago.F(shared.CreateResourceMetadataParam{
-			Name:       gocadenyacomcadenyago.F("name"),
-			ExternalID: gocadenyacomcadenyago.F("externalId"),
-			Labels: gocadenyacomcadenyago.F(map[string]string{
+	_, err := client.APIKeys.New(context.TODO(), cadenya.APIKeyNewParams{
+		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
 				"foo": "string",
 			}),
 		}),
-		Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.APIKeySpecParam{
-			Description: gocadenyacomcadenyago.F("description"),
+		Spec: cadenya.F(cadenya.APIKeySpecParam{
+			Description: cadenya.F("description"),
 		}),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -57,13 +57,13 @@ func TestAPIKeyGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -80,29 +80,29 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.Update(
 		context.TODO(),
 		"id",
-		gocadenyacomcadenyago.APIKeyUpdateParams{
-			Metadata: gocadenyacomcadenyago.F(shared.UpdateResourceMetadataParam{
-				Name:       gocadenyacomcadenyago.F("name"),
-				ExternalID: gocadenyacomcadenyago.F("externalId"),
-				Labels: gocadenyacomcadenyago.F(map[string]string{
+		cadenya.APIKeyUpdateParams{
+			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.APIKeySpecParam{
-				Description: gocadenyacomcadenyago.F("description"),
+			Spec: cadenya.F(cadenya.APIKeySpecParam{
+				Description: cadenya.F("description"),
 			}),
-			UpdateMask: gocadenyacomcadenyago.F("updateMask"),
+			UpdateMask: cadenya.F("updateMask"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -119,19 +119,19 @@ func TestAPIKeyListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.List(context.TODO(), gocadenyacomcadenyago.APIKeyListParams{
-		Cursor:      gocadenyacomcadenyago.F("cursor"),
-		IncludeInfo: gocadenyacomcadenyago.F(true),
-		Limit:       gocadenyacomcadenyago.F(int64(0)),
-		Prefix:      gocadenyacomcadenyago.F("prefix"),
-		SortOrder:   gocadenyacomcadenyago.F("sortOrder"),
+	_, err := client.APIKeys.List(context.TODO(), cadenya.APIKeyListParams{
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		Prefix:      cadenya.F("prefix"),
+		SortOrder:   cadenya.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -148,13 +148,13 @@ func TestAPIKeyDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.APIKeys.Delete(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -171,13 +171,13 @@ func TestAPIKeyRotate(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.Rotate(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

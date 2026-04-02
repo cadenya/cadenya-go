@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func TestObjectiveTaskGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -32,7 +32,7 @@ func TestObjectiveTaskGet(t *testing.T) {
 		"id",
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -49,21 +49,21 @@ func TestObjectiveTaskListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.Tasks.List(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveTaskListParams{
-			Cursor:    gocadenyacomcadenyago.F("cursor"),
-			Limit:     gocadenyacomcadenyago.F(int64(0)),
-			SortOrder: gocadenyacomcadenyago.F("sortOrder"),
+		cadenya.ObjectiveTaskListParams{
+			Cursor:    cadenya.F("cursor"),
+			Limit:     cadenya.F(int64(0)),
+			SortOrder: cadenya.F("sortOrder"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
