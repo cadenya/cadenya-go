@@ -21,6 +21,9 @@ type AccountResourceMetadata = shared.AccountResourceMetadata
 // This is an alias to an internal type.
 type AccountResourceMetadataParam = shared.AccountResourceMetadataParam
 
+// This is an alias to an internal type.
+type AccountSpec = shared.AccountSpec
+
 // BareMetadata contains the minimal metadata for a resource, including the ID.
 // These are used sparingly in Cadenya for resources where the full metadata is not
 // needed. You will come across them in list responses and other places where the

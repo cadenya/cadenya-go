@@ -67,6 +67,32 @@ func (r AccountResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+type AccountSpec struct {
+	BillingEmail string          `json:"billingEmail"`
+	Description  string          `json:"description"`
+	Domain       string          `json:"domain"`
+	Workspaces   []Workspace     `json:"workspaces"`
+	JSON         accountSpecJSON `json:"-"`
+}
+
+// accountSpecJSON contains the JSON metadata for the struct [AccountSpec]
+type accountSpecJSON struct {
+	BillingEmail apijson.Field
+	Description  apijson.Field
+	Domain       apijson.Field
+	Workspaces   apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *AccountSpec) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountSpecJSON) RawJSON() string {
+	return r.raw
+}
+
 // BareMetadata contains the minimal metadata for a resource, including the ID.
 // These are used sparingly in Cadenya for resources where the full metadata is not
 // needed. You will come across them in list responses and other places where the
