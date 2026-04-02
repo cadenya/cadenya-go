@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyago_test
+package cadenya_test
 
 import (
 	"context"
@@ -23,30 +23,30 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Objectives.New(context.TODO(), gocadenyacomcadenyago.ObjectiveNewParams{
-		AgentID: gocadenyacomcadenyago.F("agentId"),
-		Data: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ObjectiveDataParam{
-			Data:           gocadenyacomcadenyago.F[any](map[string]interface{}{}),
-			InitialMessage: gocadenyacomcadenyago.F("initialMessage"),
-			Secrets: gocadenyacomcadenyago.F([]gocadenyacomcadenyago.ObjectiveDataSecretParam{{
-				Name:  gocadenyacomcadenyago.F("name"),
-				Value: gocadenyacomcadenyago.F("value"),
+	_, err := client.Objectives.New(context.TODO(), cadenya.ObjectiveNewParams{
+		AgentID: cadenya.F("agentId"),
+		Data: cadenya.F(cadenya.ObjectiveDataParam{
+			Data:           cadenya.F[any](map[string]interface{}{}),
+			InitialMessage: cadenya.F("initialMessage"),
+			Secrets: cadenya.F([]cadenya.ObjectiveDataSecretParam{{
+				Name:  cadenya.F("name"),
+				Value: cadenya.F("value"),
 			}}),
 		}),
-		Metadata: gocadenyacomcadenyago.F(shared.CreateOperationMetadataParam{
-			ExternalID: gocadenyacomcadenyago.F("externalId"),
-			Labels: gocadenyacomcadenyago.F(map[string]string{
+		Metadata: cadenya.F(shared.CreateOperationMetadataParam{
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
 				"foo": "string",
 			}),
 		}),
-		VariationID: gocadenyacomcadenyago.F("variationId"),
+		VariationID: cadenya.F("variationId"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -63,13 +63,13 @@ func TestObjectiveGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -86,22 +86,22 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Objectives.List(context.TODO(), gocadenyacomcadenyago.ObjectiveListParams{
-		AgentID:           gocadenyacomcadenyago.F("agentId"),
-		Cursor:            gocadenyacomcadenyago.F("cursor"),
-		IncludeInfo:       gocadenyacomcadenyago.F(true),
-		Limit:             gocadenyacomcadenyago.F(int64(0)),
-		ParentObjectiveID: gocadenyacomcadenyago.F("parentObjectiveId"),
-		ProfileID:         gocadenyacomcadenyago.F("profileId"),
-		SortOrder:         gocadenyacomcadenyago.F("sortOrder"),
-		State:             gocadenyacomcadenyago.F(gocadenyacomcadenyago.ObjectiveListParamsStateStateUnspecified),
+	_, err := client.Objectives.List(context.TODO(), cadenya.ObjectiveListParams{
+		AgentID:           cadenya.F("agentId"),
+		Cursor:            cadenya.F("cursor"),
+		IncludeInfo:       cadenya.F(true),
+		Limit:             cadenya.F(int64(0)),
+		ParentObjectiveID: cadenya.F("parentObjectiveId"),
+		ProfileID:         cadenya.F("profileId"),
+		SortOrder:         cadenya.F("sortOrder"),
+		State:             cadenya.F(cadenya.ObjectiveListParamsStateStateUnspecified),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -118,19 +118,19 @@ func TestObjectiveCancelWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.Cancel(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveCancelParams{
-			Reason: gocadenyacomcadenyago.F("reason"),
+		cadenya.ObjectiveCancelParams{
+			Reason: cadenya.F("reason"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -147,24 +147,24 @@ func TestObjectiveContinueWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.Continue(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveContinueParams{
-			Enqueue: gocadenyacomcadenyago.F(true),
-			Message: gocadenyacomcadenyago.F("message"),
-			Secrets: gocadenyacomcadenyago.F([]gocadenyacomcadenyago.ObjectiveContinueParamsSecret{{
-				Name:  gocadenyacomcadenyago.F("name"),
-				Value: gocadenyacomcadenyago.F("value"),
+		cadenya.ObjectiveContinueParams{
+			Enqueue: cadenya.F(true),
+			Message: cadenya.F("message"),
+			Secrets: cadenya.F([]cadenya.ObjectiveContinueParamsSecret{{
+				Name:  cadenya.F("name"),
+				Value: cadenya.F("value"),
 			}}),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -181,21 +181,21 @@ func TestObjectiveListContextWindowsWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.ListContextWindows(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveListContextWindowsParams{
-			Cursor:      gocadenyacomcadenyago.F("cursor"),
-			IncludeInfo: gocadenyacomcadenyago.F(true),
-			Limit:       gocadenyacomcadenyago.F(int64(0)),
+		cadenya.ObjectiveListContextWindowsParams{
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -212,23 +212,23 @@ func TestObjectiveListEventsWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyago.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.ListEvents(
 		context.TODO(),
 		"objectiveId",
-		gocadenyacomcadenyago.ObjectiveListEventsParams{
-			Cursor:      gocadenyacomcadenyago.F("cursor"),
-			IncludeInfo: gocadenyacomcadenyago.F(true),
-			Limit:       gocadenyacomcadenyago.F(int64(0)),
-			SortOrder:   gocadenyacomcadenyago.F("sortOrder"),
-			WindowID:    gocadenyacomcadenyago.F("windowId"),
+		cadenya.ObjectiveListEventsParams{
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			SortOrder:   cadenya.F("sortOrder"),
+			WindowID:    cadenya.F("windowId"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyago.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

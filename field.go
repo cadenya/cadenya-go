@@ -1,4 +1,4 @@
-package gocadenyacomcadenyago
+package cadenya
 
 import (
 	"github.com/cadenya/cadenya-go/internal/param"
