@@ -137,7 +137,7 @@ type WorkspaceSecretInfo struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy  shared.Profile          `json:"createdBy"`
+	CreatedBy  Profile                 `json:"createdBy"`
 	LastUsedAt time.Time               `json:"lastUsedAt" format:"date-time"`
 	JSON       workspaceSecretInfoJSON `json:"-"`
 }

@@ -9,30 +9,6 @@ import (
 	"github.com/cadenya/cadenya-sdk-go/internal/param"
 )
 
-type Account struct {
-	// AccountResourceMetadata is used to represent a resource that is associated to an
-	// account but not to a workspace.
-	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     AccountSpec             `json:"spec" api:"required"`
-	JSON     accountJSON             `json:"-"`
-}
-
-// accountJSON contains the JSON metadata for the struct [Account]
-type accountJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Account) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountJSON) RawJSON() string {
-	return r.raw
-}
-
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
 type AccountResourceMetadata struct {
@@ -90,32 +66,6 @@ func (r AccountResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type AccountSpec struct {
-	BillingEmail string          `json:"billingEmail"`
-	Description  string          `json:"description"`
-	Domain       string          `json:"domain"`
-	Workspaces   []Workspace     `json:"workspaces"`
-	JSON         accountSpecJSON `json:"-"`
-}
-
-// accountSpecJSON contains the JSON metadata for the struct [AccountSpec]
-type accountSpecJSON struct {
-	BillingEmail apijson.Field
-	Description  apijson.Field
-	Domain       apijson.Field
-	Workspaces   apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *AccountSpec) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountSpecJSON) RawJSON() string {
-	return r.raw
-}
-
 // BareMetadata contains the minimal metadata for a resource, including the ID.
 // These are used sparingly in Cadenya for resources where the full metadata is not
 // needed. You will come across them in list responses and other places where the
@@ -139,37 +89,6 @@ func (r *BareMetadata) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r bareMetadataJSON) RawJSON() string {
-	return r.raw
-}
-
-// CallableTool is a union that represents a tool that can be called by an agent.
-// In Cadenya, a tool that is used within an agent objective might be a
-// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
-// or a Cadenya Tool (one Cadenya provides).
-type CallableTool struct {
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Agent ResourceMetadata `json:"agent"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	CadenyaProvidedTool ResourceMetadata `json:"cadenyaProvidedTool"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Tool ResourceMetadata `json:"tool"`
-	JSON callableToolJSON `json:"-"`
-}
-
-// callableToolJSON contains the JSON metadata for the struct [CallableTool]
-type callableToolJSON struct {
-	Agent               apijson.Field
-	CadenyaProvidedTool apijson.Field
-	Tool                apijson.Field
-	raw                 string
-	ExtraFields         map[string]apijson.Field
-}
-
-func (r *CallableTool) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r callableToolJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -250,111 +169,6 @@ func (r operationMetadataJSON) RawJSON() string {
 	return r.raw
 }
 
-// Profile represents a human user at the account level. Profiles are
-// account-scoped resources that can be associated with multiple workspaces through
-// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-type Profile struct {
-	// AccountResourceMetadata is used to represent a resource that is associated to an
-	// account but not to a workspace.
-	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
-	// ProfileSpec contains the profile-specific fields
-	Spec ProfileSpec `json:"spec" api:"required"`
-	JSON profileJSON `json:"-"`
-}
-
-// profileJSON contains the JSON metadata for the struct [Profile]
-type profileJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Profile) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r profileJSON) RawJSON() string {
-	return r.raw
-}
-
-// Profile represents a human user at the account level. Profiles are
-// account-scoped resources that can be associated with multiple workspaces through
-// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-type ProfileParam struct {
-	// AccountResourceMetadata is used to represent a resource that is associated to an
-	// account but not to a workspace.
-	Metadata param.Field[AccountResourceMetadataParam] `json:"metadata" api:"required"`
-	// ProfileSpec contains the profile-specific fields
-	Spec param.Field[ProfileSpecParam] `json:"spec" api:"required"`
-}
-
-func (r ProfileParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// ProfileSpec contains the profile-specific fields
-type ProfileSpec struct {
-	// Type is the type of profile. User's are humans, API keys are computers. You know
-	// the deal.
-	Type ProfileSpecType `json:"type" api:"required"`
-	// Email address of the user (required, unique per account)
-	Email string `json:"email"`
-	// Display name for the user (e.g., "Bobby Tables")
-	Name string          `json:"name"`
-	JSON profileSpecJSON `json:"-"`
-}
-
-// profileSpecJSON contains the JSON metadata for the struct [ProfileSpec]
-type profileSpecJSON struct {
-	Type        apijson.Field
-	Email       apijson.Field
-	Name        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ProfileSpec) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r profileSpecJSON) RawJSON() string {
-	return r.raw
-}
-
-// Type is the type of profile. User's are humans, API keys are computers. You know
-// the deal.
-type ProfileSpecType string
-
-const (
-	ProfileSpecTypeProfileTypeUser   ProfileSpecType = "PROFILE_TYPE_USER"
-	ProfileSpecTypeProfileTypeAPIKey ProfileSpecType = "PROFILE_TYPE_API_KEY"
-	ProfileSpecTypeProfileTypeSystem ProfileSpecType = "PROFILE_TYPE_SYSTEM"
-)
-
-func (r ProfileSpecType) IsKnown() bool {
-	switch r {
-	case ProfileSpecTypeProfileTypeUser, ProfileSpecTypeProfileTypeAPIKey, ProfileSpecTypeProfileTypeSystem:
-		return true
-	}
-	return false
-}
-
-// ProfileSpec contains the profile-specific fields
-type ProfileSpecParam struct {
-	// Type is the type of profile. User's are humans, API keys are computers. You know
-	// the deal.
-	Type param.Field[ProfileSpecType] `json:"type" api:"required"`
-	// Email address of the user (required, unique per account)
-	Email param.Field[string] `json:"email"`
-	// Display name for the user (e.g., "Bobby Tables")
-	Name param.Field[string] `json:"name"`
-}
-
-func (r ProfileSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 type ResourceMetadata struct {
 	// Unique identifier for the resource (prefixed ULID, e.g., "agent_01HXK...")
@@ -433,48 +247,4 @@ type UpdateResourceMetadataParam struct {
 
 func (r UpdateResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
-}
-
-type Workspace struct {
-	// AccountResourceMetadata is used to represent a resource that is associated to an
-	// account but not to a workspace.
-	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     WorkspaceSpec           `json:"spec" api:"required"`
-	JSON     workspaceJSON           `json:"-"`
-}
-
-// workspaceJSON contains the JSON metadata for the struct [Workspace]
-type workspaceJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Workspace) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceJSON) RawJSON() string {
-	return r.raw
-}
-
-type WorkspaceSpec struct {
-	Description string            `json:"description"`
-	JSON        workspaceSpecJSON `json:"-"`
-}
-
-// workspaceSpecJSON contains the JSON metadata for the struct [WorkspaceSpec]
-type workspaceSpecJSON struct {
-	Description apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSpec) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceSpecJSON) RawJSON() string {
-	return r.raw
 }
