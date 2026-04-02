@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,15 +22,15 @@ func TestSearchSearchToolsOrToolSetsWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Search.SearchToolsOrToolSets(context.TODO(), gocadenyacomcadenyasdkgo.SearchSearchToolsOrToolSetsParams{
-		Query: gocadenyacomcadenyasdkgo.F("query"),
+	_, err := client.Search.SearchToolsOrToolSets(context.TODO(), cadenya.SearchSearchToolsOrToolSetsParams{
+		Query: cadenya.F("query"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

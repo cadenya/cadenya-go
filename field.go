@@ -1,4 +1,4 @@
-package gocadenyacomcadenyasdkgo
+package cadenya
 
 import (
 	"github.com/cadenya/cadenya-sdk-go/internal/param"
