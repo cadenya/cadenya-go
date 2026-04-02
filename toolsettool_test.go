@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya_test
+package gocadenyacomcadenyago_test
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cadenya/cadenya-sdk-go"
-	"github.com/cadenya/cadenya-sdk-go/internal/testutil"
-	"github.com/cadenya/cadenya-sdk-go/option"
-	"github.com/cadenya/cadenya-sdk-go/shared"
+	"github.com/cadenya/cadenya-go"
+	"github.com/cadenya/cadenya-go/internal/testutil"
+	"github.com/cadenya/cadenya-go/option"
+	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestToolSetToolNewWithOptionalParams(t *testing.T) {
@@ -23,51 +23,51 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.Tools.New(
 		context.TODO(),
 		"toolSetId",
-		cadenya.ToolSetToolNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+		gocadenyacomcadenyago.ToolSetToolNewParams{
+			Metadata: gocadenyacomcadenyago.F(shared.CreateResourceMetadataParam{
+				Name:       gocadenyacomcadenyago.F("name"),
+				ExternalID: gocadenyacomcadenyago.F("externalId"),
+				Labels: gocadenyacomcadenyago.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: cadenya.F(cadenya.ToolSpecParam{
-				Config: cadenya.F(cadenya.ToolSpecConfigParam{
-					HTTP: cadenya.F(cadenya.ConfigHTTPParam{
-						RequestMethod: cadenya.F(cadenya.ConfigHTTPRequestMethodGet),
-						Headers: cadenya.F(map[string]string{
+			Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecParam{
+				Config: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecConfigParam{
+					HTTP: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigHTTPParam{
+						RequestMethod: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigHTTPRequestMethodGet),
+						Headers: gocadenyacomcadenyago.F(map[string]string{
 							"foo": "string",
 						}),
-						Path:                   cadenya.F("path"),
-						Query:                  cadenya.F("query"),
-						RequestBodyContentType: cadenya.F("requestBodyContentType"),
-						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
-						ToolName:               cadenya.F("toolName"),
+						Path:                   gocadenyacomcadenyago.F("path"),
+						Query:                  gocadenyacomcadenyago.F("query"),
+						RequestBodyContentType: gocadenyacomcadenyago.F("requestBodyContentType"),
+						RequestBodyTemplate:    gocadenyacomcadenyago.F("requestBodyTemplate"),
+						ToolName:               gocadenyacomcadenyago.F("toolName"),
 					}),
-					Mcp: cadenya.F(cadenya.ConfigMcpParam{
-						ToolDescription: cadenya.F("toolDescription"),
-						ToolName:        cadenya.F("toolName"),
-						ToolTitle:       cadenya.F("toolTitle"),
+					Mcp: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigMcpParam{
+						ToolDescription: gocadenyacomcadenyago.F("toolDescription"),
+						ToolName:        gocadenyacomcadenyago.F("toolName"),
+						ToolTitle:       gocadenyacomcadenyago.F("toolTitle"),
 					}),
 				}),
-				Description: cadenya.F("description"),
-				Parameters: cadenya.F(map[string]interface{}{
+				Description: gocadenyacomcadenyago.F("description"),
+				Parameters: gocadenyacomcadenyago.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				Status:           cadenya.F(cadenya.ToolSpecStatusToolStatusUnspecified),
-				RequiresApproval: cadenya.F(true),
+				Status:           gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecStatusToolStatusUnspecified),
+				RequiresApproval: gocadenyacomcadenyago.F(true),
 			}),
 		},
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -84,7 +84,7 @@ func TestToolSetToolGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -94,7 +94,7 @@ func TestToolSetToolGet(t *testing.T) {
 		"id",
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -111,7 +111,7 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -119,45 +119,45 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"toolSetId",
 		"id",
-		cadenya.ToolSetToolUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+		gocadenyacomcadenyago.ToolSetToolUpdateParams{
+			Metadata: gocadenyacomcadenyago.F(shared.UpdateResourceMetadataParam{
+				Name:       gocadenyacomcadenyago.F("name"),
+				ExternalID: gocadenyacomcadenyago.F("externalId"),
+				Labels: gocadenyacomcadenyago.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: cadenya.F(cadenya.ToolSpecParam{
-				Config: cadenya.F(cadenya.ToolSpecConfigParam{
-					HTTP: cadenya.F(cadenya.ConfigHTTPParam{
-						RequestMethod: cadenya.F(cadenya.ConfigHTTPRequestMethodGet),
-						Headers: cadenya.F(map[string]string{
+			Spec: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecParam{
+				Config: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecConfigParam{
+					HTTP: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigHTTPParam{
+						RequestMethod: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigHTTPRequestMethodGet),
+						Headers: gocadenyacomcadenyago.F(map[string]string{
 							"foo": "string",
 						}),
-						Path:                   cadenya.F("path"),
-						Query:                  cadenya.F("query"),
-						RequestBodyContentType: cadenya.F("requestBodyContentType"),
-						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
-						ToolName:               cadenya.F("toolName"),
+						Path:                   gocadenyacomcadenyago.F("path"),
+						Query:                  gocadenyacomcadenyago.F("query"),
+						RequestBodyContentType: gocadenyacomcadenyago.F("requestBodyContentType"),
+						RequestBodyTemplate:    gocadenyacomcadenyago.F("requestBodyTemplate"),
+						ToolName:               gocadenyacomcadenyago.F("toolName"),
 					}),
-					Mcp: cadenya.F(cadenya.ConfigMcpParam{
-						ToolDescription: cadenya.F("toolDescription"),
-						ToolName:        cadenya.F("toolName"),
-						ToolTitle:       cadenya.F("toolTitle"),
+					Mcp: gocadenyacomcadenyago.F(gocadenyacomcadenyago.ConfigMcpParam{
+						ToolDescription: gocadenyacomcadenyago.F("toolDescription"),
+						ToolName:        gocadenyacomcadenyago.F("toolName"),
+						ToolTitle:       gocadenyacomcadenyago.F("toolTitle"),
 					}),
 				}),
-				Description: cadenya.F("description"),
-				Parameters: cadenya.F(map[string]interface{}{
+				Description: gocadenyacomcadenyago.F("description"),
+				Parameters: gocadenyacomcadenyago.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				Status:           cadenya.F(cadenya.ToolSpecStatusToolStatusUnspecified),
-				RequiresApproval: cadenya.F(true),
+				Status:           gocadenyacomcadenyago.F(gocadenyacomcadenyago.ToolSpecStatusToolStatusUnspecified),
+				RequiresApproval: gocadenyacomcadenyago.F(true),
 			}),
-			UpdateMask: cadenya.F("updateMask"),
+			UpdateMask: gocadenyacomcadenyago.F("updateMask"),
 		},
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -174,23 +174,23 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.Tools.List(
 		context.TODO(),
 		"toolSetId",
-		cadenya.ToolSetToolListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			SortOrder:   cadenya.F("sortOrder"),
+		gocadenyacomcadenyago.ToolSetToolListParams{
+			Cursor:      gocadenyacomcadenyago.F("cursor"),
+			IncludeInfo: gocadenyacomcadenyago.F(true),
+			Limit:       gocadenyacomcadenyago.F(int64(0)),
+			Prefix:      gocadenyacomcadenyago.F("prefix"),
+			SortOrder:   gocadenyacomcadenyago.F("sortOrder"),
 		},
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -207,7 +207,7 @@ func TestToolSetToolDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -217,7 +217,7 @@ func TestToolSetToolDelete(t *testing.T) {
 		"id",
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

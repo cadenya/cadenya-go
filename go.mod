@@ -1,4 +1,4 @@
-module github.com/cadenya/cadenya-sdk-go
+module github.com/cadenya/cadenya-go
 
 go 1.22
 

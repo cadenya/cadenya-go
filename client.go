@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya
+package gocadenyacomcadenyago
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"os"
 	"slices"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-sdk-go/option"
+	"github.com/cadenya/cadenya-go/internal/requestconfig"
+	"github.com/cadenya/cadenya-go/option"
 )
 
 // Client creates a struct with services and top level methods that help with

@@ -18,11 +18,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go/internal"
-	"github.com/cadenya/cadenya-sdk-go/internal/apierror"
-	"github.com/cadenya/cadenya-sdk-go/internal/apiform"
-	"github.com/cadenya/cadenya-sdk-go/internal/apiquery"
-	"github.com/cadenya/cadenya-sdk-go/internal/param"
+	"github.com/cadenya/cadenya-go/internal"
+	"github.com/cadenya/cadenya-go/internal/apierror"
+	"github.com/cadenya/cadenya-go/internal/apiform"
+	"github.com/cadenya/cadenya-go/internal/apiquery"
+	"github.com/cadenya/cadenya-go/internal/param"
 )
 
 func getDefaultHeaders() map[string]string {

@@ -5,9 +5,9 @@ package pagination
 import (
 	"net/http"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
-	"github.com/cadenya/cadenya-sdk-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-sdk-go/option"
+	"github.com/cadenya/cadenya-go/internal/apijson"
+	"github.com/cadenya/cadenya-go/internal/requestconfig"
+	"github.com/cadenya/cadenya-go/option"
 )
 
 type CursorPaginationPagination struct {
