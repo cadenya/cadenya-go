@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (2026-04-02)
+
+Full Changelog: [v0.2.0...v0.2.1](https://github.com/cadenya/cadenya-go/compare/v0.2.0...v0.2.1)
+
+### Chores
+
+* sync repo ([1dd2177](https://github.com/cadenya/cadenya-go/commit/1dd217754171d651726b0f202b6c30ffdc8da639))
+
 ## 0.2.0 (2026-04-02)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/cadenya/cadenya-sdk-go/compare/v0.1.0...v0.2.0)
