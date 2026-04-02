@@ -157,7 +157,7 @@ type ObjectiveToolCallData struct {
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Callable shared.CallableTool `json:"callable" api:"required"`
+	Callable CallableTool `json:"callable" api:"required"`
 	// The arguments passed to the tool
 	Arguments map[string]interface{} `json:"arguments"`
 	// A memo supplied by the reviewer when denying the tool call
@@ -167,7 +167,7 @@ type ObjectiveToolCallData struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	StatusChangedBy shared.Profile            `json:"statusChangedBy"`
+	StatusChangedBy Profile                   `json:"statusChangedBy"`
 	JSON            objectiveToolCallDataJSON `json:"-"`
 }
 
@@ -195,7 +195,7 @@ type ObjectiveToolCallInfo struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy shared.Profile `json:"createdBy"`
+	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Objective shared.OperationMetadata  `json:"objective"`

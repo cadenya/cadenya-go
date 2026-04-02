@@ -3,30 +3,33 @@
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountResourceMetadataParam">AccountResourceMetadataParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#CreateOperationMetadataParam">CreateOperationMetadataParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#CreateResourceMetadataParam">CreateResourceMetadataParam</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ProfileParam">ProfileParam</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ProfileSpecParam">ProfileSpecParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ResourceMetadataParam">ResourceMetadataParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#UpdateResourceMetadataParam">UpdateResourceMetadataParam</a>
 
 # Shared Response Types
 
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Account">Account</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountResourceMetadata">AccountResourceMetadata</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountSpec">AccountSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#BareMetadata">BareMetadata</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#CallableTool">CallableTool</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#OperationMetadata">OperationMetadata</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Profile">Profile</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ProfileSpec">ProfileSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ResourceMetadata">ResourceMetadata</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Workspace">Workspace</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#WorkspaceSpec">WorkspaceSpec</a>
 
 # Account
 
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#ProfileParam">ProfileParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#ProfileSpecParam">ProfileSpecParam</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Account">Account</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AccountSpec">AccountSpec</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Profile">Profile</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#ProfileSpec">ProfileSpec</a>
+
 Methods:
 
-- <code title="get /v1/account">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AccountService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Account">Account</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/account">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AccountService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Account">Account</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # Agents
 
@@ -109,6 +112,7 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AssistantMessage">AssistantMessage</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AssistantToolCall">AssistantToolCall</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#CallableTool">CallableTool</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Objective">Objective</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#ObjectiveContextWindow">ObjectiveContextWindow</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#ObjectiveContextWindowData">ObjectiveContextWindowData</a>
@@ -302,7 +306,12 @@ Methods:
 
 # Workspaces
 
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Workspace">Workspace</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceSpec">WorkspaceSpec</a>
+
 Methods:
 
-- <code title="get /v1/workspaces">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceListParams">WorkspaceListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Workspace">Workspace</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
-- <code title="get /v1/workspaces/current">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/workspaces">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceListParams">WorkspaceListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Workspace">Workspace</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/workspaces/current">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>

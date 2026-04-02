@@ -198,7 +198,7 @@ type AssistantToolCall struct {
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Tool shared.CallableTool   `json:"tool"`
+	Tool CallableTool          `json:"tool"`
 	JSON assistantToolCallJSON `json:"-"`
 }
 
@@ -217,6 +217,37 @@ func (r *AssistantToolCall) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r assistantToolCallJSON) RawJSON() string {
+	return r.raw
+}
+
+// CallableTool is a union that represents a tool that can be called by an agent.
+// In Cadenya, a tool that is used within an agent objective might be a
+// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
+// or a Cadenya Tool (one Cadenya provides).
+type CallableTool struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	CadenyaProvidedTool shared.ResourceMetadata `json:"cadenyaProvidedTool"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Tool shared.ResourceMetadata `json:"tool"`
+	JSON callableToolJSON        `json:"-"`
+}
+
+// callableToolJSON contains the JSON metadata for the struct [CallableTool]
+type callableToolJSON struct {
+	Agent               apijson.Field
+	CadenyaProvidedTool apijson.Field
+	Tool                apijson.Field
+	raw                 string
+	ExtraFields         map[string]apijson.Field
+}
+
+func (r *CallableTool) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r callableToolJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -289,7 +320,7 @@ type ObjectiveContextWindowInfo struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy shared.Profile `json:"createdBy"`
+	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Objective shared.OperationMetadata       `json:"objective"`
@@ -510,7 +541,7 @@ type ObjectiveEventInfo struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy shared.Profile `json:"createdBy"`
+	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Objective shared.OperationMetadata `json:"objective"`
@@ -539,11 +570,11 @@ func (r objectiveEventInfoJSON) RawJSON() string {
 type ObjectiveInfo struct {
 	// List of callable tools assigned to the agent for this objective Includes tools,
 	// agents, and cadenya-provided tools from the agent's configuration
-	CallableTools []shared.CallableTool `json:"callableTools"`
+	CallableTools []CallableTool `json:"callableTools"`
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy shared.Profile `json:"createdBy"`
+	CreatedBy Profile `json:"createdBy"`
 	// Total number of context windows that this objective has generated
 	TotalContextWindows int64 `json:"totalContextWindows"`
 	// Total number of events generated during this objective's execution
