@@ -9,6 +9,9 @@ import (
 
 type Error = apierror.Error
 
+// This is an alias to an internal type.
+type Account = shared.Account
+
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
 //
@@ -120,3 +123,6 @@ type UpdateResourceMetadataParam = shared.UpdateResourceMetadataParam
 
 // This is an alias to an internal type.
 type Workspace = shared.Workspace
+
+// This is an alias to an internal type.
+type WorkspaceSpec = shared.WorkspaceSpec

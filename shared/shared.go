@@ -5,10 +5,33 @@ package shared
 import (
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go"
 	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
 	"github.com/cadenya/cadenya-sdk-go/internal/param"
 )
+
+type Account struct {
+	// AccountResourceMetadata is used to represent a resource that is associated to an
+	// account but not to a workspace.
+	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
+	Spec     AccountSpec             `json:"spec" api:"required"`
+	JSON     accountJSON             `json:"-"`
+}
+
+// accountJSON contains the JSON metadata for the struct [Account]
+type accountJSON struct {
+	Metadata    apijson.Field
+	Spec        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *Account) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountJSON) RawJSON() string {
+	return r.raw
+}
 
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
@@ -416,7 +439,7 @@ type Workspace struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     cadenya.WorkspaceSpec   `json:"spec" api:"required"`
+	Spec     WorkspaceSpec           `json:"spec" api:"required"`
 	JSON     workspaceJSON           `json:"-"`
 }
 
@@ -433,5 +456,25 @@ func (r *Workspace) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r workspaceJSON) RawJSON() string {
+	return r.raw
+}
+
+type WorkspaceSpec struct {
+	Description string            `json:"description"`
+	JSON        workspaceSpecJSON `json:"-"`
+}
+
+// workspaceSpecJSON contains the JSON metadata for the struct [WorkspaceSpec]
+type workspaceSpecJSON struct {
+	Description apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *WorkspaceSpec) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r workspaceSpecJSON) RawJSON() string {
 	return r.raw
 }
