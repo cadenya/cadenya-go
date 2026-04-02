@@ -113,24 +113,24 @@ func (r objectiveTaskJSON) RawJSON() string {
 }
 
 type ObjectiveTaskData struct {
+	// Whether the task has been completed
+	Completed bool `json:"completed" api:"required"`
+	// The sequential number of this task within the objective (auto-assigned, 1-based)
+	Number int64 `json:"number" api:"required"`
 	// Description of the task to be completed
 	Task string `json:"task" api:"required"`
-	// Whether the task has been completed
-	Completed bool `json:"completed"`
 	// Timestamp when the task was marked as completed
-	CompletedAt time.Time `json:"completedAt" format:"date-time"`
-	// The sequential number of this task within the objective (auto-assigned, 1-based)
-	Number int64                 `json:"number"`
-	JSON   objectiveTaskDataJSON `json:"-"`
+	CompletedAt time.Time             `json:"completedAt" format:"date-time"`
+	JSON        objectiveTaskDataJSON `json:"-"`
 }
 
 // objectiveTaskDataJSON contains the JSON metadata for the struct
 // [ObjectiveTaskData]
 type objectiveTaskDataJSON struct {
-	Task        apijson.Field
 	Completed   apijson.Field
-	CompletedAt apijson.Field
 	Number      apijson.Field
+	Task        apijson.Field
+	CompletedAt apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
