@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,13 +22,13 @@ func TestModelGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Models.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -45,19 +45,19 @@ func TestModelListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Models.List(context.TODO(), gocadenyacomcadenyasdkgo.ModelListParams{
-		Cursor:    gocadenyacomcadenyasdkgo.F("cursor"),
-		Limit:     gocadenyacomcadenyasdkgo.F(int64(0)),
-		Prefix:    gocadenyacomcadenyasdkgo.F("prefix"),
-		SortOrder: gocadenyacomcadenyasdkgo.F("sortOrder"),
-		Status:    gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ModelListParamsStatusModelStatusUnspecified),
+	_, err := client.Models.List(context.TODO(), cadenya.ModelListParams{
+		Cursor:    cadenya.F("cursor"),
+		Limit:     cadenya.F(int64(0)),
+		Prefix:    cadenya.F("prefix"),
+		SortOrder: cadenya.F("sortOrder"),
+		Status:    cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -74,19 +74,19 @@ func TestModelSetStatusWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Models.SetStatus(
 		context.TODO(),
 		"id",
-		gocadenyacomcadenyasdkgo.ModelSetStatusParams{
-			Status: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ModelSetStatusParamsStatusModelStatusUnspecified),
+		cadenya.ModelSetStatusParams{
+			Status: cadenya.F(cadenya.ModelSetStatusParamsStatusModelStatusUnspecified),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

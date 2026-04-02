@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -23,83 +23,83 @@ func TestToolSetNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.ToolSets.New(context.TODO(), gocadenyacomcadenyasdkgo.ToolSetNewParams{
-		Metadata: gocadenyacomcadenyasdkgo.F(shared.CreateResourceMetadataParam{
-			Name:       gocadenyacomcadenyasdkgo.F("name"),
-			ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-			Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+	_, err := client.ToolSets.New(context.TODO(), cadenya.ToolSetNewParams{
+		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
 				"foo": "string",
 			}),
 		}),
-		Spec: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetSpecParam{
-			Adapter: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterParam{
-				HTTP: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterHTTPParam{
-					BaseURL: gocadenyacomcadenyasdkgo.F("baseUrl"),
-					Headers: gocadenyacomcadenyasdkgo.F(map[string]string{
+		Spec: cadenya.F(cadenya.ToolSetSpecParam{
+			Adapter: cadenya.F(cadenya.ToolSetAdapterParam{
+				HTTP: cadenya.F(cadenya.ToolSetAdapterHTTPParam{
+					BaseURL: cadenya.F("baseUrl"),
+					Headers: cadenya.F(map[string]string{
 						"foo": "string",
 					}),
 				}),
-				Mcp: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterMcpParam{
-					ExcludeTools: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-						Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-						Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-							Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-							Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-								CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-								Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-								EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-								Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-								Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-								StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+				Mcp: cadenya.F(cadenya.ToolSetAdapterMcpParam{
+					ExcludeTools: cadenya.F(cadenya.McpToolFilterParam{
+						Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+						Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+							Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+							Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+								CaseSensitive: cadenya.F(true),
+								Contains:      cadenya.F("contains"),
+								EndsWith:      cadenya.F("endsWith"),
+								Exact:         cadenya.F("exact"),
+								Regex:         cadenya.F("regex"),
+								StartsWith:    cadenya.F("startsWith"),
 							}),
 						}}),
 					}),
-					Headers: gocadenyacomcadenyasdkgo.F(map[string]string{
+					Headers: cadenya.F(map[string]string{
 						"foo": "string",
 					}),
-					IncludeTools: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-						Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-						Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-							Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-							Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-								CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-								Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-								EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-								Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-								Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-								StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+					IncludeTools: cadenya.F(cadenya.McpToolFilterParam{
+						Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+						Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+							Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+							Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+								CaseSensitive: cadenya.F(true),
+								Contains:      cadenya.F("contains"),
+								EndsWith:      cadenya.F("endsWith"),
+								Exact:         cadenya.F("exact"),
+								Regex:         cadenya.F("regex"),
+								StartsWith:    cadenya.F("startsWith"),
 							}),
 						}}),
 					}),
-					ToolApprovals: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterMcpToolApprovalsParam{
-						Always: gocadenyacomcadenyasdkgo.F(true),
-						Only: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-							Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-							Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-								Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-								Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-									CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-									Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-									EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-									Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-									Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-									StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+					ToolApprovals: cadenya.F(cadenya.ToolSetAdapterMcpToolApprovalsParam{
+						Always: cadenya.F(true),
+						Only: cadenya.F(cadenya.McpToolFilterParam{
+							Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+							Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+								Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+								Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									CaseSensitive: cadenya.F(true),
+									Contains:      cadenya.F("contains"),
+									EndsWith:      cadenya.F("endsWith"),
+									Exact:         cadenya.F("exact"),
+									Regex:         cadenya.F("regex"),
+									StartsWith:    cadenya.F("startsWith"),
 								}),
 							}}),
 						}),
 					}),
-					URL: gocadenyacomcadenyasdkgo.F("url"),
+					URL: cadenya.F("url"),
 				}),
 			}),
-			Description: gocadenyacomcadenyasdkgo.F("description"),
+			Description: cadenya.F("description"),
 		}),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -116,13 +116,13 @@ func TestToolSetGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -139,88 +139,88 @@ func TestToolSetUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.Update(
 		context.TODO(),
 		"id",
-		gocadenyacomcadenyasdkgo.ToolSetUpdateParams{
-			Metadata: gocadenyacomcadenyasdkgo.F(shared.UpdateResourceMetadataParam{
-				Name:       gocadenyacomcadenyasdkgo.F("name"),
-				ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-				Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+		cadenya.ToolSetUpdateParams{
+			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetSpecParam{
-				Adapter: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterParam{
-					HTTP: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterHTTPParam{
-						BaseURL: gocadenyacomcadenyasdkgo.F("baseUrl"),
-						Headers: gocadenyacomcadenyasdkgo.F(map[string]string{
+			Spec: cadenya.F(cadenya.ToolSetSpecParam{
+				Adapter: cadenya.F(cadenya.ToolSetAdapterParam{
+					HTTP: cadenya.F(cadenya.ToolSetAdapterHTTPParam{
+						BaseURL: cadenya.F("baseUrl"),
+						Headers: cadenya.F(map[string]string{
 							"foo": "string",
 						}),
 					}),
-					Mcp: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterMcpParam{
-						ExcludeTools: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-							Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-							Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-								Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-								Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-									CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-									Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-									EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-									Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-									Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-									StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+					Mcp: cadenya.F(cadenya.ToolSetAdapterMcpParam{
+						ExcludeTools: cadenya.F(cadenya.McpToolFilterParam{
+							Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+							Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+								Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+								Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									CaseSensitive: cadenya.F(true),
+									Contains:      cadenya.F("contains"),
+									EndsWith:      cadenya.F("endsWith"),
+									Exact:         cadenya.F("exact"),
+									Regex:         cadenya.F("regex"),
+									StartsWith:    cadenya.F("startsWith"),
 								}),
 							}}),
 						}),
-						Headers: gocadenyacomcadenyasdkgo.F(map[string]string{
+						Headers: cadenya.F(map[string]string{
 							"foo": "string",
 						}),
-						IncludeTools: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-							Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-							Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-								Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-								Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-									CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-									Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-									EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-									Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-									Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-									StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+						IncludeTools: cadenya.F(cadenya.McpToolFilterParam{
+							Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+							Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+								Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+								Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									CaseSensitive: cadenya.F(true),
+									Contains:      cadenya.F("contains"),
+									EndsWith:      cadenya.F("endsWith"),
+									Exact:         cadenya.F("exact"),
+									Regex:         cadenya.F("regex"),
+									StartsWith:    cadenya.F("startsWith"),
 								}),
 							}}),
 						}),
-						ToolApprovals: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSetAdapterMcpToolApprovalsParam{
-							Always: gocadenyacomcadenyasdkgo.F(true),
-							Only: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterParam{
-								Operator: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterOperatorOperatorUnspecified),
-								Filters: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.McpToolFilterFilterParam{{
-									Attribute: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersAttributeAttributeUnspecified),
-									Matcher: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.McpToolFilterFiltersMatcherParam{
-										CaseSensitive: gocadenyacomcadenyasdkgo.F(true),
-										Contains:      gocadenyacomcadenyasdkgo.F("contains"),
-										EndsWith:      gocadenyacomcadenyasdkgo.F("endsWith"),
-										Exact:         gocadenyacomcadenyasdkgo.F("exact"),
-										Regex:         gocadenyacomcadenyasdkgo.F("regex"),
-										StartsWith:    gocadenyacomcadenyasdkgo.F("startsWith"),
+						ToolApprovals: cadenya.F(cadenya.ToolSetAdapterMcpToolApprovalsParam{
+							Always: cadenya.F(true),
+							Only: cadenya.F(cadenya.McpToolFilterParam{
+								Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+								Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+									Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+									Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+										CaseSensitive: cadenya.F(true),
+										Contains:      cadenya.F("contains"),
+										EndsWith:      cadenya.F("endsWith"),
+										Exact:         cadenya.F("exact"),
+										Regex:         cadenya.F("regex"),
+										StartsWith:    cadenya.F("startsWith"),
 									}),
 								}}),
 							}),
 						}),
-						URL: gocadenyacomcadenyasdkgo.F("url"),
+						URL: cadenya.F("url"),
 					}),
 				}),
-				Description: gocadenyacomcadenyasdkgo.F("description"),
+				Description: cadenya.F("description"),
 			}),
-			UpdateMask: gocadenyacomcadenyasdkgo.F("updateMask"),
+			UpdateMask: cadenya.F("updateMask"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -237,19 +237,19 @@ func TestToolSetListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.ToolSets.List(context.TODO(), gocadenyacomcadenyasdkgo.ToolSetListParams{
-		Cursor:      gocadenyacomcadenyasdkgo.F("cursor"),
-		IncludeInfo: gocadenyacomcadenyasdkgo.F(true),
-		Limit:       gocadenyacomcadenyasdkgo.F(int64(0)),
-		Prefix:      gocadenyacomcadenyasdkgo.F("prefix"),
-		SortOrder:   gocadenyacomcadenyasdkgo.F("sortOrder"),
+	_, err := client.ToolSets.List(context.TODO(), cadenya.ToolSetListParams{
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		Prefix:      cadenya.F("prefix"),
+		SortOrder:   cadenya.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -266,13 +266,13 @@ func TestToolSetDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.ToolSets.Delete(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -289,22 +289,22 @@ func TestToolSetListEventsWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.ListEvents(
 		context.TODO(),
 		"toolSetId",
-		gocadenyacomcadenyasdkgo.ToolSetListEventsParams{
-			Cursor:      gocadenyacomcadenyasdkgo.F("cursor"),
-			IncludeInfo: gocadenyacomcadenyasdkgo.F(true),
-			Limit:       gocadenyacomcadenyasdkgo.F(int64(0)),
-			SortOrder:   gocadenyacomcadenyasdkgo.F("sortOrder"),
+		cadenya.ToolSetListEventsParams{
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			SortOrder:   cadenya.F("sortOrder"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

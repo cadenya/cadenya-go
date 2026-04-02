@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -23,104 +23,104 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.New(context.TODO(), gocadenyacomcadenyasdkgo.AgentNewParams{
-		Metadata: gocadenyacomcadenyasdkgo.F(shared.CreateResourceMetadataParam{
-			Name:       gocadenyacomcadenyasdkgo.F("name"),
-			ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-			Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+	_, err := client.Agents.New(context.TODO(), cadenya.AgentNewParams{
+		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
 				"foo": "string",
 			}),
 		}),
-		Spec: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecParam{
-			Status:                 gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecStatusAgentStatusUnspecified),
-			VariationSelectionMode: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-			Description:            gocadenyacomcadenyasdkgo.F("description"),
-			WebhookEventsURL:       gocadenyacomcadenyasdkgo.F("webhookEventsUrl"),
+		Spec: cadenya.F(cadenya.AgentSpecParam{
+			Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
+			VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
+			Description:            cadenya.F("description"),
+			WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 		}),
-		DefaultVariation: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentNewParamsDefaultVariation{
-			Metadata: gocadenyacomcadenyasdkgo.F(shared.CreateResourceMetadataParam{
-				Name:       gocadenyacomcadenyasdkgo.F("name"),
-				ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-				Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+		DefaultVariation: cadenya.F(cadenya.AgentNewParamsDefaultVariation{
+			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentVariationSpecParam{
-				AgentDocuments: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.AgentVariationSpecAgentDocumentParam{{
-					DocumentID: gocadenyacomcadenyasdkgo.F("documentId"),
-					DocumentMetadata: gocadenyacomcadenyasdkgo.F(shared.ResourceMetadataParam{
-						Name:       gocadenyacomcadenyasdkgo.F("name"),
-						ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-						Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
+				AgentDocuments: cadenya.F([]cadenya.AgentVariationSpecAgentDocumentParam{{
+					DocumentID: cadenya.F("documentId"),
+					DocumentMetadata: cadenya.F(shared.ResourceMetadataParam{
+						Name:       cadenya.F("name"),
+						ExternalID: cadenya.F("externalId"),
+						Labels: cadenya.F(map[string]string{
 							"foo": "string",
 						}),
 					}),
-					DocumentNamespaceID: gocadenyacomcadenyasdkgo.F("documentNamespaceId"),
-					DocumentNamespaceMetadata: gocadenyacomcadenyasdkgo.F(shared.ResourceMetadataParam{
-						Name:       gocadenyacomcadenyasdkgo.F("name"),
-						ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-						Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}}),
-				AgentTools: gocadenyacomcadenyasdkgo.F([]gocadenyacomcadenyasdkgo.AgentVariationSpecAgentToolParam{{
-					AgentID: gocadenyacomcadenyasdkgo.F("agentId"),
-					AgentMetadata: gocadenyacomcadenyasdkgo.F(shared.ResourceMetadataParam{
-						Name:       gocadenyacomcadenyasdkgo.F("name"),
-						ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-						Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolID: gocadenyacomcadenyasdkgo.F("toolId"),
-					ToolMetadata: gocadenyacomcadenyasdkgo.F(shared.ResourceMetadataParam{
-						Name:       gocadenyacomcadenyasdkgo.F("name"),
-						ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-						Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolSetID: gocadenyacomcadenyasdkgo.F("toolSetId"),
-					ToolSetMetadata: gocadenyacomcadenyasdkgo.F(shared.ResourceMetadataParam{
-						Name:       gocadenyacomcadenyasdkgo.F("name"),
-						ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-						Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+					DocumentNamespaceID: cadenya.F("documentNamespaceId"),
+					DocumentNamespaceMetadata: cadenya.F(shared.ResourceMetadataParam{
+						Name:       cadenya.F("name"),
+						ExternalID: cadenya.F("externalId"),
+						Labels: cadenya.F(map[string]string{
 							"foo": "string",
 						}),
 					}),
 				}}),
-				Constraints: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentVariationSpecConstraintsParam{
-					MaxSubObjectives: gocadenyacomcadenyasdkgo.F(int64(0)),
-					MaxToolCalls:     gocadenyacomcadenyasdkgo.F(int64(0)),
-				}),
-				Description:          gocadenyacomcadenyasdkgo.F("description"),
-				EnableEpisodicMemory: gocadenyacomcadenyasdkgo.F(true),
-				EpisodicMemoryTtl:    gocadenyacomcadenyasdkgo.F(int64(0)),
-				ModelConfig: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentVariationSpecModelConfigParam{
-					ModelID:     gocadenyacomcadenyasdkgo.F("modelId"),
-					Temperature: gocadenyacomcadenyasdkgo.F(0.000000),
-				}),
-				Prompt: gocadenyacomcadenyasdkgo.F("prompt"),
-				ToolSelection: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentVariationSpecToolSelectionParam{
-					AssignedTools: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSelectionAssignedToolsParam{
-						AllowDiscovery: gocadenyacomcadenyasdkgo.F(true),
+				AgentTools: cadenya.F([]cadenya.AgentVariationSpecAgentToolParam{{
+					AgentID: cadenya.F("agentId"),
+					AgentMetadata: cadenya.F(shared.ResourceMetadataParam{
+						Name:       cadenya.F("name"),
+						ExternalID: cadenya.F("externalId"),
+						Labels: cadenya.F(map[string]string{
+							"foo": "string",
+						}),
 					}),
-					AutoDiscovery: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.ToolSelectionAutoDiscoveryParam{
-						Hints:    gocadenyacomcadenyasdkgo.F([]string{"string"}),
-						MaxTools: gocadenyacomcadenyasdkgo.F(int64(0)),
+					ToolID: cadenya.F("toolId"),
+					ToolMetadata: cadenya.F(shared.ResourceMetadataParam{
+						Name:       cadenya.F("name"),
+						ExternalID: cadenya.F("externalId"),
+						Labels: cadenya.F(map[string]string{
+							"foo": "string",
+						}),
+					}),
+					ToolSetID: cadenya.F("toolSetId"),
+					ToolSetMetadata: cadenya.F(shared.ResourceMetadataParam{
+						Name:       cadenya.F("name"),
+						ExternalID: cadenya.F("externalId"),
+						Labels: cadenya.F(map[string]string{
+							"foo": "string",
+						}),
+					}),
+				}}),
+				Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
+					MaxSubObjectives: cadenya.F(int64(0)),
+					MaxToolCalls:     cadenya.F(int64(0)),
+				}),
+				Description:          cadenya.F("description"),
+				EnableEpisodicMemory: cadenya.F(true),
+				EpisodicMemoryTtl:    cadenya.F(int64(0)),
+				ModelConfig: cadenya.F(cadenya.AgentVariationSpecModelConfigParam{
+					ModelID:     cadenya.F("modelId"),
+					Temperature: cadenya.F(0.000000),
+				}),
+				Prompt: cadenya.F("prompt"),
+				ToolSelection: cadenya.F(cadenya.AgentVariationSpecToolSelectionParam{
+					AssignedTools: cadenya.F(cadenya.ToolSelectionAssignedToolsParam{
+						AllowDiscovery: cadenya.F(true),
+					}),
+					AutoDiscovery: cadenya.F(cadenya.ToolSelectionAutoDiscoveryParam{
+						Hints:    cadenya.F([]string{"string"}),
+						MaxTools: cadenya.F(int64(0)),
 					}),
 				}),
-				Weight: gocadenyacomcadenyasdkgo.F(int64(0)),
+				Weight: cadenya.F(int64(0)),
 			}),
 		}),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -137,13 +137,13 @@ func TestAgentGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.Get(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -160,32 +160,32 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.Update(
 		context.TODO(),
 		"id",
-		gocadenyacomcadenyasdkgo.AgentUpdateParams{
-			Metadata: gocadenyacomcadenyasdkgo.F(shared.UpdateResourceMetadataParam{
-				Name:       gocadenyacomcadenyasdkgo.F("name"),
-				ExternalID: gocadenyacomcadenyasdkgo.F("externalId"),
-				Labels: gocadenyacomcadenyasdkgo.F(map[string]string{
+		cadenya.AgentUpdateParams{
+			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
-			Spec: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecParam{
-				Status:                 gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecStatusAgentStatusUnspecified),
-				VariationSelectionMode: gocadenyacomcadenyasdkgo.F(gocadenyacomcadenyasdkgo.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-				Description:            gocadenyacomcadenyasdkgo.F("description"),
-				WebhookEventsURL:       gocadenyacomcadenyasdkgo.F("webhookEventsUrl"),
+			Spec: cadenya.F(cadenya.AgentSpecParam{
+				Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
+				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
+				Description:            cadenya.F("description"),
+				WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 			}),
-			UpdateMask: gocadenyacomcadenyasdkgo.F("updateMask"),
+			UpdateMask: cadenya.F("updateMask"),
 		},
 	)
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -202,19 +202,19 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.List(context.TODO(), gocadenyacomcadenyasdkgo.AgentListParams{
-		Cursor:      gocadenyacomcadenyasdkgo.F("cursor"),
-		IncludeInfo: gocadenyacomcadenyasdkgo.F(true),
-		Limit:       gocadenyacomcadenyasdkgo.F(int64(0)),
-		Prefix:      gocadenyacomcadenyasdkgo.F("prefix"),
-		SortOrder:   gocadenyacomcadenyasdkgo.F("sortOrder"),
+	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		Prefix:      cadenya.F("prefix"),
+		SortOrder:   cadenya.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -231,13 +231,13 @@ func TestAgentDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Agents.Delete(context.TODO(), "id")
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

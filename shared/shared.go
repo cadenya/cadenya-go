@@ -389,9 +389,9 @@ func (r UpdateResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 type Workspace struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
-	Metadata AccountResourceMetadata                `json:"metadata" api:"required"`
-	Spec     gocadenyacomcadenyasdkgo.WorkspaceSpec `json:"spec" api:"required"`
-	JSON     workspaceJSON                          `json:"-"`
+	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
+	Spec     cadenya.WorkspaceSpec   `json:"spec" api:"required"`
+	JSON     workspaceJSON           `json:"-"`
 }
 
 // workspaceJSON contains the JSON metadata for the struct [Workspace]

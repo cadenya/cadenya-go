@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package gocadenyacomcadenyasdkgo_test
+package cadenya_test
 
 import (
 	"context"
@@ -22,18 +22,18 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.List(context.TODO(), gocadenyacomcadenyasdkgo.WorkspaceListParams{
-		Cursor:      gocadenyacomcadenyasdkgo.F("cursor"),
-		IncludeInfo: gocadenyacomcadenyasdkgo.F(true),
-		Limit:       gocadenyacomcadenyasdkgo.F(int64(0)),
-		SortOrder:   gocadenyacomcadenyasdkgo.F("sortOrder"),
+	_, err := client.Workspaces.List(context.TODO(), cadenya.WorkspaceListParams{
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		SortOrder:   cadenya.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -50,13 +50,13 @@ func TestWorkspaceGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := gocadenyacomcadenyasdkgo.NewClient(
+	client := cadenya.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Workspaces.Get(context.TODO())
 	if err != nil {
-		var apierr *gocadenyacomcadenyasdkgo.Error
+		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
