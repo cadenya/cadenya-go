@@ -168,9 +168,9 @@ type AgentInfo struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy      shared.Profile `json:"createdBy"`
-	VariationCount int64          `json:"variationCount"`
-	JSON           agentInfoJSON  `json:"-"`
+	CreatedBy      Profile       `json:"createdBy"`
+	VariationCount int64         `json:"variationCount"`
+	JSON           agentInfoJSON `json:"-"`
 }
 
 // agentInfoJSON contains the JSON metadata for the struct [AgentInfo]
@@ -195,7 +195,7 @@ type AgentInfoParam struct {
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
-	CreatedBy param.Field[shared.ProfileParam] `json:"createdBy"`
+	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
 }
 
 func (r AgentInfoParam) MarshalJSON() (data []byte, err error) {
