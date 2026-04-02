@@ -5,10 +5,33 @@ package shared
 import (
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go"
 	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
 	"github.com/cadenya/cadenya-sdk-go/internal/param"
 )
+
+type Account struct {
+	// AccountResourceMetadata is used to represent a resource that is associated to an
+	// account but not to a workspace.
+	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
+	Spec     AccountSpec             `json:"spec" api:"required"`
+	JSON     accountJSON             `json:"-"`
+}
+
+// accountJSON contains the JSON metadata for the struct [Account]
+type accountJSON struct {
+	Metadata    apijson.Field
+	Spec        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *Account) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountJSON) RawJSON() string {
+	return r.raw
+}
 
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
@@ -65,6 +88,32 @@ type AccountResourceMetadataParam struct {
 
 func (r AccountResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+type AccountSpec struct {
+	BillingEmail string          `json:"billingEmail"`
+	Description  string          `json:"description"`
+	Domain       string          `json:"domain"`
+	Workspaces   []Workspace     `json:"workspaces"`
+	JSON         accountSpecJSON `json:"-"`
+}
+
+// accountSpecJSON contains the JSON metadata for the struct [AccountSpec]
+type accountSpecJSON struct {
+	BillingEmail apijson.Field
+	Description  apijson.Field
+	Domain       apijson.Field
+	Workspaces   apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *AccountSpec) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountSpecJSON) RawJSON() string {
+	return r.raw
 }
 
 // BareMetadata contains the minimal metadata for a resource, including the ID.
@@ -390,7 +439,7 @@ type Workspace struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     cadenya.WorkspaceSpec   `json:"spec" api:"required"`
+	Spec     WorkspaceSpec           `json:"spec" api:"required"`
 	JSON     workspaceJSON           `json:"-"`
 }
 
@@ -407,5 +456,25 @@ func (r *Workspace) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r workspaceJSON) RawJSON() string {
+	return r.raw
+}
+
+type WorkspaceSpec struct {
+	Description string            `json:"description"`
+	JSON        workspaceSpecJSON `json:"-"`
+}
+
+// workspaceSpecJSON contains the JSON metadata for the struct [WorkspaceSpec]
+type workspaceSpecJSON struct {
+	Description apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *WorkspaceSpec) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r workspaceSpecJSON) RawJSON() string {
 	return r.raw
 }

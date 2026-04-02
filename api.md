@@ -10,7 +10,9 @@
 
 # Shared Response Types
 
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Account">Account</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountResourceMetadata">AccountResourceMetadata</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountSpec">AccountSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#BareMetadata">BareMetadata</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#CallableTool">CallableTool</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#OperationMetadata">OperationMetadata</a>
@@ -18,16 +20,13 @@
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ProfileSpec">ProfileSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#ResourceMetadata">ResourceMetadata</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Workspace">Workspace</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#WorkspaceSpec">WorkspaceSpec</a>
 
 # Account
 
-Response Types:
-
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Account">Account</a>
-
 Methods:
 
-- <code title="get /v1/account">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AccountService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#Account">Account</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/account">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#AccountService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#Account">Account</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # Agents
 
@@ -302,10 +301,6 @@ Methods:
 - <code title="delete /v1/workspace_secrets/{id}">client.WorkspaceSecrets.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceSecretService.Delete">Delete</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
 
 # Workspaces
-
-Response Types:
-
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go#WorkspaceSpec">WorkspaceSpec</a>
 
 Methods:
 

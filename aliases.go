@@ -9,6 +9,9 @@ import (
 
 type Error = apierror.Error
 
+// This is an alias to an internal type.
+type Account = shared.Account
+
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
 //
@@ -20,6 +23,9 @@ type AccountResourceMetadata = shared.AccountResourceMetadata
 //
 // This is an alias to an internal type.
 type AccountResourceMetadataParam = shared.AccountResourceMetadataParam
+
+// This is an alias to an internal type.
+type AccountSpec = shared.AccountSpec
 
 // BareMetadata contains the minimal metadata for a resource, including the ID.
 // These are used sparingly in Cadenya for resources where the full metadata is not
@@ -117,3 +123,6 @@ type UpdateResourceMetadataParam = shared.UpdateResourceMetadataParam
 
 // This is an alias to an internal type.
 type Workspace = shared.Workspace
+
+// This is an alias to an internal type.
+type WorkspaceSpec = shared.WorkspaceSpec

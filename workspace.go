@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
 	"github.com/cadenya/cadenya-sdk-go/internal/apiquery"
 	"github.com/cadenya/cadenya-sdk-go/internal/param"
 	"github.com/cadenya/cadenya-sdk-go/internal/requestconfig"
@@ -73,26 +72,6 @@ func (r *WorkspaceService) Get(ctx context.Context, opts ...option.RequestOption
 	path := "v1/workspaces/current"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
-}
-
-type WorkspaceSpec struct {
-	Description string            `json:"description"`
-	JSON        workspaceSpecJSON `json:"-"`
-}
-
-// workspaceSpecJSON contains the JSON metadata for the struct [WorkspaceSpec]
-type workspaceSpecJSON struct {
-	Description apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSpec) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceSpecJSON) RawJSON() string {
-	return r.raw
 }
 
 type WorkspaceListParams struct {
