@@ -5,8 +5,8 @@ package shared
 import (
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
-	"github.com/cadenya/cadenya-sdk-go/internal/param"
+	"github.com/cadenya/cadenya-go/internal/apijson"
+	"github.com/cadenya/cadenya-go/internal/param"
 )
 
 // AccountResourceMetadata is used to represent a resource that is associated to an

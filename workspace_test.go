@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya_test
+package gocadenyacomcadenyago_test
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cadenya/cadenya-sdk-go"
-	"github.com/cadenya/cadenya-sdk-go/internal/testutil"
-	"github.com/cadenya/cadenya-sdk-go/option"
+	"github.com/cadenya/cadenya-go"
+	"github.com/cadenya/cadenya-go/internal/testutil"
+	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestWorkspaceListWithOptionalParams(t *testing.T) {
@@ -22,18 +22,18 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.List(context.TODO(), cadenya.WorkspaceListParams{
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		SortOrder:   cadenya.F("sortOrder"),
+	_, err := client.Workspaces.List(context.TODO(), gocadenyacomcadenyago.WorkspaceListParams{
+		Cursor:      gocadenyacomcadenyago.F("cursor"),
+		IncludeInfo: gocadenyacomcadenyago.F(true),
+		Limit:       gocadenyacomcadenyago.F(int64(0)),
+		SortOrder:   gocadenyacomcadenyago.F("sortOrder"),
 	})
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -50,13 +50,13 @@ func TestWorkspaceGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Workspaces.Get(context.TODO())
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

@@ -13,7 +13,7 @@ import (
 
 	"github.com/tidwall/sjson"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/param"
+	"github.com/cadenya/cadenya-go/internal/param"
 )
 
 var encoders sync.Map // map[encoderEntry]encoderFunc

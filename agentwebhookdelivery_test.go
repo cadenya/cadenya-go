@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya_test
+package gocadenyacomcadenyago_test
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cadenya/cadenya-sdk-go"
-	"github.com/cadenya/cadenya-sdk-go/internal/testutil"
-	"github.com/cadenya/cadenya-sdk-go/option"
+	"github.com/cadenya/cadenya-go"
+	"github.com/cadenya/cadenya-go/internal/testutil"
+	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
@@ -22,22 +22,22 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := cadenya.NewClient(
+	client := gocadenyacomcadenyago.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.WebhookDeliveries.List(
 		context.TODO(),
 		"agentId",
-		cadenya.AgentWebhookDeliveryListParams{
-			Cursor:      cadenya.F("cursor"),
-			EventType:   cadenya.F(cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
-			Limit:       cadenya.F(int64(0)),
-			ObjectiveID: cadenya.F("objectiveId"),
+		gocadenyacomcadenyago.AgentWebhookDeliveryListParams{
+			Cursor:      gocadenyacomcadenyago.F("cursor"),
+			EventType:   gocadenyacomcadenyago.F(gocadenyacomcadenyago.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
+			Limit:       gocadenyacomcadenyago.F(int64(0)),
+			ObjectiveID: gocadenyacomcadenyago.F("objectiveId"),
 		},
 	)
 	if err != nil {
-		var apierr *cadenya.Error
+		var apierr *gocadenyacomcadenyago.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

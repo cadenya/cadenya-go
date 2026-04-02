@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package cadenya
+package gocadenyacomcadenyago
 
 import (
 	"context"
@@ -11,13 +11,13 @@ import (
 	"slices"
 	"time"
 
-	"github.com/cadenya/cadenya-sdk-go/internal/apijson"
-	"github.com/cadenya/cadenya-sdk-go/internal/apiquery"
-	"github.com/cadenya/cadenya-sdk-go/internal/param"
-	"github.com/cadenya/cadenya-sdk-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-sdk-go/option"
-	"github.com/cadenya/cadenya-sdk-go/packages/pagination"
-	"github.com/cadenya/cadenya-sdk-go/shared"
+	"github.com/cadenya/cadenya-go/internal/apijson"
+	"github.com/cadenya/cadenya-go/internal/apiquery"
+	"github.com/cadenya/cadenya-go/internal/param"
+	"github.com/cadenya/cadenya-go/internal/requestconfig"
+	"github.com/cadenya/cadenya-go/option"
+	"github.com/cadenya/cadenya-go/packages/pagination"
+	"github.com/cadenya/cadenya-go/shared"
 )
 
 // AgentService manages AI agents at the WORKSPACE level. Agents are
