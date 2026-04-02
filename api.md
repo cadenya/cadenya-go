@@ -11,6 +11,7 @@
 # Shared Response Types
 
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountResourceMetadata">AccountResourceMetadata</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#AccountSpec">AccountSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#BareMetadata">BareMetadata</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#CallableTool">CallableTool</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-sdk-go/shared#OperationMetadata">OperationMetadata</a>

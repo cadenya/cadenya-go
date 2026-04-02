@@ -51,7 +51,7 @@ type Account struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     AccountSpec                    `json:"spec" api:"required"`
+	Spec     shared.AccountSpec             `json:"spec" api:"required"`
 	JSON     accountJSON                    `json:"-"`
 }
 
@@ -68,31 +68,5 @@ func (r *Account) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r accountJSON) RawJSON() string {
-	return r.raw
-}
-
-type AccountSpec struct {
-	BillingEmail string             `json:"billingEmail"`
-	Description  string             `json:"description"`
-	Domain       string             `json:"domain"`
-	Workspaces   []shared.Workspace `json:"workspaces"`
-	JSON         accountSpecJSON    `json:"-"`
-}
-
-// accountSpecJSON contains the JSON metadata for the struct [AccountSpec]
-type accountSpecJSON struct {
-	BillingEmail apijson.Field
-	Description  apijson.Field
-	Domain       apijson.Field
-	Workspaces   apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *AccountSpec) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountSpecJSON) RawJSON() string {
 	return r.raw
 }
