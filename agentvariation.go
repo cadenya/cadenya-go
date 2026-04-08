@@ -172,8 +172,13 @@ type AgentVariationInfo struct {
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
 	CreatedBy Profile `json:"createdBy"`
+	// Total number of objective feedbacks received for this variation
+	FeedbackCount int64 `json:"feedbackCount"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Model shared.ResourceMetadata `json:"model"`
+	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
+	// where 0.5 = neutral, >0.5 = positive, <0.5 = negative.
+	Score float64 `json:"score"`
 	// Number of sub-agents assigned to this variation
 	SubAgentCount int64 `json:"subAgentCount"`
 	// Number of individual tools assigned to this variation
@@ -187,7 +192,9 @@ type AgentVariationInfo struct {
 // [AgentVariationInfo]
 type agentVariationInfoJSON struct {
 	CreatedBy     apijson.Field
+	FeedbackCount apijson.Field
 	Model         apijson.Field
+	Score         apijson.Field
 	SubAgentCount apijson.Field
 	ToolCount     apijson.Field
 	ToolSetCount  apijson.Field
@@ -209,6 +216,11 @@ type AgentVariationInfoParam struct {
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
 	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
+	// Total number of objective feedbacks received for this variation
+	FeedbackCount param.Field[int64] `json:"feedbackCount"`
+	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
+	// where 0.5 = neutral, >0.5 = positive, <0.5 = negative.
+	Score param.Field[float64] `json:"score"`
 }
 
 func (r AgentVariationInfoParam) MarshalJSON() (data []byte, err error) {
