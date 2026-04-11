@@ -157,8 +157,7 @@ func TestObjectiveCompactWithOptionalParams(t *testing.T) {
 		cadenya.ObjectiveCompactParams{
 			CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
 				Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
-					Instructions:     cadenya.F("instructions"),
-					MinPreserveTurns: cadenya.F(int64(0)),
+					Instructions: cadenya.F("instructions"),
 				}),
 				ToolResultClearing: cadenya.F(cadenya.CompactionConfigToolResultClearingStrategyParam{
 					PreserveRecentResults: cadenya.F(int64(0)),

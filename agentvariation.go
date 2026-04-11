@@ -556,21 +556,16 @@ type CompactionConfigSummarizationStrategy struct {
 	// Custom instructions that guide what the summarizer preserves. Replaces the
 	// default summarization prompt entirely. Example: "Preserve all code snippets,
 	// variable names, and technical decisions."
-	Instructions string `json:"instructions"`
-	// Minimum number of recent message turns to always preserve during compaction.
-	// These turns are never summarized, ensuring recent context stays intact. Default:
-	// 4
-	MinPreserveTurns int64                                     `json:"minPreserveTurns"`
-	JSON             compactionConfigSummarizationStrategyJSON `json:"-"`
+	Instructions string                                    `json:"instructions"`
+	JSON         compactionConfigSummarizationStrategyJSON `json:"-"`
 }
 
 // compactionConfigSummarizationStrategyJSON contains the JSON metadata for the
 // struct [CompactionConfigSummarizationStrategy]
 type compactionConfigSummarizationStrategyJSON struct {
-	Instructions     apijson.Field
-	MinPreserveTurns apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
+	Instructions apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
 }
 
 func (r *CompactionConfigSummarizationStrategy) UnmarshalJSON(data []byte) (err error) {
@@ -588,10 +583,6 @@ type CompactionConfigSummarizationStrategyParam struct {
 	// default summarization prompt entirely. Example: "Preserve all code snippets,
 	// variable names, and technical decisions."
 	Instructions param.Field[string] `json:"instructions"`
-	// Minimum number of recent message turns to always preserve during compaction.
-	// These turns are never summarized, ensuring recent context stays intact. Default:
-	// 4
-	MinPreserveTurns param.Field[int64] `json:"minPreserveTurns"`
 }
 
 func (r CompactionConfigSummarizationStrategyParam) MarshalJSON() (data []byte, err error) {
