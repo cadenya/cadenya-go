@@ -50,24 +50,6 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-				AgentDocuments: cadenya.F([]cadenya.AgentVariationSpecAgentDocumentParam{{
-					DocumentID: cadenya.F("documentId"),
-					DocumentMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					DocumentNamespaceID: cadenya.F("documentNamespaceId"),
-					DocumentNamespaceMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}}),
 				AgentTools: cadenya.F([]cadenya.AgentVariationSpecAgentToolParam{{
 					AgentID: cadenya.F("agentId"),
 					AgentMetadata: cadenya.F(shared.ResourceMetadataParam{
@@ -94,6 +76,16 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 						}),
 					}),
 				}}),
+				CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
+					Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
+						Instructions:     cadenya.F("instructions"),
+						MinPreserveTurns: cadenya.F(int64(0)),
+					}),
+					ToolResultClearing: cadenya.F(cadenya.CompactionConfigToolResultClearingStrategyParam{
+						PreserveRecentResults: cadenya.F(int64(0)),
+					}),
+					TriggerThreshold: cadenya.F(0.000000),
+				}),
 				Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
 					MaxSubObjectives: cadenya.F(int64(0)),
 					MaxToolCalls:     cadenya.F(int64(0)),
