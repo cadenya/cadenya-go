@@ -229,11 +229,11 @@ func (r AgentVariationInfoParam) MarshalJSON() (data []byte, err error) {
 
 // AgentVariationSpec defines the operational configuration for a variation
 type AgentVariationSpec struct {
-	// Documents assigned to this variation. Can include individual documents or entire
-	// document namespaces (which include all documents in the namespace).
-	AgentDocuments []AgentVariationSpecAgentDocument `json:"agentDocuments"`
 	// Tools assigned to this variation
 	AgentTools []AgentVariationSpecAgentTool `json:"agentTools"`
+	// CompactionConfig defines how context window compaction behaves for objectives
+	// using this variation.
+	CompactionConfig AgentVariationSpecCompactionConfig `json:"compactionConfig"`
 	// Execution constraints
 	Constraints AgentVariationSpecConstraints `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
@@ -264,8 +264,8 @@ type AgentVariationSpec struct {
 // agentVariationSpecJSON contains the JSON metadata for the struct
 // [AgentVariationSpec]
 type agentVariationSpecJSON struct {
-	AgentDocuments       apijson.Field
 	AgentTools           apijson.Field
+	CompactionConfig     apijson.Field
 	Constraints          apijson.Field
 	Description          apijson.Field
 	EnableEpisodicMemory apijson.Field
@@ -288,11 +288,11 @@ func (r agentVariationSpecJSON) RawJSON() string {
 
 // AgentVariationSpec defines the operational configuration for a variation
 type AgentVariationSpecParam struct {
-	// Documents assigned to this variation. Can include individual documents or entire
-	// document namespaces (which include all documents in the namespace).
-	AgentDocuments param.Field[[]AgentVariationSpecAgentDocumentParam] `json:"agentDocuments"`
 	// Tools assigned to this variation
 	AgentTools param.Field[[]AgentVariationSpecAgentToolParam] `json:"agentTools"`
+	// CompactionConfig defines how context window compaction behaves for objectives
+	// using this variation.
+	CompactionConfig param.Field[AgentVariationSpecCompactionConfigParam] `json:"compactionConfig"`
 	// Execution constraints
 	Constraints param.Field[AgentVariationSpecConstraintsParam] `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
@@ -320,48 +320,6 @@ type AgentVariationSpecParam struct {
 }
 
 func (r AgentVariationSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-type AgentVariationSpecAgentDocument struct {
-	DocumentID string `json:"documentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentMetadata    shared.ResourceMetadata `json:"documentMetadata"`
-	DocumentNamespaceID string                  `json:"documentNamespaceId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentNamespaceMetadata shared.ResourceMetadata             `json:"documentNamespaceMetadata"`
-	JSON                      agentVariationSpecAgentDocumentJSON `json:"-"`
-}
-
-// agentVariationSpecAgentDocumentJSON contains the JSON metadata for the struct
-// [AgentVariationSpecAgentDocument]
-type agentVariationSpecAgentDocumentJSON struct {
-	DocumentID                apijson.Field
-	DocumentMetadata          apijson.Field
-	DocumentNamespaceID       apijson.Field
-	DocumentNamespaceMetadata apijson.Field
-	raw                       string
-	ExtraFields               map[string]apijson.Field
-}
-
-func (r *AgentVariationSpecAgentDocument) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r agentVariationSpecAgentDocumentJSON) RawJSON() string {
-	return r.raw
-}
-
-type AgentVariationSpecAgentDocumentParam struct {
-	DocumentID param.Field[string] `json:"documentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentMetadata    param.Field[shared.ResourceMetadataParam] `json:"documentMetadata"`
-	DocumentNamespaceID param.Field[string]                       `json:"documentNamespaceId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentNamespaceMetadata param.Field[shared.ResourceMetadataParam] `json:"documentNamespaceMetadata"`
-}
-
-func (r AgentVariationSpecAgentDocumentParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -412,6 +370,57 @@ type AgentVariationSpecAgentToolParam struct {
 }
 
 func (r AgentVariationSpecAgentToolParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// CompactionConfig defines how context window compaction behaves for objectives
+// using this variation.
+type AgentVariationSpecCompactionConfig struct {
+	// SummarizationStrategy configures LLM-powered summarization of older conversation
+	// turns.
+	Summarization CompactionConfigSummarizationStrategy `json:"summarization"`
+	// ToolResultClearingStrategy configures clearing of older tool result content.
+	ToolResultClearing CompactionConfigToolResultClearingStrategy `json:"toolResultClearing"`
+	// Trigger threshold as a percentage of the model's context window (0.0 to 1.0).
+	// When input tokens reach this percentage of the model's limit, compaction
+	// triggers. Default: 0.75 (75%)
+	TriggerThreshold float64                                `json:"triggerThreshold"`
+	JSON             agentVariationSpecCompactionConfigJSON `json:"-"`
+}
+
+// agentVariationSpecCompactionConfigJSON contains the JSON metadata for the struct
+// [AgentVariationSpecCompactionConfig]
+type agentVariationSpecCompactionConfigJSON struct {
+	Summarization      apijson.Field
+	ToolResultClearing apijson.Field
+	TriggerThreshold   apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
+}
+
+func (r *AgentVariationSpecCompactionConfig) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r agentVariationSpecCompactionConfigJSON) RawJSON() string {
+	return r.raw
+}
+
+// CompactionConfig defines how context window compaction behaves for objectives
+// using this variation.
+type AgentVariationSpecCompactionConfigParam struct {
+	// SummarizationStrategy configures LLM-powered summarization of older conversation
+	// turns.
+	Summarization param.Field[CompactionConfigSummarizationStrategyParam] `json:"summarization"`
+	// ToolResultClearingStrategy configures clearing of older tool result content.
+	ToolResultClearing param.Field[CompactionConfigToolResultClearingStrategyParam] `json:"toolResultClearing"`
+	// Trigger threshold as a percentage of the model's context window (0.0 to 1.0).
+	// When input tokens reach this percentage of the model's limit, compaction
+	// triggers. Default: 0.75 (75%)
+	TriggerThreshold param.Field[float64] `json:"triggerThreshold"`
+}
+
+func (r AgentVariationSpecCompactionConfigParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -538,6 +547,91 @@ type AgentVariationSpecToolSelectionParam struct {
 }
 
 func (r AgentVariationSpecToolSelectionParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// SummarizationStrategy configures LLM-powered summarization of older conversation
+// turns.
+type CompactionConfigSummarizationStrategy struct {
+	// Custom instructions that guide what the summarizer preserves. Replaces the
+	// default summarization prompt entirely. Example: "Preserve all code snippets,
+	// variable names, and technical decisions."
+	Instructions string `json:"instructions"`
+	// Minimum number of recent message turns to always preserve during compaction.
+	// These turns are never summarized, ensuring recent context stays intact. Default:
+	// 4
+	MinPreserveTurns int64                                     `json:"minPreserveTurns"`
+	JSON             compactionConfigSummarizationStrategyJSON `json:"-"`
+}
+
+// compactionConfigSummarizationStrategyJSON contains the JSON metadata for the
+// struct [CompactionConfigSummarizationStrategy]
+type compactionConfigSummarizationStrategyJSON struct {
+	Instructions     apijson.Field
+	MinPreserveTurns apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *CompactionConfigSummarizationStrategy) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r compactionConfigSummarizationStrategyJSON) RawJSON() string {
+	return r.raw
+}
+
+// SummarizationStrategy configures LLM-powered summarization of older conversation
+// turns.
+type CompactionConfigSummarizationStrategyParam struct {
+	// Custom instructions that guide what the summarizer preserves. Replaces the
+	// default summarization prompt entirely. Example: "Preserve all code snippets,
+	// variable names, and technical decisions."
+	Instructions param.Field[string] `json:"instructions"`
+	// Minimum number of recent message turns to always preserve during compaction.
+	// These turns are never summarized, ensuring recent context stays intact. Default:
+	// 4
+	MinPreserveTurns param.Field[int64] `json:"minPreserveTurns"`
+}
+
+func (r CompactionConfigSummarizationStrategyParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// ToolResultClearingStrategy configures clearing of older tool result content.
+type CompactionConfigToolResultClearingStrategy struct {
+	// Number of most recent tool call results to keep intact. Older tool results have
+	// their content replaced with "[result cleared]" while preserving the assistant
+	// tool call message (function name, arguments). Default: 2
+	PreserveRecentResults int64                                          `json:"preserveRecentResults"`
+	JSON                  compactionConfigToolResultClearingStrategyJSON `json:"-"`
+}
+
+// compactionConfigToolResultClearingStrategyJSON contains the JSON metadata for
+// the struct [CompactionConfigToolResultClearingStrategy]
+type compactionConfigToolResultClearingStrategyJSON struct {
+	PreserveRecentResults apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *CompactionConfigToolResultClearingStrategy) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r compactionConfigToolResultClearingStrategyJSON) RawJSON() string {
+	return r.raw
+}
+
+// ToolResultClearingStrategy configures clearing of older tool result content.
+type CompactionConfigToolResultClearingStrategyParam struct {
+	// Number of most recent tool call results to keep intact. Older tool results have
+	// their content replaced with "[result cleared]" while preserving the assistant
+	// tool call message (function name, arguments). Default: 2
+	PreserveRecentResults param.Field[int64] `json:"preserveRecentResults"`
+}
+
+func (r CompactionConfigToolResultClearingStrategyParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
