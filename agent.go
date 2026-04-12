@@ -32,8 +32,7 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAgentService] method instead.
 type AgentService struct {
-	Options    []option.RequestOption
-	Variations *AgentVariationService
+	Options []option.RequestOption
 	// AgentService manages AI agents at the WORKSPACE level. Agents are
 	// workspace-scoped resources that define AI behavior and tool access. All
 	// operations are implicitly scoped to the workspace determined by the JWT token.
@@ -48,7 +47,6 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 	r = &AgentService{}
 	r.Options = opts
-	r.Variations = NewAgentVariationService(opts...)
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
 	return
 }
@@ -211,10 +209,6 @@ type AgentSpec struct {
 	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description string `json:"description"`
-	// The generated secret that will sign all webhooks that are sent to your
-	// configured Webhook URL. Formatted as "wh_asdf1234" per the
-	// https://www.standardwebhooks.com/ format.
-	WebhookEventsHmacSecret string `json:"webhookEventsHmacSecret"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL string        `json:"webhookEventsUrl"`
 	JSON             agentSpecJSON `json:"-"`
@@ -222,13 +216,12 @@ type AgentSpec struct {
 
 // agentSpecJSON contains the JSON metadata for the struct [AgentSpec]
 type agentSpecJSON struct {
-	Status                  apijson.Field
-	VariationSelectionMode  apijson.Field
-	Description             apijson.Field
-	WebhookEventsHmacSecret apijson.Field
-	WebhookEventsURL        apijson.Field
-	raw                     string
-	ExtraFields             map[string]apijson.Field
+	Status                 apijson.Field
+	VariationSelectionMode apijson.Field
+	Description            apijson.Field
+	WebhookEventsURL       apijson.Field
+	raw                    string
+	ExtraFields            map[string]apijson.Field
 }
 
 func (r *AgentSpec) UnmarshalJSON(data []byte) (err error) {

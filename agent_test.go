@@ -50,32 +50,6 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-				AgentTools: cadenya.F([]cadenya.AgentVariationSpecAgentToolParam{{
-					AgentID: cadenya.F("agentId"),
-					AgentMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolID: cadenya.F("toolId"),
-					ToolMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolSetID: cadenya.F("toolSetId"),
-					ToolSetMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}}),
 				CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
 					Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
 						Instructions: cadenya.F("instructions"),

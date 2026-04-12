@@ -30,5 +30,5 @@ func TestUsage(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	t.Logf("%+v\n", account.Metadata)
+	t.Logf("%+v\n", account.Info)
 }
