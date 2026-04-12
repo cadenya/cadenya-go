@@ -66,20 +66,25 @@ func (r AccountResourceMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// BareMetadata contains the minimal metadata for a resource, including the ID.
-// These are used sparingly in Cadenya for resources where the full metadata is not
-// needed. You will come across them in list responses and other places where the
-// full metadata is not required like listing the tools that were assigned to an
-// objective. Because these types records are commonly created by other processes
-// in Cadenya, they do not have things like external IDs, labels, or names.
+// BareMetadata contains the minimal metadata for a resource: the ID and an
+// optional human-readable name. These are used for reference fields where the full
+// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+// e.g., the tool references inside an agent variation spec or the tools assigned
+// to an objective. Both fields are server-populated; clients provide IDs through
+// sibling fields rather than by constructing a BareMetadata themselves.
 type BareMetadata struct {
-	ID   string           `json:"id" api:"required"`
+	ID string `json:"id"`
+	// Human-readable name of the referenced resource, populated by the server on reads
+	// for convenience. Absent on references to resources that do not have a name
+	// (e.g., objective tasks).
+	Name string           `json:"name"`
 	JSON bareMetadataJSON `json:"-"`
 }
 
 // bareMetadataJSON contains the JSON metadata for the struct [BareMetadata]
 type bareMetadataJSON struct {
 	ID          apijson.Field
+	Name        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -90,6 +95,19 @@ func (r *BareMetadata) UnmarshalJSON(data []byte) (err error) {
 
 func (r bareMetadataJSON) RawJSON() string {
 	return r.raw
+}
+
+// BareMetadata contains the minimal metadata for a resource: the ID and an
+// optional human-readable name. These are used for reference fields where the full
+// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+// e.g., the tool references inside an agent variation spec or the tools assigned
+// to an objective. Both fields are server-populated; clients provide IDs through
+// sibling fields rather than by constructing a BareMetadata themselves.
+type BareMetadataParam struct {
+}
+
+func (r BareMetadataParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 // CreateOperationMetadata contains the user-provided fields for creating an

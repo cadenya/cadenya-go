@@ -67,12 +67,12 @@ func (r *ObjectiveToolService) ListAutoPaging(ctx context.Context, objectiveID s
 
 // ObjectiveTool represents a tool that was assigned to an objective.
 type ObjectiveTool struct {
-	// BareMetadata contains the minimal metadata for a resource, including the ID.
-	// These are used sparingly in Cadenya for resources where the full metadata is not
-	// needed. You will come across them in list responses and other places where the
-	// full metadata is not required like listing the tools that were assigned to an
-	// objective. Because these types records are commonly created by other processes
-	// in Cadenya, they do not have things like external IDs, labels, or names.
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
 	Metadata shared.BareMetadata `json:"metadata" api:"required"`
 	// Snapshot of the tool at the time it was assigned to the objective. Because tools
 	// can change over time, snapshots are used to ensure tools don't change

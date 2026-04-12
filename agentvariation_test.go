@@ -27,7 +27,7 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Variations.New(
+	_, err := client.AgentVariations.New(
 		context.TODO(),
 		"agentId",
 		cadenya.AgentVariationNewParams{
@@ -39,32 +39,6 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-				AgentTools: cadenya.F([]cadenya.AgentVariationSpecAgentToolParam{{
-					AgentID: cadenya.F("agentId"),
-					AgentMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolID: cadenya.F("toolId"),
-					ToolMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolSetID: cadenya.F("toolSetId"),
-					ToolSetMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}}),
 				CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
 					Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
 						Instructions: cadenya.F("instructions"),
@@ -121,7 +95,7 @@ func TestAgentVariationGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Variations.Get(
+	_, err := client.AgentVariations.Get(
 		context.TODO(),
 		"agentId",
 		"id",
@@ -148,7 +122,7 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Variations.Update(
+	_, err := client.AgentVariations.Update(
 		context.TODO(),
 		"agentId",
 		"id",
@@ -161,32 +135,6 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-				AgentTools: cadenya.F([]cadenya.AgentVariationSpecAgentToolParam{{
-					AgentID: cadenya.F("agentId"),
-					AgentMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolID: cadenya.F("toolId"),
-					ToolMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-					ToolSetID: cadenya.F("toolSetId"),
-					ToolSetMetadata: cadenya.F(shared.ResourceMetadataParam{
-						Name:       cadenya.F("name"),
-						ExternalID: cadenya.F("externalId"),
-						Labels: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}}),
 				CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
 					Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
 						Instructions: cadenya.F("instructions"),
@@ -244,7 +192,7 @@ func TestAgentVariationListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Variations.List(
+	_, err := client.AgentVariations.List(
 		context.TODO(),
 		"agentId",
 		cadenya.AgentVariationListParams{
@@ -276,9 +224,67 @@ func TestAgentVariationDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.Agents.Variations.Delete(
+	err := client.AgentVariations.Delete(
 		context.TODO(),
 		"agentId",
+		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentVariationAddAssignmentWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.AgentVariations.AddAssignment(
+		context.TODO(),
+		"agentVariationId",
+		cadenya.AgentVariationAddAssignmentParams{
+			SubAgentID: cadenya.F("subAgentId"),
+			ToolID:     cadenya.F("toolId"),
+			ToolSetID:  cadenya.F("toolSetId"),
+		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentVariationRemoveAssignment(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	err := client.AgentVariations.RemoveAssignment(
+		context.TODO(),
+		"agentVariationId",
 		"id",
 	)
 	if err != nil {

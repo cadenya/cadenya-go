@@ -83,12 +83,12 @@ func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, objective
 // time.
 type ObjectiveFeedback struct {
 	Data ObjectiveFeedbackData `json:"data" api:"required"`
-	// BareMetadata contains the minimal metadata for a resource, including the ID.
-	// These are used sparingly in Cadenya for resources where the full metadata is not
-	// needed. You will come across them in list responses and other places where the
-	// full metadata is not required like listing the tools that were assigned to an
-	// objective. Because these types records are commonly created by other processes
-	// in Cadenya, they do not have things like external IDs, labels, or names.
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
 	Metadata shared.BareMetadata   `json:"metadata" api:"required"`
 	Info     ObjectiveFeedbackInfo `json:"info"`
 	JSON     objectiveFeedbackJSON `json:"-"`
