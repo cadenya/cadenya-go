@@ -31,6 +31,23 @@ type Client struct {
 	Agents          *AgentService
 	AgentVariations *AgentVariationService
 	Objectives      *ObjectiveService
+	// MemoryService manages memory layers and their entries at the WORKSPACE level.
+	// Layers are named containers that can be composed into an objective's memory
+	// stack; entries are the keyed values within a layer.
+	//
+	// All operations are implicitly scoped to the workspace determined by the JWT
+	// token. System-managed layers (e.g., episodic layers created by the runtime)
+	// cannot be mutated through this API.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	MemoryLayers *MemoryLayerService
+	// UploadService issues short-lived presigned URLs for direct client-to-object-
+	// storage uploads at the WORKSPACE level. Created uploads can be referenced by id
+	// when creating or updating resources that accept binary content (e.g.,
+	// MemoryEntry).
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Uploads *UploadService
 	// ModelService manages LLM models at the WORKSPACE level. Models represent
 	// available LLM providers and families (e.g., "anthropic/claude-sonnet-4.6").
 	// Models are seeded into workspaces and can be enabled or disabled. All operations
@@ -94,6 +111,8 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r.Agents = NewAgentService(opts...)
 	r.AgentVariations = NewAgentVariationService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
+	r.MemoryLayers = NewMemoryLayerService(opts...)
+	r.Uploads = NewUploadService(opts...)
 	r.Models = NewModelService(opts...)
 	r.Search = NewSearchService(opts...)
 	r.ToolSets = NewToolSetService(opts...)
