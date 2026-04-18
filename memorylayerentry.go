@@ -185,7 +185,6 @@ type MemoryEntryCreateSpecParam struct {
 	// Inline content, written directly into the entry.
 	Content     param.Field[string] `json:"content"`
 	Description param.Field[string] `json:"description"`
-	Title       param.Field[string] `json:"title"`
 	// ID of a COMPLETE Upload. The server reads the object from storage, copies its
 	// bytes into the entry, and marks the upload consumed.
 	UploadID param.Field[string] `json:"uploadId"`
@@ -201,7 +200,7 @@ func (r MemoryEntryCreateSpecParam) MarshalJSON() (data []byte, err error) {
 type MemoryEntryDetail struct {
 	// The resolved body of the entry. For entries created or updated via an upload_id,
 	// this is the ingested content, not the original upload handle. May be empty; an
-	// entry with only a key, title, and description is valid (e.g., a stub skill being
+	// entry with only a key and description is valid (e.g., a stub skill being
 	// drafted, or an entry where the frontmatter alone is the payload).
 	Content string `json:"content" api:"required"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
@@ -284,18 +283,14 @@ type MemoryEntrySpec struct {
 	// entries. The model uses this to decide whether to load the body, so it should be
 	// written for the model as the audience. Ignored for layer types that do not
 	// advertise frontmatter.
-	Description string `json:"description"`
-	// Short human/LLM-readable title shown in the frontmatter manifest for skills
-	// entries. Ignored for layer types that do not advertise frontmatter.
-	Title string              `json:"title"`
-	JSON  memoryEntrySpecJSON `json:"-"`
+	Description string              `json:"description"`
+	JSON        memoryEntrySpecJSON `json:"-"`
 }
 
 // memoryEntrySpecJSON contains the JSON metadata for the struct [MemoryEntrySpec]
 type memoryEntrySpecJSON struct {
 	Key         apijson.Field
 	Description apijson.Field
-	Title       apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -316,7 +311,6 @@ type MemoryEntryUpdateSpecParam struct {
 	Content     param.Field[string] `json:"content"`
 	Description param.Field[string] `json:"description"`
 	Key         param.Field[string] `json:"key"`
-	Title       param.Field[string] `json:"title"`
 	UploadID    param.Field[string] `json:"uploadId"`
 }
 
