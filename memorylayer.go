@@ -133,8 +133,7 @@ func (r *MemoryLayerService) Delete(ctx context.Context, id string, opts ...opti
 // controls how its entries participate in the agent loop — see MemoryLayerType for
 // details.
 //
-// Memory stacks are LIFO: when an objective resolves a key, layers are walked from
-// the top of the stack downward, and the first matching entry wins.
+// See "Memory stack composition" above for how layers compose at lookup time.
 type MemoryLayer struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`

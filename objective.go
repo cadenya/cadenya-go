@@ -297,6 +297,89 @@ func (r contextWindowCompactedJSON) RawJSON() string {
 	return r.raw
 }
 
+// MemoryRead is emitted each time the agent resolves a key against the memory
+// stack and loads an entry. Lookups that miss (key not found in any layer) do not
+// emit this event.
+type MemoryRead struct {
+	// The specific entry that was read.
+	MemoryEntryID string `json:"memoryEntryId"`
+	// The layer the entry resolved to. The top-most layer that contained the key —
+	// other layers beneath it that also contained the key are shadowed and not
+	// referenced here.
+	MemoryLayerID string `json:"memoryLayerId"`
+	// Human-readable description of the read, set by the runtime. For example: "Loaded
+	// skill", "Resolved context key". Not machine-parsed; intended for UI display
+	// alongside the other events in an objective's timeline.
+	Message string         `json:"message"`
+	JSON    memoryReadJSON `json:"-"`
+}
+
+// memoryReadJSON contains the JSON metadata for the struct [MemoryRead]
+type memoryReadJSON struct {
+	MemoryEntryID apijson.Field
+	MemoryLayerID apijson.Field
+	Message       apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *MemoryRead) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r memoryReadJSON) RawJSON() string {
+	return r.raw
+}
+
+// MemoryReference identifies a memory layer or a specific entry within one, for
+// composition into a memory stack. Used on objectives (where entry pinning is
+// permitted).
+//
+// memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
+// form (external_id:my-custom-id). The same applies to memory_entry_id.
+type MemoryReference struct {
+	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
+	// as a single-entry layer (only this key resolves at this position). The entry
+	// must belong to memory_layer_id; mismatches are rejected with InvalidArgument.
+	MemoryEntryID string              `json:"memoryEntryId"`
+	MemoryLayerID string              `json:"memoryLayerId"`
+	JSON          memoryReferenceJSON `json:"-"`
+}
+
+// memoryReferenceJSON contains the JSON metadata for the struct [MemoryReference]
+type memoryReferenceJSON struct {
+	MemoryEntryID apijson.Field
+	MemoryLayerID apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *MemoryReference) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r memoryReferenceJSON) RawJSON() string {
+	return r.raw
+}
+
+// MemoryReference identifies a memory layer or a specific entry within one, for
+// composition into a memory stack. Used on objectives (where entry pinning is
+// permitted).
+//
+// memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
+// form (external_id:my-custom-id). The same applies to memory_entry_id.
+type MemoryReferenceParam struct {
+	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
+	// as a single-entry layer (only this key resolves at this position). The entry
+	// must belong to memory_layer_id; mismatches are rejected with InvalidArgument.
+	MemoryEntryID param.Field[string] `json:"memoryEntryId"`
+	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
+}
+
+func (r MemoryReferenceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type Objective struct {
 	Data ObjectiveData `json:"data" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
@@ -438,6 +521,26 @@ type ObjectiveData struct {
 	// The initial message sent to the agent. This becomes the first user message in
 	// the LLM chat history.
 	InitialMessage string `json:"initialMessage"`
+	// Memory layers/entries to push onto this objective's memory stack on top of the
+	// baseline stack inherited from the selected variation.
+	//
+	// See "Memory stack composition" in memory.proto for lookup semantics.
+	//
+	// Array order is push order: the first element sits lower in the objective's
+	// contribution to the stack; the LAST element ends up on top of the effective
+	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
+	// position.
+	//
+	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
+	// themselves automatically via the runtime based on episodic_key.
+	//
+	// Stack size cap: the TOTAL effective stack (variation's memory layers
+	//
+	//   - this field) must not exceed 10 entries. A request that would produce an
+	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
+	//     themselves are capped at 10 memory layer assignments, so a variation that is
+	//     already "full" leaves no room for objective-level references.
+	MemoryStack []MemoryReference `json:"memoryStack"`
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
 	ParentObjectiveID string `json:"parentObjectiveId"`
@@ -456,6 +559,7 @@ type objectiveDataJSON struct {
 	Agent             apijson.Field
 	Data              apijson.Field
 	InitialMessage    apijson.Field
+	MemoryStack       apijson.Field
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
 	SystemPrompt      apijson.Field
@@ -479,6 +583,26 @@ type ObjectiveDataParam struct {
 	// The initial message sent to the agent. This becomes the first user message in
 	// the LLM chat history.
 	InitialMessage param.Field[string] `json:"initialMessage"`
+	// Memory layers/entries to push onto this objective's memory stack on top of the
+	// baseline stack inherited from the selected variation.
+	//
+	// See "Memory stack composition" in memory.proto for lookup semantics.
+	//
+	// Array order is push order: the first element sits lower in the objective's
+	// contribution to the stack; the LAST element ends up on top of the effective
+	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
+	// position.
+	//
+	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
+	// themselves automatically via the runtime based on episodic_key.
+	//
+	// Stack size cap: the TOTAL effective stack (variation's memory layers
+	//
+	//   - this field) must not exceed 10 entries. A request that would produce an
+	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
+	//     themselves are capped at 10 memory layer assignments, so a variation that is
+	//     already "full" leaves no room for objective-level references.
+	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets param.Field[[]ObjectiveDataSecretParam] `json:"secrets"`
@@ -546,16 +670,20 @@ type ObjectiveEventData struct {
 	AssistantMessage       AssistantMessage       `json:"assistantMessage"`
 	ContextWindowCompacted ContextWindowCompacted `json:"contextWindowCompacted"`
 	Error                  ObjectiveError         `json:"error"`
-	SubObjectiveCreated    SubObjectiveCreated    `json:"subObjectiveCreated"`
-	ToolApprovalRequested  ToolApprovalRequested  `json:"toolApprovalRequested"`
-	ToolApproved           ToolApproved           `json:"toolApproved"`
-	ToolCalled             ToolCalled             `json:"toolCalled"`
-	ToolDenied             ToolDenied             `json:"toolDenied"`
-	ToolError              ToolError              `json:"toolError"`
-	ToolResult             ToolResult             `json:"toolResult"`
-	Type                   string                 `json:"type"`
-	UserMessage            UserMessage            `json:"userMessage"`
-	JSON                   objectiveEventDataJSON `json:"-"`
+	// MemoryRead is emitted each time the agent resolves a key against the memory
+	// stack and loads an entry. Lookups that miss (key not found in any layer) do not
+	// emit this event.
+	MemoryRead            MemoryRead             `json:"memoryRead"`
+	SubObjectiveCreated   SubObjectiveCreated    `json:"subObjectiveCreated"`
+	ToolApprovalRequested ToolApprovalRequested  `json:"toolApprovalRequested"`
+	ToolApproved          ToolApproved           `json:"toolApproved"`
+	ToolCalled            ToolCalled             `json:"toolCalled"`
+	ToolDenied            ToolDenied             `json:"toolDenied"`
+	ToolError             ToolError              `json:"toolError"`
+	ToolResult            ToolResult             `json:"toolResult"`
+	Type                  string                 `json:"type"`
+	UserMessage           UserMessage            `json:"userMessage"`
+	JSON                  objectiveEventDataJSON `json:"-"`
 }
 
 // objectiveEventDataJSON contains the JSON metadata for the struct
@@ -564,6 +692,7 @@ type objectiveEventDataJSON struct {
 	AssistantMessage       apijson.Field
 	ContextWindowCompacted apijson.Field
 	Error                  apijson.Field
+	MemoryRead             apijson.Field
 	SubObjectiveCreated    apijson.Field
 	ToolApprovalRequested  apijson.Field
 	ToolApproved           apijson.Field
@@ -623,6 +752,11 @@ type ObjectiveInfo struct {
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
 	CreatedBy Profile `json:"createdBy"`
+	// The effective memory stack at objective creation time, flattened from the
+	// variation's baseline plus ObjectiveData.memory_stack. Order is push order (last
+	// = top). Returned on reads so clients can see exactly what stack the objective is
+	// using without having to re-join variation state.
+	EffectiveMemoryStack []MemoryReference `json:"effectiveMemoryStack"`
 	// Total number of context windows that this objective has generated
 	TotalContextWindows int64 `json:"totalContextWindows"`
 	// Total number of events generated during this objective's execution
@@ -640,15 +774,16 @@ type ObjectiveInfo struct {
 
 // objectiveInfoJSON contains the JSON metadata for the struct [ObjectiveInfo]
 type objectiveInfoJSON struct {
-	CallableTools       apijson.Field
-	CreatedBy           apijson.Field
-	TotalContextWindows apijson.Field
-	TotalEvents         apijson.Field
-	TotalInputTokens    apijson.Field
-	TotalOutputTokens   apijson.Field
-	TotalToolCalls      apijson.Field
-	raw                 string
-	ExtraFields         map[string]apijson.Field
+	CallableTools        apijson.Field
+	CreatedBy            apijson.Field
+	EffectiveMemoryStack apijson.Field
+	TotalContextWindows  apijson.Field
+	TotalEvents          apijson.Field
+	TotalInputTokens     apijson.Field
+	TotalOutputTokens    apijson.Field
+	TotalToolCalls       apijson.Field
+	raw                  string
+	ExtraFields          map[string]apijson.Field
 }
 
 func (r *ObjectiveInfo) UnmarshalJSON(data []byte) (err error) {

@@ -139,6 +139,19 @@ func (r *AgentVariationService) AddAssignment(ctx context.Context, agentVariatio
 	return res, err
 }
 
+// Attaches a memory layer to a variation at a given position in the variation's
+// baseline memory stack.
+func (r *AgentVariationService) AddMemoryLayer(ctx context.Context, agentVariationID string, body AgentVariationAddMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers", agentVariationID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // Detaches an assignment from a variation, identified by the assignment ID
 // returned when it was added.
 func (r *AgentVariationService) RemoveAssignment(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
@@ -155,6 +168,40 @@ func (r *AgentVariationService) RemoveAssignment(ctx context.Context, agentVaria
 	path := fmt.Sprintf("v1/agent_variations/%s/assignments/%s", agentVariationID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
+}
+
+// Detaches a memory layer assignment from a variation, identified by the
+// assignment id.
+func (r *AgentVariationService) RemoveMemoryLayer(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
+	return err
+}
+
+// Updates the position of a memory layer assignment on a variation.
+func (r *AgentVariationService) UpdateMemoryLayer(ctx context.Context, agentVariationID string, id string, body AgentVariationUpdateMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	return res, err
 }
 
 // AgentVariation resource
@@ -209,6 +256,11 @@ type AgentVariationInfo struct {
 	CreatedBy Profile `json:"createdBy"`
 	// Total number of objective feedbacks received for this variation
 	FeedbackCount int64 `json:"feedbackCount"`
+	// Read-only list of memory layer assignments for this variation, returned in
+	// ascending `position` (bottom → top). Capped at 10 entries.
+	MemoryLayerAssignments []VariationMemoryLayerAssignment `json:"memoryLayerAssignments"`
+	// Count of memory layer assignments.
+	MemoryLayerCount int64 `json:"memoryLayerCount"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Model shared.ResourceMetadata `json:"model"`
 	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
@@ -226,16 +278,18 @@ type AgentVariationInfo struct {
 // agentVariationInfoJSON contains the JSON metadata for the struct
 // [AgentVariationInfo]
 type agentVariationInfoJSON struct {
-	Assignments   apijson.Field
-	CreatedBy     apijson.Field
-	FeedbackCount apijson.Field
-	Model         apijson.Field
-	Score         apijson.Field
-	SubAgentCount apijson.Field
-	ToolCount     apijson.Field
-	ToolSetCount  apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
+	Assignments            apijson.Field
+	CreatedBy              apijson.Field
+	FeedbackCount          apijson.Field
+	MemoryLayerAssignments apijson.Field
+	MemoryLayerCount       apijson.Field
+	Model                  apijson.Field
+	Score                  apijson.Field
+	SubAgentCount          apijson.Field
+	ToolCount              apijson.Field
+	ToolSetCount           apijson.Field
+	raw                    string
+	ExtraFields            map[string]apijson.Field
 }
 
 func (r *AgentVariationInfo) UnmarshalJSON(data []byte) (err error) {
@@ -773,6 +827,76 @@ func (r VariationAssignmentParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
+// given position in the variation's baseline memory stack. A variation has at most
+// one assignment per memory_layer_id.
+//
+// Variations only support whole-layer attachments — entry pinning is an
+// objective-level capability.
+type VariationMemoryLayerAssignment struct {
+	// Assignment row id — handle for removing the assignment. Distinct from the
+	// referenced memory layer's id.
+	ID string `json:"id"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	MemoryLayer shared.BareMetadata `json:"memoryLayer"`
+	// Position in the variation's baseline stack. Lower values sit lower; the
+	// highest-position assignment is on top of the variation's baseline. Gaps are fine
+	// — only relative position matters. Positions must be unique within a variation; a
+	// request that would collide with an existing assignment's position is rejected
+	// with InvalidArgument.
+	Position int64                              `json:"position"`
+	JSON     variationMemoryLayerAssignmentJSON `json:"-"`
+}
+
+// variationMemoryLayerAssignmentJSON contains the JSON metadata for the struct
+// [VariationMemoryLayerAssignment]
+type variationMemoryLayerAssignmentJSON struct {
+	ID          apijson.Field
+	MemoryLayer apijson.Field
+	Position    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *VariationMemoryLayerAssignment) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r variationMemoryLayerAssignmentJSON) RawJSON() string {
+	return r.raw
+}
+
+// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
+// given position in the variation's baseline memory stack. A variation has at most
+// one assignment per memory_layer_id.
+//
+// Variations only support whole-layer attachments — entry pinning is an
+// objective-level capability.
+type VariationMemoryLayerAssignmentParam struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	MemoryLayer param.Field[shared.BareMetadataParam] `json:"memoryLayer"`
+	// Position in the variation's baseline stack. Lower values sit lower; the
+	// highest-position assignment is on top of the variation's baseline. Gaps are fine
+	// — only relative position matters. Positions must be unique within a variation; a
+	// request that would collide with an existing assignment's position is rejected
+	// with InvalidArgument.
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r VariationMemoryLayerAssignmentParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type AgentVariationNewParams struct {
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
@@ -828,5 +952,25 @@ type AgentVariationAddAssignmentParams struct {
 }
 
 func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentVariationAddMemoryLayerParams struct {
+	// Layer to attach. Accepts memlyr\_… or external_id:… form.
+	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
+	// Position in the stack. If omitted, server appends (max existing position + 1).
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r AgentVariationAddMemoryLayerParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentVariationUpdateMemoryLayerParams struct {
+	// New position. Only field currently updatable on an assignment.
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r AgentVariationUpdateMemoryLayerParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
