@@ -269,6 +269,36 @@ func TestAgentVariationAddAssignmentWithOptionalParams(t *testing.T) {
 	}
 }
 
+func TestAgentVariationAddMemoryLayerWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.AgentVariations.AddMemoryLayer(
+		context.TODO(),
+		"agentVariationId",
+		cadenya.AgentVariationAddMemoryLayerParams{
+			MemoryLayerID: cadenya.F("memoryLayerId"),
+			Position:      cadenya.F(int64(0)),
+		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestAgentVariationRemoveAssignment(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
@@ -286,6 +316,63 @@ func TestAgentVariationRemoveAssignment(t *testing.T) {
 		context.TODO(),
 		"agentVariationId",
 		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentVariationRemoveMemoryLayer(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	err := client.AgentVariations.RemoveMemoryLayer(
+		context.TODO(),
+		"agentVariationId",
+		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentVariationUpdateMemoryLayerWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.AgentVariations.UpdateMemoryLayer(
+		context.TODO(),
+		"agentVariationId",
+		"id",
+		cadenya.AgentVariationUpdateMemoryLayerParams{
+			Position: cadenya.F(int64(0)),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

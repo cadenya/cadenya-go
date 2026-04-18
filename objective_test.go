@@ -32,6 +32,10 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 		Data: cadenya.F(cadenya.ObjectiveDataParam{
 			Data:           cadenya.F[any](map[string]interface{}{}),
 			InitialMessage: cadenya.F("initialMessage"),
+			MemoryStack: cadenya.F([]cadenya.MemoryReferenceParam{{
+				MemoryEntryID: cadenya.F("memoryEntryId"),
+				MemoryLayerID: cadenya.F("memoryLayerId"),
+			}}),
 			Secrets: cadenya.F([]cadenya.ObjectiveDataSecretParam{{
 				Name:  cadenya.F("name"),
 				Value: cadenya.F("value"),
