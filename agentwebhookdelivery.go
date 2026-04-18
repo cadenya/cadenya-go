@@ -154,22 +154,24 @@ func (r webhookDeliveryDataJSON) RawJSON() string {
 type WebhookDeliveryDataEventType string
 
 const (
-	WebhookDeliveryDataEventTypeObjectiveEventTypeUnspecified           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_UNSPECIFIED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeUserMessage           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_USER_MESSAGE"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolApprovalRequested WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVAL_REQUESTED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolApproved          WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolDenied            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_DENIED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolCalled            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_CALLED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeSubObjectiveCreated   WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_SUB_OBJECTIVE_CREATED"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeError                 WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_ERROR"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeAssistantMessage      WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolResult            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_RESULT"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeToolError             WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_ERROR"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeUnspecified            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_UNSPECIFIED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeUserMessage            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_USER_MESSAGE"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolApprovalRequested  WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVAL_REQUESTED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolApproved           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolDenied             WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_DENIED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolCalled             WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_CALLED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeSubObjectiveCreated    WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_SUB_OBJECTIVE_CREATED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeError                  WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_ERROR"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeAssistantMessage       WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolResult             WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_RESULT"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeToolError              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TOOL_ERROR"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeContextWindowCompacted WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_CONTEXT_WINDOW_COMPACTED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeMemoryRead             WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_MEMORY_READ"
 )
 
 func (r WebhookDeliveryDataEventType) IsKnown() bool {
 	switch r {
-	case WebhookDeliveryDataEventTypeObjectiveEventTypeUnspecified, WebhookDeliveryDataEventTypeObjectiveEventTypeUserMessage, WebhookDeliveryDataEventTypeObjectiveEventTypeToolApprovalRequested, WebhookDeliveryDataEventTypeObjectiveEventTypeToolApproved, WebhookDeliveryDataEventTypeObjectiveEventTypeToolDenied, WebhookDeliveryDataEventTypeObjectiveEventTypeToolCalled, WebhookDeliveryDataEventTypeObjectiveEventTypeSubObjectiveCreated, WebhookDeliveryDataEventTypeObjectiveEventTypeError, WebhookDeliveryDataEventTypeObjectiveEventTypeAssistantMessage, WebhookDeliveryDataEventTypeObjectiveEventTypeToolResult, WebhookDeliveryDataEventTypeObjectiveEventTypeToolError:
+	case WebhookDeliveryDataEventTypeObjectiveEventTypeUnspecified, WebhookDeliveryDataEventTypeObjectiveEventTypeUserMessage, WebhookDeliveryDataEventTypeObjectiveEventTypeToolApprovalRequested, WebhookDeliveryDataEventTypeObjectiveEventTypeToolApproved, WebhookDeliveryDataEventTypeObjectiveEventTypeToolDenied, WebhookDeliveryDataEventTypeObjectiveEventTypeToolCalled, WebhookDeliveryDataEventTypeObjectiveEventTypeSubObjectiveCreated, WebhookDeliveryDataEventTypeObjectiveEventTypeError, WebhookDeliveryDataEventTypeObjectiveEventTypeAssistantMessage, WebhookDeliveryDataEventTypeObjectiveEventTypeToolResult, WebhookDeliveryDataEventTypeObjectiveEventTypeToolError, WebhookDeliveryDataEventTypeObjectiveEventTypeContextWindowCompacted, WebhookDeliveryDataEventTypeObjectiveEventTypeMemoryRead:
 		return true
 	}
 	return false
@@ -217,22 +219,24 @@ func (r AgentWebhookDeliveryListParams) URLQuery() (v url.Values) {
 type AgentWebhookDeliveryListParamsEventType string
 
 const (
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified           AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_UNSPECIFIED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUserMessage           AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_USER_MESSAGE"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApprovalRequested AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVAL_REQUESTED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApproved          AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolDenied            AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_DENIED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolCalled            AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_CALLED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeSubObjectiveCreated   AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_SUB_OBJECTIVE_CREATED"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeError                 AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_ERROR"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeAssistantMessage      AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolResult            AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_RESULT"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolError             AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_ERROR"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified            AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_UNSPECIFIED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUserMessage            AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_USER_MESSAGE"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApprovalRequested  AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVAL_REQUESTED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApproved           AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_APPROVED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolDenied             AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_DENIED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolCalled             AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_CALLED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeSubObjectiveCreated    AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_SUB_OBJECTIVE_CREATED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeError                  AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_ERROR"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeAssistantMessage       AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolResult             AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_RESULT"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolError              AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TOOL_ERROR"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeContextWindowCompacted AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_CONTEXT_WINDOW_COMPACTED"
+	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeMemoryRead             AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_MEMORY_READ"
 )
 
 func (r AgentWebhookDeliveryListParamsEventType) IsKnown() bool {
 	switch r {
-	case AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUserMessage, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApprovalRequested, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApproved, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolDenied, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolCalled, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeSubObjectiveCreated, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeError, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeAssistantMessage, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolResult, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolError:
+	case AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUserMessage, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApprovalRequested, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolApproved, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolDenied, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolCalled, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeSubObjectiveCreated, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeError, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeAssistantMessage, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolResult, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeToolError, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeContextWindowCompacted, AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeMemoryRead:
 		return true
 	}
 	return false

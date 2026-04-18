@@ -14,7 +14,7 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-func TestAgentNewWithOptionalParams(t *testing.T) {
+func TestMemoryLayerEntryNewWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -27,21 +27,10 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.New(context.TODO(), cadenya.AgentNewParams{
-		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-			Name:       cadenya.F("name"),
-			ExternalID: cadenya.F("externalId"),
-			Labels: cadenya.F(map[string]string{
-				"foo": "string",
-			}),
-		}),
-		Spec: cadenya.F(cadenya.AgentSpecParam{
-			Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
-			VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-			Description:            cadenya.F("description"),
-			WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
-		}),
-		DefaultVariation: cadenya.F(cadenya.AgentNewParamsDefaultVariation{
+	_, err := client.MemoryLayers.Entries.New(
+		context.TODO(),
+		"memoryLayerId",
+		cadenya.MemoryLayerEntryNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
 				ExternalID: cadenya.F("externalId"),
@@ -49,41 +38,14 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 					"foo": "string",
 				}),
 			}),
-			Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-				CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
-					Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
-						Instructions: cadenya.F("instructions"),
-					}),
-					ToolResultClearing: cadenya.F(cadenya.CompactionConfigToolResultClearingStrategyParam{
-						PreserveRecentResults: cadenya.F(int64(0)),
-					}),
-					TriggerThreshold: cadenya.F(0.000000),
-				}),
-				Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
-					MaxSubObjectives: cadenya.F(int64(0)),
-					MaxToolCalls:     cadenya.F(int64(0)),
-				}),
-				Description:          cadenya.F("description"),
-				EnableEpisodicMemory: cadenya.F(true),
-				EpisodicMemoryTtl:    cadenya.F(int64(0)),
-				ModelConfig: cadenya.F(cadenya.AgentVariationSpecModelConfigParam{
-					ModelID:     cadenya.F("modelId"),
-					Temperature: cadenya.F(0.000000),
-				}),
-				Prompt: cadenya.F("prompt"),
-				ToolSelection: cadenya.F(cadenya.AgentVariationSpecToolSelectionParam{
-					AssignedTools: cadenya.F(cadenya.ToolSelectionAssignedToolsParam{
-						AllowDiscovery: cadenya.F(true),
-					}),
-					AutoDiscovery: cadenya.F(cadenya.ToolSelectionAutoDiscoveryParam{
-						Hints:    cadenya.F([]string{"string"}),
-						MaxTools: cadenya.F(int64(0)),
-					}),
-				}),
-				Weight: cadenya.F(int64(0)),
+			Spec: cadenya.F(cadenya.MemoryEntryCreateSpecParam{
+				Key:         cadenya.F("key"),
+				Content:     cadenya.F("content"),
+				Description: cadenya.F("description"),
+				UploadID:    cadenya.F("uploadId"),
 			}),
-		}),
-	})
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -93,7 +55,7 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentGet(t *testing.T) {
+func TestMemoryLayerEntryGet(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -106,33 +68,38 @@ func TestAgentGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.Get(context.TODO(), "id")
-	if err != nil {
-		var apierr *cadenya.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestAgentUpdateWithOptionalParams(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := cadenya.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Agents.Update(
+	_, err := client.MemoryLayers.Entries.Get(
 		context.TODO(),
+		"memoryLayerId",
 		"id",
-		cadenya.AgentUpdateParams{
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestMemoryLayerEntryUpdateWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.MemoryLayers.Entries.Update(
+		context.TODO(),
+		"memoryLayerId",
+		"id",
+		cadenya.MemoryLayerEntryUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
 				ExternalID: cadenya.F("externalId"),
@@ -140,11 +107,11 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 					"foo": "string",
 				}),
 			}),
-			Spec: cadenya.F(cadenya.AgentSpecParam{
-				Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
-				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-				Description:            cadenya.F("description"),
-				WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
+			Spec: cadenya.F(cadenya.MemoryEntryUpdateSpecParam{
+				Content:     cadenya.F("content"),
+				Description: cadenya.F("description"),
+				Key:         cadenya.F("key"),
+				UploadID:    cadenya.F("uploadId"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
@@ -158,7 +125,7 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentListWithOptionalParams(t *testing.T) {
+func TestMemoryLayerEntryListWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -171,13 +138,17 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		Prefix:      cadenya.F("prefix"),
-		SortOrder:   cadenya.F("sortOrder"),
-	})
+	_, err := client.MemoryLayers.Entries.List(
+		context.TODO(),
+		"memoryLayerId",
+		cadenya.MemoryLayerEntryListParams{
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			Prefix:      cadenya.F("prefix"),
+			SortOrder:   cadenya.F("sortOrder"),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -187,7 +158,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAgentDelete(t *testing.T) {
+func TestMemoryLayerEntryDelete(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -200,7 +171,11 @@ func TestAgentDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.Agents.Delete(context.TODO(), "id")
+	err := client.MemoryLayers.Entries.Delete(
+		context.TODO(),
+		"memoryLayerId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

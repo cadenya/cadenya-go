@@ -48,16 +48,29 @@ func (r *AccountService) Get(ctx context.Context, opts ...option.RequestOption) 
 	return res, err
 }
 
+// Rotates the webhook signing key for the account. Returns only the new key.
+func (r *AccountService) RotateWebhookSigningKey(ctx context.Context, opts ...option.RequestOption) (res *RotateWebhookSigningKeyResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/account/rotate_webhook_signing_key"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
+// Account is an account resource.
 type Account struct {
+	// AccountInfo contains information about the account.
+	Info AccountInfo `json:"info" api:"required"`
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
-	Spec     AccountSpec                    `json:"spec" api:"required"`
-	JSON     accountJSON                    `json:"-"`
+	// AccountSpec contains the specification for an account.
+	Spec AccountSpec `json:"spec" api:"required"`
+	JSON accountJSON `json:"-"`
 }
 
 // accountJSON contains the JSON metadata for the struct [Account]
 type accountJSON struct {
+	Info        apijson.Field
 	Metadata    apijson.Field
 	Spec        apijson.Field
 	raw         string
@@ -72,6 +85,31 @@ func (r accountJSON) RawJSON() string {
 	return r.raw
 }
 
+// AccountInfo contains information about the account.
+type AccountInfo struct {
+	// The generated secret that will sign all webhooks that are sent to your
+	// configured Webhook URL. Formatted as "wh_asdf1234" per the
+	// https://www.standardwebhooks.com/ format.
+	WebhookEventsHmacSecret string          `json:"webhookEventsHmacSecret"`
+	JSON                    accountInfoJSON `json:"-"`
+}
+
+// accountInfoJSON contains the JSON metadata for the struct [AccountInfo]
+type accountInfoJSON struct {
+	WebhookEventsHmacSecret apijson.Field
+	raw                     string
+	ExtraFields             map[string]apijson.Field
+}
+
+func (r *AccountInfo) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountInfoJSON) RawJSON() string {
+	return r.raw
+}
+
+// AccountSpec contains the specification for an account.
 type AccountSpec struct {
 	BillingEmail string          `json:"billingEmail"`
 	Description  string          `json:"description"`
@@ -201,4 +239,27 @@ type ProfileSpecParam struct {
 
 func (r ProfileSpecParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+// RotateWebhookEventsHmacSecretResponse is a response to a
+// RotateWebhookEventsHmacSecretRequest.
+type RotateWebhookSigningKeyResponse struct {
+	WebhookEventsHmacSecret string                              `json:"webhookEventsHmacSecret"`
+	JSON                    rotateWebhookSigningKeyResponseJSON `json:"-"`
+}
+
+// rotateWebhookSigningKeyResponseJSON contains the JSON metadata for the struct
+// [RotateWebhookSigningKeyResponse]
+type rotateWebhookSigningKeyResponseJSON struct {
+	WebhookEventsHmacSecret apijson.Field
+	raw                     string
+	ExtraFields             map[string]apijson.Field
+}
+
+func (r *RotateWebhookSigningKeyResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r rotateWebhookSigningKeyResponseJSON) RawJSON() string {
+	return r.raw
 }

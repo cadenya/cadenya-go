@@ -126,6 +126,84 @@ func (r *AgentVariationService) Delete(ctx context.Context, agentID string, id s
 	return err
 }
 
+// Assigns a tool, tool set, or sub-agent to a variation. Exactly one target ID
+// must be set.
+func (r *AgentVariationService) AddAssignment(ctx context.Context, agentVariationID string, body AgentVariationAddAssignmentParams, opts ...option.RequestOption) (res *VariationAssignment, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/assignments", agentVariationID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Attaches a memory layer to a variation at a given position in the variation's
+// baseline memory stack.
+func (r *AgentVariationService) AddMemoryLayer(ctx context.Context, agentVariationID string, body AgentVariationAddMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers", agentVariationID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Detaches an assignment from a variation, identified by the assignment ID
+// returned when it was added.
+func (r *AgentVariationService) RemoveAssignment(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/assignments/%s", agentVariationID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
+	return err
+}
+
+// Detaches a memory layer assignment from a variation, identified by the
+// assignment id.
+func (r *AgentVariationService) RemoveMemoryLayer(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
+	return err
+}
+
+// Updates the position of a memory layer assignment on a variation.
+func (r *AgentVariationService) UpdateMemoryLayer(ctx context.Context, agentVariationID string, id string, body AgentVariationUpdateMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if agentVariationID == "" {
+		err = errors.New("missing required agentVariationId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	return res, err
+}
+
 // AgentVariation resource
 type AgentVariation struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
@@ -168,12 +246,26 @@ func (r AgentVariationParam) MarshalJSON() (data []byte, err error) {
 
 // AgentVariationInfo provides read-only summary information about a variation
 type AgentVariationInfo struct {
+	// All tools, tool sets, and sub-agents assigned to this variation. Populated on
+	// reads so clients can render a variation's full assignment list without calling
+	// the add/remove endpoints just to enumerate.
+	Assignments []VariationAssignment `json:"assignments"`
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
 	CreatedBy Profile `json:"createdBy"`
+	// Total number of objective feedbacks received for this variation
+	FeedbackCount int64 `json:"feedbackCount"`
+	// Read-only list of memory layer assignments for this variation, returned in
+	// ascending `position` (bottom → top). Capped at 10 entries.
+	MemoryLayerAssignments []VariationMemoryLayerAssignment `json:"memoryLayerAssignments"`
+	// Count of memory layer assignments.
+	MemoryLayerCount int64 `json:"memoryLayerCount"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Model shared.ResourceMetadata `json:"model"`
+	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
+	// where 0.5 = neutral, >0.5 = positive, <0.5 = negative.
+	Score float64 `json:"score"`
 	// Number of sub-agents assigned to this variation
 	SubAgentCount int64 `json:"subAgentCount"`
 	// Number of individual tools assigned to this variation
@@ -186,13 +278,18 @@ type AgentVariationInfo struct {
 // agentVariationInfoJSON contains the JSON metadata for the struct
 // [AgentVariationInfo]
 type agentVariationInfoJSON struct {
-	CreatedBy     apijson.Field
-	Model         apijson.Field
-	SubAgentCount apijson.Field
-	ToolCount     apijson.Field
-	ToolSetCount  apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
+	Assignments            apijson.Field
+	CreatedBy              apijson.Field
+	FeedbackCount          apijson.Field
+	MemoryLayerAssignments apijson.Field
+	MemoryLayerCount       apijson.Field
+	Model                  apijson.Field
+	Score                  apijson.Field
+	SubAgentCount          apijson.Field
+	ToolCount              apijson.Field
+	ToolSetCount           apijson.Field
+	raw                    string
+	ExtraFields            map[string]apijson.Field
 }
 
 func (r *AgentVariationInfo) UnmarshalJSON(data []byte) (err error) {
@@ -209,6 +306,11 @@ type AgentVariationInfoParam struct {
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
 	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
+	// Total number of objective feedbacks received for this variation
+	FeedbackCount param.Field[int64] `json:"feedbackCount"`
+	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
+	// where 0.5 = neutral, >0.5 = positive, <0.5 = negative.
+	Score param.Field[float64] `json:"score"`
 }
 
 func (r AgentVariationInfoParam) MarshalJSON() (data []byte, err error) {
@@ -217,11 +319,9 @@ func (r AgentVariationInfoParam) MarshalJSON() (data []byte, err error) {
 
 // AgentVariationSpec defines the operational configuration for a variation
 type AgentVariationSpec struct {
-	// Documents assigned to this variation. Can include individual documents or entire
-	// document namespaces (which include all documents in the namespace).
-	AgentDocuments []AgentVariationSpecAgentDocument `json:"agentDocuments"`
-	// Tools assigned to this variation
-	AgentTools []AgentVariationSpecAgentTool `json:"agentTools"`
+	// CompactionConfig defines how context window compaction behaves for objectives
+	// using this variation.
+	CompactionConfig AgentVariationSpecCompactionConfig `json:"compactionConfig"`
 	// Execution constraints
 	Constraints AgentVariationSpecConstraints `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
@@ -252,8 +352,7 @@ type AgentVariationSpec struct {
 // agentVariationSpecJSON contains the JSON metadata for the struct
 // [AgentVariationSpec]
 type agentVariationSpecJSON struct {
-	AgentDocuments       apijson.Field
-	AgentTools           apijson.Field
+	CompactionConfig     apijson.Field
 	Constraints          apijson.Field
 	Description          apijson.Field
 	EnableEpisodicMemory apijson.Field
@@ -276,11 +375,9 @@ func (r agentVariationSpecJSON) RawJSON() string {
 
 // AgentVariationSpec defines the operational configuration for a variation
 type AgentVariationSpecParam struct {
-	// Documents assigned to this variation. Can include individual documents or entire
-	// document namespaces (which include all documents in the namespace).
-	AgentDocuments param.Field[[]AgentVariationSpecAgentDocumentParam] `json:"agentDocuments"`
-	// Tools assigned to this variation
-	AgentTools param.Field[[]AgentVariationSpecAgentToolParam] `json:"agentTools"`
+	// CompactionConfig defines how context window compaction behaves for objectives
+	// using this variation.
+	CompactionConfig param.Field[AgentVariationSpecCompactionConfigParam] `json:"compactionConfig"`
 	// Execution constraints
 	Constraints param.Field[AgentVariationSpecConstraintsParam] `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
@@ -311,95 +408,54 @@ func (r AgentVariationSpecParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type AgentVariationSpecAgentDocument struct {
-	DocumentID string `json:"documentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentMetadata    shared.ResourceMetadata `json:"documentMetadata"`
-	DocumentNamespaceID string                  `json:"documentNamespaceId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentNamespaceMetadata shared.ResourceMetadata             `json:"documentNamespaceMetadata"`
-	JSON                      agentVariationSpecAgentDocumentJSON `json:"-"`
+// CompactionConfig defines how context window compaction behaves for objectives
+// using this variation.
+type AgentVariationSpecCompactionConfig struct {
+	// SummarizationStrategy configures LLM-powered summarization of older conversation
+	// turns.
+	Summarization CompactionConfigSummarizationStrategy `json:"summarization"`
+	// ToolResultClearingStrategy configures clearing of older tool result content.
+	ToolResultClearing CompactionConfigToolResultClearingStrategy `json:"toolResultClearing"`
+	// Trigger threshold as a percentage of the model's context window (0.0 to 1.0).
+	// When input tokens reach this percentage of the model's limit, compaction
+	// triggers. Default: 0.75 (75%)
+	TriggerThreshold float64                                `json:"triggerThreshold"`
+	JSON             agentVariationSpecCompactionConfigJSON `json:"-"`
 }
 
-// agentVariationSpecAgentDocumentJSON contains the JSON metadata for the struct
-// [AgentVariationSpecAgentDocument]
-type agentVariationSpecAgentDocumentJSON struct {
-	DocumentID                apijson.Field
-	DocumentMetadata          apijson.Field
-	DocumentNamespaceID       apijson.Field
-	DocumentNamespaceMetadata apijson.Field
-	raw                       string
-	ExtraFields               map[string]apijson.Field
+// agentVariationSpecCompactionConfigJSON contains the JSON metadata for the struct
+// [AgentVariationSpecCompactionConfig]
+type agentVariationSpecCompactionConfigJSON struct {
+	Summarization      apijson.Field
+	ToolResultClearing apijson.Field
+	TriggerThreshold   apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
 }
 
-func (r *AgentVariationSpecAgentDocument) UnmarshalJSON(data []byte) (err error) {
+func (r *AgentVariationSpecCompactionConfig) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r agentVariationSpecAgentDocumentJSON) RawJSON() string {
+func (r agentVariationSpecCompactionConfigJSON) RawJSON() string {
 	return r.raw
 }
 
-type AgentVariationSpecAgentDocumentParam struct {
-	DocumentID param.Field[string] `json:"documentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentMetadata    param.Field[shared.ResourceMetadataParam] `json:"documentMetadata"`
-	DocumentNamespaceID param.Field[string]                       `json:"documentNamespaceId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	DocumentNamespaceMetadata param.Field[shared.ResourceMetadataParam] `json:"documentNamespaceMetadata"`
+// CompactionConfig defines how context window compaction behaves for objectives
+// using this variation.
+type AgentVariationSpecCompactionConfigParam struct {
+	// SummarizationStrategy configures LLM-powered summarization of older conversation
+	// turns.
+	Summarization param.Field[CompactionConfigSummarizationStrategyParam] `json:"summarization"`
+	// ToolResultClearingStrategy configures clearing of older tool result content.
+	ToolResultClearing param.Field[CompactionConfigToolResultClearingStrategyParam] `json:"toolResultClearing"`
+	// Trigger threshold as a percentage of the model's context window (0.0 to 1.0).
+	// When input tokens reach this percentage of the model's limit, compaction
+	// triggers. Default: 0.75 (75%)
+	TriggerThreshold param.Field[float64] `json:"triggerThreshold"`
 }
 
-func (r AgentVariationSpecAgentDocumentParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-type AgentVariationSpecAgentTool struct {
-	AgentID string `json:"agentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	AgentMetadata shared.ResourceMetadata `json:"agentMetadata"`
-	ToolID        string                  `json:"toolId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	ToolMetadata shared.ResourceMetadata `json:"toolMetadata"`
-	ToolSetID    string                  `json:"toolSetId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	ToolSetMetadata shared.ResourceMetadata         `json:"toolSetMetadata"`
-	JSON            agentVariationSpecAgentToolJSON `json:"-"`
-}
-
-// agentVariationSpecAgentToolJSON contains the JSON metadata for the struct
-// [AgentVariationSpecAgentTool]
-type agentVariationSpecAgentToolJSON struct {
-	AgentID         apijson.Field
-	AgentMetadata   apijson.Field
-	ToolID          apijson.Field
-	ToolMetadata    apijson.Field
-	ToolSetID       apijson.Field
-	ToolSetMetadata apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *AgentVariationSpecAgentTool) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r agentVariationSpecAgentToolJSON) RawJSON() string {
-	return r.raw
-}
-
-type AgentVariationSpecAgentToolParam struct {
-	AgentID param.Field[string] `json:"agentId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	AgentMetadata param.Field[shared.ResourceMetadataParam] `json:"agentMetadata"`
-	ToolID        param.Field[string]                       `json:"toolId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	ToolMetadata param.Field[shared.ResourceMetadataParam] `json:"toolMetadata"`
-	ToolSetID    param.Field[string]                       `json:"toolSetId"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	ToolSetMetadata param.Field[shared.ResourceMetadataParam] `json:"toolSetMetadata"`
-}
-
-func (r AgentVariationSpecAgentToolParam) MarshalJSON() (data []byte, err error) {
+func (r AgentVariationSpecCompactionConfigParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -529,6 +585,82 @@ func (r AgentVariationSpecToolSelectionParam) MarshalJSON() (data []byte, err er
 	return apijson.MarshalRoot(r)
 }
 
+// SummarizationStrategy configures LLM-powered summarization of older conversation
+// turns.
+type CompactionConfigSummarizationStrategy struct {
+	// Custom instructions that guide what the summarizer preserves. Replaces the
+	// default summarization prompt entirely. Example: "Preserve all code snippets,
+	// variable names, and technical decisions."
+	Instructions string                                    `json:"instructions"`
+	JSON         compactionConfigSummarizationStrategyJSON `json:"-"`
+}
+
+// compactionConfigSummarizationStrategyJSON contains the JSON metadata for the
+// struct [CompactionConfigSummarizationStrategy]
+type compactionConfigSummarizationStrategyJSON struct {
+	Instructions apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *CompactionConfigSummarizationStrategy) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r compactionConfigSummarizationStrategyJSON) RawJSON() string {
+	return r.raw
+}
+
+// SummarizationStrategy configures LLM-powered summarization of older conversation
+// turns.
+type CompactionConfigSummarizationStrategyParam struct {
+	// Custom instructions that guide what the summarizer preserves. Replaces the
+	// default summarization prompt entirely. Example: "Preserve all code snippets,
+	// variable names, and technical decisions."
+	Instructions param.Field[string] `json:"instructions"`
+}
+
+func (r CompactionConfigSummarizationStrategyParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// ToolResultClearingStrategy configures clearing of older tool result content.
+type CompactionConfigToolResultClearingStrategy struct {
+	// Number of most recent tool call results to keep intact. Older tool results have
+	// their content replaced with "[result cleared]" while preserving the assistant
+	// tool call message (function name, arguments). Default: 2
+	PreserveRecentResults int64                                          `json:"preserveRecentResults"`
+	JSON                  compactionConfigToolResultClearingStrategyJSON `json:"-"`
+}
+
+// compactionConfigToolResultClearingStrategyJSON contains the JSON metadata for
+// the struct [CompactionConfigToolResultClearingStrategy]
+type compactionConfigToolResultClearingStrategyJSON struct {
+	PreserveRecentResults apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *CompactionConfigToolResultClearingStrategy) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r compactionConfigToolResultClearingStrategyJSON) RawJSON() string {
+	return r.raw
+}
+
+// ToolResultClearingStrategy configures clearing of older tool result content.
+type CompactionConfigToolResultClearingStrategyParam struct {
+	// Number of most recent tool call results to keep intact. Older tool results have
+	// their content replaced with "[result cleared]" while preserving the assistant
+	// tool call message (function name, arguments). Default: 2
+	PreserveRecentResults param.Field[int64] `json:"preserveRecentResults"`
+}
+
+func (r CompactionConfigToolResultClearingStrategyParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 // AssignedTools is used to indicate that the agent should only use the tools/tool
 // sets that are explicitly assigned to it. Allow discovery is used when the agent
 // thinks it needs to discover more tools.
@@ -606,6 +738,165 @@ func (r ToolSelectionAutoDiscoveryParam) MarshalJSON() (data []byte, err error) 
 	return apijson.MarshalRoot(r)
 }
 
+// VariationAssignment is a read-only reference to a single tool, tool set, or
+// sub-agent attached to a variation. Clients read the full set of assignments via
+// `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
+// assignment endpoints under /v1/agent_variations/{id}/assignments.
+//
+// The `id` identifies the assignment row itself (not the referenced resource) and
+// is the handle used to remove the assignment. It is returned by the add endpoint
+// and present on every entry in AgentVariationInfo.assignments.
+type VariationAssignment struct {
+	ID string `json:"id"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Agent shared.BareMetadata `json:"agent"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Tool shared.BareMetadata `json:"tool"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	ToolSet shared.BareMetadata     `json:"toolSet"`
+	JSON    variationAssignmentJSON `json:"-"`
+}
+
+// variationAssignmentJSON contains the JSON metadata for the struct
+// [VariationAssignment]
+type variationAssignmentJSON struct {
+	ID          apijson.Field
+	Agent       apijson.Field
+	Tool        apijson.Field
+	ToolSet     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *VariationAssignment) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r variationAssignmentJSON) RawJSON() string {
+	return r.raw
+}
+
+// VariationAssignment is a read-only reference to a single tool, tool set, or
+// sub-agent attached to a variation. Clients read the full set of assignments via
+// `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
+// assignment endpoints under /v1/agent_variations/{id}/assignments.
+//
+// The `id` identifies the assignment row itself (not the referenced resource) and
+// is the handle used to remove the assignment. It is returned by the add endpoint
+// and present on every entry in AgentVariationInfo.assignments.
+type VariationAssignmentParam struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Agent param.Field[shared.BareMetadataParam] `json:"agent"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Tool param.Field[shared.BareMetadataParam] `json:"tool"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	ToolSet param.Field[shared.BareMetadataParam] `json:"toolSet"`
+}
+
+func (r VariationAssignmentParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
+// given position in the variation's baseline memory stack. A variation has at most
+// one assignment per memory_layer_id.
+//
+// Variations only support whole-layer attachments — entry pinning is an
+// objective-level capability.
+type VariationMemoryLayerAssignment struct {
+	// Assignment row id — handle for removing the assignment. Distinct from the
+	// referenced memory layer's id.
+	ID string `json:"id"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	MemoryLayer shared.BareMetadata `json:"memoryLayer"`
+	// Position in the variation's baseline stack. Lower values sit lower; the
+	// highest-position assignment is on top of the variation's baseline. Gaps are fine
+	// — only relative position matters. Positions must be unique within a variation; a
+	// request that would collide with an existing assignment's position is rejected
+	// with InvalidArgument.
+	Position int64                              `json:"position"`
+	JSON     variationMemoryLayerAssignmentJSON `json:"-"`
+}
+
+// variationMemoryLayerAssignmentJSON contains the JSON metadata for the struct
+// [VariationMemoryLayerAssignment]
+type variationMemoryLayerAssignmentJSON struct {
+	ID          apijson.Field
+	MemoryLayer apijson.Field
+	Position    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *VariationMemoryLayerAssignment) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r variationMemoryLayerAssignmentJSON) RawJSON() string {
+	return r.raw
+}
+
+// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
+// given position in the variation's baseline memory stack. A variation has at most
+// one assignment per memory_layer_id.
+//
+// Variations only support whole-layer attachments — entry pinning is an
+// objective-level capability.
+type VariationMemoryLayerAssignmentParam struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	MemoryLayer param.Field[shared.BareMetadataParam] `json:"memoryLayer"`
+	// Position in the variation's baseline stack. Lower values sit lower; the
+	// highest-position assignment is on top of the variation's baseline. Gaps are fine
+	// — only relative position matters. Positions must be unique within a variation; a
+	// request that would collide with an existing assignment's position is rejected
+	// with InvalidArgument.
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r VariationMemoryLayerAssignmentParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type AgentVariationNewParams struct {
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
@@ -652,4 +943,34 @@ func (r AgentVariationListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type AgentVariationAddAssignmentParams struct {
+	SubAgentID param.Field[string] `json:"subAgentId"`
+	ToolID     param.Field[string] `json:"toolId"`
+	ToolSetID  param.Field[string] `json:"toolSetId"`
+}
+
+func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentVariationAddMemoryLayerParams struct {
+	// Layer to attach. Accepts memlyr\_… or external_id:… form.
+	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
+	// Position in the stack. If omitted, server appends (max existing position + 1).
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r AgentVariationAddMemoryLayerParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentVariationUpdateMemoryLayerParams struct {
+	// New position. Only field currently updatable on an assignment.
+	Position param.Field[int64] `json:"position"`
+}
+
+func (r AgentVariationUpdateMemoryLayerParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }

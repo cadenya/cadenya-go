@@ -28,8 +28,26 @@ type Client struct {
 	// operations are implicitly scoped to the workspace determined by the JWT token.
 	//
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
-	Agents     *AgentService
-	Objectives *ObjectiveService
+	Agents          *AgentService
+	AgentVariations *AgentVariationService
+	Objectives      *ObjectiveService
+	// MemoryService manages memory layers and their entries at the WORKSPACE level.
+	// Layers are named containers that can be composed into an objective's memory
+	// stack; entries are the keyed values within a layer.
+	//
+	// All operations are implicitly scoped to the workspace determined by the JWT
+	// token. System-managed layers (e.g., episodic layers created by the runtime)
+	// cannot be mutated through this API.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	MemoryLayers *MemoryLayerService
+	// UploadService issues short-lived presigned URLs for direct client-to-object-
+	// storage uploads at the WORKSPACE level. Created uploads can be referenced by id
+	// when creating or updating resources that accept binary content (e.g.,
+	// MemoryEntry).
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Uploads *UploadService
 	// ModelService manages LLM models at the WORKSPACE level. Models represent
 	// available LLM providers and families (e.g., "anthropic/claude-sonnet-4.6").
 	// Models are seeded into workspaces and can be enabled or disabled. All operations
@@ -60,10 +78,12 @@ type Client struct {
 	// Authentication: Bearer token (JWT) Scope: Account-level operations (manages
 	// workspaces themselves, not resources within workspaces)
 	Workspaces *WorkspaceService
+	Webhooks   *WebhookService
 }
 
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
-// CADENYA_BASE_URL). This should be used to initialize new clients.
+// CADENYA_WEBHOOK_KEY, CADENYA_BASE_URL). This should be used to initialize new
+// clients.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("CADENYA_BASE_URL"); ok {
@@ -72,13 +92,16 @@ func DefaultClientOptions() []option.RequestOption {
 	if o, ok := os.LookupEnv("CADENYA_API_KEY"); ok {
 		defaults = append(defaults, option.WithAPIKey(o))
 	}
+	if o, ok := os.LookupEnv("CADENYA_WEBHOOK_KEY"); ok {
+		defaults = append(defaults, option.WithWebhookKey(o))
+	}
 	return defaults
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (CADENYA_API_KEY, CADENYA_BASE_URL). The option passed in as
-// arguments are applied after these default arguments, and all option will be
-// passed down to the services and requests that this client makes.
+// environment (CADENYA_API_KEY, CADENYA_WEBHOOK_KEY, CADENYA_BASE_URL). The option
+// passed in as arguments are applied after these default arguments, and all option
+// will be passed down to the services and requests that this client makes.
 func NewClient(opts ...option.RequestOption) (r *Client) {
 	opts = append(DefaultClientOptions(), opts...)
 
@@ -86,13 +109,17 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Account = NewAccountService(opts...)
 	r.Agents = NewAgentService(opts...)
+	r.AgentVariations = NewAgentVariationService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
+	r.MemoryLayers = NewMemoryLayerService(opts...)
+	r.Uploads = NewUploadService(opts...)
 	r.Models = NewModelService(opts...)
 	r.Search = NewSearchService(opts...)
 	r.ToolSets = NewToolSetService(opts...)
 	r.APIKeys = NewAPIKeyService(opts...)
 	r.WorkspaceSecrets = NewWorkspaceSecretService(opts...)
 	r.Workspaces = NewWorkspaceService(opts...)
+	r.Webhooks = NewWebhookService(opts...)
 
 	return
 }
