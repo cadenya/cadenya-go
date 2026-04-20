@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 (2026-04-20)
+
+Full Changelog: [v0.6.0...v0.7.0](https://github.com/cadenya/cadenya-go/compare/v0.6.0...v0.7.0)
+
+### Features
+
+* Make agent variations API AIP-122 compliant ([2dc30b1](https://github.com/cadenya/cadenya-go/commit/2dc30b1abe589b398cc25b7301f56198cc6fc425))
+
 ## 0.6.0 (2026-04-18)
 
 Full Changelog: [v0.5.0...v0.6.0](https://github.com/cadenya/cadenya-go/compare/v0.5.0...v0.6.0)

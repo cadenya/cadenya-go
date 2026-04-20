@@ -128,78 +128,98 @@ func (r *AgentVariationService) Delete(ctx context.Context, agentID string, id s
 
 // Assigns a tool, tool set, or sub-agent to a variation. Exactly one target ID
 // must be set.
-func (r *AgentVariationService) AddAssignment(ctx context.Context, agentVariationID string, body AgentVariationAddAssignmentParams, opts ...option.RequestOption) (res *VariationAssignment, err error) {
+func (r *AgentVariationService) AddAssignment(ctx context.Context, agentID string, variationID string, body AgentVariationAddAssignmentParams, opts ...option.RequestOption) (res *VariationAssignment, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if agentVariationID == "" {
-		err = errors.New("missing required agentVariationId parameter")
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agent_variations/%s/assignments", agentVariationID)
+	if variationID == "" {
+		err = errors.New("missing required variationId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agents/%s/variations/%s/assignments", agentID, variationID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Attaches a memory layer to a variation at a given position in the variation's
 // baseline memory stack.
-func (r *AgentVariationService) AddMemoryLayer(ctx context.Context, agentVariationID string, body AgentVariationAddMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+func (r *AgentVariationService) AddMemoryLayer(ctx context.Context, agentID string, variationID string, body AgentVariationAddMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if agentVariationID == "" {
-		err = errors.New("missing required agentVariationId parameter")
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers", agentVariationID)
+	if variationID == "" {
+		err = errors.New("missing required variationId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/agents/%s/variations/%s/memory_layer_assignments", agentID, variationID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Detaches an assignment from a variation, identified by the assignment ID
 // returned when it was added.
-func (r *AgentVariationService) RemoveAssignment(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
+func (r *AgentVariationService) RemoveAssignment(ctx context.Context, agentID string, variationID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	if agentVariationID == "" {
-		err = errors.New("missing required agentVariationId parameter")
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return err
+	}
+	if variationID == "" {
+		err = errors.New("missing required variationId parameter")
 		return err
 	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/agent_variations/%s/assignments/%s", agentVariationID, id)
+	path := fmt.Sprintf("v1/agents/%s/variations/%s/assignments/%s", agentID, variationID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Detaches a memory layer assignment from a variation, identified by the
 // assignment id.
-func (r *AgentVariationService) RemoveMemoryLayer(ctx context.Context, agentVariationID string, id string, opts ...option.RequestOption) (err error) {
+func (r *AgentVariationService) RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	if agentVariationID == "" {
-		err = errors.New("missing required agentVariationId parameter")
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return err
+	}
+	if variationID == "" {
+		err = errors.New("missing required variationId parameter")
 		return err
 	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	path := fmt.Sprintf("v1/agents/%s/variations/%s/memory_layer_assignments/%s", agentID, variationID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Updates the position of a memory layer assignment on a variation.
-func (r *AgentVariationService) UpdateMemoryLayer(ctx context.Context, agentVariationID string, id string, body AgentVariationUpdateMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
+func (r *AgentVariationService) UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, id string, body AgentVariationUpdateMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if agentVariationID == "" {
-		err = errors.New("missing required agentVariationId parameter")
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return nil, err
+	}
+	if variationID == "" {
+		err = errors.New("missing required variationId parameter")
 		return nil, err
 	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agent_variations/%s/memory_layers/%s", agentVariationID, id)
+	path := fmt.Sprintf("v1/agents/%s/variations/%s/memory_layer_assignments/%s", agentID, variationID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
@@ -741,7 +761,8 @@ func (r ToolSelectionAutoDiscoveryParam) MarshalJSON() (data []byte, err error) 
 // VariationAssignment is a read-only reference to a single tool, tool set, or
 // sub-agent attached to a variation. Clients read the full set of assignments via
 // `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints under /v1/agent_variations/{id}/assignments.
+// assignment endpoints under
+// /v1/agents/{agent_id}/variations/{variation_id}/assignments.
 //
 // The `id` identifies the assignment row itself (not the referenced resource) and
 // is the handle used to remove the assignment. It is returned by the add endpoint
@@ -794,7 +815,8 @@ func (r variationAssignmentJSON) RawJSON() string {
 // VariationAssignment is a read-only reference to a single tool, tool set, or
 // sub-agent attached to a variation. Clients read the full set of assignments via
 // `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints under /v1/agent_variations/{id}/assignments.
+// assignment endpoints under
+// /v1/agents/{agent_id}/variations/{variation_id}/assignments.
 //
 // The `id` identifies the assignment row itself (not the referenced resource) and
 // is the handle used to remove the assignment. It is returned by the add endpoint
