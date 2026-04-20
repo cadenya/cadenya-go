@@ -916,7 +916,8 @@ func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error
 }
 
 type AgentVariationAddMemoryLayerParams struct {
-	// Layer to attach. Accepts memlyr\_… or external_id:… form.
+	// Layer to attach. Accepts canonical memlyr\_… form or external_id:<value> form
+	// (see common.proto "Path-parameter ID resolution").
 	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
 	// Position in the stack. If omitted, server appends (max existing position + 1).
 	Position param.Field[int64] `json:"position"`
