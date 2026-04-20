@@ -27,7 +27,7 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.New(
+	_, err := client.Agents.Variations.New(
 		context.TODO(),
 		"agentId",
 		cadenya.AgentVariationNewParams{
@@ -95,7 +95,7 @@ func TestAgentVariationGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.Get(
+	_, err := client.Agents.Variations.Get(
 		context.TODO(),
 		"agentId",
 		"id",
@@ -122,7 +122,7 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.Update(
+	_, err := client.Agents.Variations.Update(
 		context.TODO(),
 		"agentId",
 		"id",
@@ -192,7 +192,7 @@ func TestAgentVariationListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.List(
+	_, err := client.Agents.Variations.List(
 		context.TODO(),
 		"agentId",
 		cadenya.AgentVariationListParams{
@@ -224,7 +224,7 @@ func TestAgentVariationDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.AgentVariations.Delete(
+	err := client.Agents.Variations.Delete(
 		context.TODO(),
 		"agentId",
 		"id",
@@ -251,9 +251,10 @@ func TestAgentVariationAddAssignmentWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.AddAssignment(
+	_, err := client.Agents.Variations.AddAssignment(
 		context.TODO(),
-		"agentVariationId",
+		"agentId",
+		"variationId",
 		cadenya.AgentVariationAddAssignmentParams{
 			SubAgentID: cadenya.F("subAgentId"),
 			ToolID:     cadenya.F("toolId"),
@@ -282,9 +283,10 @@ func TestAgentVariationAddMemoryLayerWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.AddMemoryLayer(
+	_, err := client.Agents.Variations.AddMemoryLayer(
 		context.TODO(),
-		"agentVariationId",
+		"agentId",
+		"variationId",
 		cadenya.AgentVariationAddMemoryLayerParams{
 			MemoryLayerID: cadenya.F("memoryLayerId"),
 			Position:      cadenya.F(int64(0)),
@@ -312,9 +314,10 @@ func TestAgentVariationRemoveAssignment(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.AgentVariations.RemoveAssignment(
+	err := client.Agents.Variations.RemoveAssignment(
 		context.TODO(),
-		"agentVariationId",
+		"agentId",
+		"variationId",
 		"id",
 	)
 	if err != nil {
@@ -339,9 +342,10 @@ func TestAgentVariationRemoveMemoryLayer(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.AgentVariations.RemoveMemoryLayer(
+	err := client.Agents.Variations.RemoveMemoryLayer(
 		context.TODO(),
-		"agentVariationId",
+		"agentId",
+		"variationId",
 		"id",
 	)
 	if err != nil {
@@ -366,9 +370,10 @@ func TestAgentVariationUpdateMemoryLayerWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AgentVariations.UpdateMemoryLayer(
+	_, err := client.Agents.Variations.UpdateMemoryLayer(
 		context.TODO(),
-		"agentVariationId",
+		"agentId",
+		"variationId",
 		"id",
 		cadenya.AgentVariationUpdateMemoryLayerParams{
 			Position: cadenya.F(int64(0)),
