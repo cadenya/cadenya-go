@@ -78,11 +78,8 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecCompactionConfigParam">AgentVariationSpecCompactionConfigParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecConstraintsParam">AgentVariationSpecConstraintsParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecModelConfigParam">AgentVariationSpecModelConfigParam</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecToolSelectionParam">AgentVariationSpecToolSelectionParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#CompactionConfigSummarizationStrategyParam">CompactionConfigSummarizationStrategyParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#CompactionConfigToolResultClearingStrategyParam">CompactionConfigToolResultClearingStrategyParam</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSelectionAssignedToolsParam">ToolSelectionAssignedToolsParam</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSelectionAutoDiscoveryParam">ToolSelectionAutoDiscoveryParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationAssignmentParam">VariationAssignmentParam</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationMemoryLayerAssignmentParam">VariationMemoryLayerAssignmentParam</a>
 
@@ -94,11 +91,8 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecCompactionConfig">AgentVariationSpecCompactionConfig</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecConstraints">AgentVariationSpecConstraints</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecModelConfig">AgentVariationSpecModelConfig</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationSpecToolSelection">AgentVariationSpecToolSelection</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#CompactionConfigSummarizationStrategy">CompactionConfigSummarizationStrategy</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#CompactionConfigToolResultClearingStrategy">CompactionConfigToolResultClearingStrategy</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSelectionAssignedTools">ToolSelectionAssignedTools</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSelectionAutoDiscovery">ToolSelectionAutoDiscovery</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationAssignment">VariationAssignment</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationMemoryLayerAssignment">VariationMemoryLayerAssignment</a>
 

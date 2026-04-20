@@ -211,6 +211,12 @@ type AgentSpec struct {
 	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description string `json:"description"`
+	// InputDataSchema is used for enforcing a data input when objectives are created.
+	// This is valuable when using liquid formatting in agent variation prompts. Input
+	// data schema is also valuable when using an agent as a sub-agent, as the schema
+	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
+	// will be loaded with a simple "prompt" free text string as its schema.
+	InputDataSchema interface{} `json:"inputDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL string        `json:"webhookEventsUrl"`
 	JSON             agentSpecJSON `json:"-"`
@@ -221,6 +227,7 @@ type agentSpecJSON struct {
 	Status                 apijson.Field
 	VariationSelectionMode apijson.Field
 	Description            apijson.Field
+	InputDataSchema        apijson.Field
 	WebhookEventsURL       apijson.Field
 	raw                    string
 	ExtraFields            map[string]apijson.Field
@@ -279,6 +286,12 @@ type AgentSpecParam struct {
 	VariationSelectionMode param.Field[AgentSpecVariationSelectionMode] `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description param.Field[string] `json:"description"`
+	// InputDataSchema is used for enforcing a data input when objectives are created.
+	// This is valuable when using liquid formatting in agent variation prompts. Input
+	// data schema is also valuable when using an agent as a sub-agent, as the schema
+	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
+	// will be loaded with a simple "prompt" free text string as its schema.
+	InputDataSchema param.Field[interface{}] `json:"inputDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL param.Field[string] `json:"webhookEventsUrl"`
 }
