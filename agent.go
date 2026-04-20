@@ -39,6 +39,7 @@ type AgentService struct {
 	//
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	WebhookDeliveries *AgentWebhookDeliveryService
+	Variations        *AgentVariationService
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -48,6 +49,7 @@ func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 	r = &AgentService{}
 	r.Options = opts
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
+	r.Variations = NewAgentVariationService(opts...)
 	return
 }
 

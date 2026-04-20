@@ -28,9 +28,8 @@ type Client struct {
 	// operations are implicitly scoped to the workspace determined by the JWT token.
 	//
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
-	Agents          *AgentService
-	AgentVariations *AgentVariationService
-	Objectives      *ObjectiveService
+	Agents     *AgentService
+	Objectives *ObjectiveService
 	// MemoryService manages memory layers and their entries at the WORKSPACE level.
 	// Layers are named containers that can be composed into an objective's memory
 	// stack; entries are the keyed values within a layer.
@@ -109,7 +108,6 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Account = NewAccountService(opts...)
 	r.Agents = NewAgentService(opts...)
-	r.AgentVariations = NewAgentVariationService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
 	r.MemoryLayers = NewMemoryLayerService(opts...)
 	r.Uploads = NewUploadService(opts...)
