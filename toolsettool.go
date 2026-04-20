@@ -174,16 +174,17 @@ func (r configHTTPJSON) RawJSON() string {
 type ConfigHTTPRequestMethod string
 
 const (
-	ConfigHTTPRequestMethodGet    ConfigHTTPRequestMethod = "GET"
-	ConfigHTTPRequestMethodPost   ConfigHTTPRequestMethod = "POST"
-	ConfigHTTPRequestMethodPut    ConfigHTTPRequestMethod = "PUT"
-	ConfigHTTPRequestMethodPatch  ConfigHTTPRequestMethod = "PATCH"
-	ConfigHTTPRequestMethodDelete ConfigHTTPRequestMethod = "DELETE"
+	ConfigHTTPRequestMethodHTTPMethodUnspecified ConfigHTTPRequestMethod = "HTTP_METHOD_UNSPECIFIED"
+	ConfigHTTPRequestMethodGet                   ConfigHTTPRequestMethod = "GET"
+	ConfigHTTPRequestMethodPost                  ConfigHTTPRequestMethod = "POST"
+	ConfigHTTPRequestMethodPut                   ConfigHTTPRequestMethod = "PUT"
+	ConfigHTTPRequestMethodPatch                 ConfigHTTPRequestMethod = "PATCH"
+	ConfigHTTPRequestMethodDelete                ConfigHTTPRequestMethod = "DELETE"
 )
 
 func (r ConfigHTTPRequestMethod) IsKnown() bool {
 	switch r {
-	case ConfigHTTPRequestMethodGet, ConfigHTTPRequestMethodPost, ConfigHTTPRequestMethodPut, ConfigHTTPRequestMethodPatch, ConfigHTTPRequestMethodDelete:
+	case ConfigHTTPRequestMethodHTTPMethodUnspecified, ConfigHTTPRequestMethodGet, ConfigHTTPRequestMethodPost, ConfigHTTPRequestMethodPut, ConfigHTTPRequestMethodPatch, ConfigHTTPRequestMethodDelete:
 		return true
 	}
 	return false
