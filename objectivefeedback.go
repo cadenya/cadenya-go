@@ -164,6 +164,20 @@ func (r ObjectiveFeedbackDataParam) MarshalJSON() (data []byte, err error) {
 }
 
 type ObjectiveFeedbackInfo struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	AgentVariation shared.BareMetadata `json:"agentVariation"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Objective shared.BareMetadata `json:"objective"`
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
@@ -174,9 +188,11 @@ type ObjectiveFeedbackInfo struct {
 // objectiveFeedbackInfoJSON contains the JSON metadata for the struct
 // [ObjectiveFeedbackInfo]
 type objectiveFeedbackInfoJSON struct {
-	SubmittedBy apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
+	AgentVariation apijson.Field
+	Objective      apijson.Field
+	SubmittedBy    apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
 }
 
 func (r *ObjectiveFeedbackInfo) UnmarshalJSON(data []byte) (err error) {

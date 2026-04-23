@@ -38,6 +38,12 @@ type AgentService struct {
 	// operations are implicitly scoped to the workspace determined by the JWT token.
 	//
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Feedback *AgentFeedbackService
+	// AgentService manages AI agents at the WORKSPACE level. Agents are
+	// workspace-scoped resources that define AI behavior and tool access. All
+	// operations are implicitly scoped to the workspace determined by the JWT token.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	WebhookDeliveries *AgentWebhookDeliveryService
 	Variations        *AgentVariationService
 }
@@ -48,6 +54,7 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 	r = &AgentService{}
 	r.Options = opts
+	r.Feedback = NewAgentFeedbackService(opts...)
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
 	r.Variations = NewAgentVariationService(opts...)
 	return
