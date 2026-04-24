@@ -427,6 +427,8 @@ type ToolSetToolListParams struct {
 	Limit param.Field[int64] `query:"limit"`
 	// Filter expression (query param: prefix)
 	Prefix param.Field[string] `query:"prefix"`
+	// Free-form search query
+	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
 }

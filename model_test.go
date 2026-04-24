@@ -53,6 +53,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		Cursor:    cadenya.F("cursor"),
 		Limit:     cadenya.F(int64(0)),
 		Prefix:    cadenya.F("prefix"),
+		Query:     cadenya.F("query"),
 		SortOrder: cadenya.F("sortOrder"),
 		Status:    cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
 	})

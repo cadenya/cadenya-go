@@ -186,6 +186,7 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),
 			Prefix:      cadenya.F("prefix"),
+			Query:       cadenya.F("query"),
 			SortOrder:   cadenya.F("sortOrder"),
 		},
 	)
