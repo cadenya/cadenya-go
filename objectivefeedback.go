@@ -83,15 +83,11 @@ func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, objective
 // time.
 type ObjectiveFeedback struct {
 	Data ObjectiveFeedbackData `json:"data" api:"required"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	Metadata shared.BareMetadata   `json:"metadata" api:"required"`
-	Info     ObjectiveFeedbackInfo `json:"info"`
-	JSON     objectiveFeedbackJSON `json:"-"`
+	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
+	// runs)
+	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
+	Info     ObjectiveFeedbackInfo    `json:"info"`
+	JSON     objectiveFeedbackJSON    `json:"-"`
 }
 
 // objectiveFeedbackJSON contains the JSON metadata for the struct
@@ -113,11 +109,6 @@ func (r objectiveFeedbackJSON) RawJSON() string {
 }
 
 type ObjectiveFeedbackData struct {
-	// Arbitrary key-value pairs to identify the source of the feedback. Since the
-	// submitting profile is typically an API key, use this to pass through
-	// application-specific identifiers (e.g., {"user_id": "usr_123", "session_id":
-	// "abc"}).
-	Attributes map[string]string `json:"attributes"`
 	// Optional human-readable comment explaining the feedback
 	Comment string `json:"comment"`
 	// A score between -1.0 and 1.0 representing the quality of the objective's
@@ -130,7 +121,6 @@ type ObjectiveFeedbackData struct {
 // objectiveFeedbackDataJSON contains the JSON metadata for the struct
 // [ObjectiveFeedbackData]
 type objectiveFeedbackDataJSON struct {
-	Attributes  apijson.Field
 	Comment     apijson.Field
 	Score       apijson.Field
 	raw         string
@@ -146,11 +136,6 @@ func (r objectiveFeedbackDataJSON) RawJSON() string {
 }
 
 type ObjectiveFeedbackDataParam struct {
-	// Arbitrary key-value pairs to identify the source of the feedback. Since the
-	// submitting profile is typically an API key, use this to pass through
-	// application-specific identifiers (e.g., {"user_id": "usr_123", "session_id":
-	// "abc"}).
-	Attributes param.Field[map[string]string] `json:"attributes"`
 	// Optional human-readable comment explaining the feedback
 	Comment param.Field[string] `json:"comment"`
 	// A score between -1.0 and 1.0 representing the quality of the objective's
@@ -205,6 +190,10 @@ func (r objectiveFeedbackInfoJSON) RawJSON() string {
 
 type ObjectiveFeedbackNewParams struct {
 	Data param.Field[ObjectiveFeedbackDataParam] `json:"data" api:"required"`
+	// CreateOperationMetadata contains the user-provided fields for creating an
+	// operation. Read-only fields (id, account_id, workspace_id, created_at,
+	// profile_id) are excluded since they are set by the server.
+	Metadata param.Field[shared.CreateOperationMetadataParam] `json:"metadata" api:"required"`
 }
 
 func (r ObjectiveFeedbackNewParams) MarshalJSON() (data []byte, err error) {
