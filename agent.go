@@ -46,6 +46,12 @@ type AgentService struct {
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	WebhookDeliveries *AgentWebhookDeliveryService
 	Variations        *AgentVariationService
+	// AgentScheduleService manages recurring schedules attached to agents. Schedules
+	// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
+	// operations are implicitly scoped to the workspace determined by the JWT token.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Schedules *AgentScheduleService
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -57,6 +63,7 @@ func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 	r.Feedback = NewAgentFeedbackService(opts...)
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
 	r.Variations = NewAgentVariationService(opts...)
+	r.Schedules = NewAgentScheduleService(opts...)
 	return
 }
 
