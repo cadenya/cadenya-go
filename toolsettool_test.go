@@ -185,9 +185,11 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),
+			Names:       cadenya.F([]string{"string"}),
 			Prefix:      cadenya.F("prefix"),
 			Query:       cadenya.F("query"),
 			SortOrder:   cadenya.F("sortOrder"),
+			Statuses:    cadenya.F([]cadenya.ToolSetToolListParamsStatus{cadenya.ToolSetToolListParamsStatusToolStatusUnspecified}),
 		},
 	)
 	if err != nil {
