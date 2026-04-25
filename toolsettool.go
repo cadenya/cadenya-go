@@ -431,6 +431,9 @@ type ToolSetToolListParams struct {
 	Prefix param.Field[string] `query:"prefix"`
 	// Free-form search query
 	Query param.Field[string] `query:"query"`
+	// Filter by approval requirement. Omitted = no filter; true = only tools requiring
+	// approval; false = only tools not requiring approval.
+	RequiresApproval param.Field[bool] `query:"requiresApproval"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
 	// Filter by tool status. Multiple values are OR'd together.
