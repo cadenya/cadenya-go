@@ -547,6 +547,11 @@ type ObjectiveData struct {
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets []ObjectiveDataSecret `json:"secrets"`
+	// ID of the AgentSchedule that produced this objective, when applicable.
+	// Read-only; populated by the runtime when the objective is created from a
+	// schedule fire. Empty when the objective was created via CreateObjective
+	// directly.
+	SourceScheduleID string `json:"sourceScheduleId"`
 	// system_prompt is read-only, derived from the selected variation's prompt
 	SystemPrompt string `json:"systemPrompt"`
 	// AgentVariation resource
@@ -562,6 +567,7 @@ type objectiveDataJSON struct {
 	MemoryStack       apijson.Field
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
+	SourceScheduleID  apijson.Field
 	SystemPrompt      apijson.Field
 	Variation         apijson.Field
 	raw               string
