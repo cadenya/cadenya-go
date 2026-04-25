@@ -84,6 +84,8 @@ type AgentFeedbackListParams struct {
 	CreatedBefore param.Field[time.Time] `query:"createdBefore" format:"date-time"`
 	// Pagination cursor from previous response.
 	Cursor param.Field[string] `query:"cursor"`
+	// When set to true you may use more of your alloted API rate-limit
+	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return.
 	Limit param.Field[int64] `query:"limit"`
 	// Free-text search applied to the feedback comment. Case-insensitive substring

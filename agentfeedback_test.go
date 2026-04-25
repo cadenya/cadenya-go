@@ -35,6 +35,7 @@ func TestAgentFeedbackListWithOptionalParams(t *testing.T) {
 			CreatedAfter:     cadenya.F(time.Now()),
 			CreatedBefore:    cadenya.F(time.Now()),
 			Cursor:           cadenya.F("cursor"),
+			IncludeInfo:      cadenya.F(true),
 			Limit:            cadenya.F(int64(0)),
 			Query:            cadenya.F("query"),
 			Sentiment:        cadenya.F(cadenya.AgentFeedbackListParamsSentimentFeedbackSentimentUnspecified),
