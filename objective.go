@@ -1122,6 +1122,10 @@ func (r ObjectiveNewParams) MarshalJSON() (data []byte, err error) {
 type ObjectiveListParams struct {
 	// Agent ID for filtering
 	AgentID param.Field[string] `query:"agentId"`
+	// Filter to objectives produced by a specific AgentSchedule. Matches
+	// ObjectiveData.source*schedule_id. Accepts canonical as*… form or
+	// external_id:<value> form (see common.proto "Path-parameter ID resolution").
+	AgentScheduleID param.Field[string] `query:"agentScheduleId"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// When set to true you may use more of your alloted API rate-limit
