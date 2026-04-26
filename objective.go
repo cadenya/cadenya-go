@@ -673,9 +673,13 @@ func (r objectiveErrorJSON) RawJSON() string {
 }
 
 type ObjectiveEventData struct {
-	AssistantMessage       AssistantMessage       `json:"assistantMessage"`
-	ContextWindowCompacted ContextWindowCompacted `json:"contextWindowCompacted"`
-	Error                  ObjectiveError         `json:"error"`
+	AssistantMessage AssistantMessage `json:"assistantMessage"`
+	// ObjectiveCancelled is the terminal event written when an objective is cancelled.
+	// After this event, the objective is super-terminal: no further iterations,
+	// compaction, or continuation are permitted.
+	Cancelled              ObjectiveEventDataCancelled `json:"cancelled"`
+	ContextWindowCompacted ContextWindowCompacted      `json:"contextWindowCompacted"`
+	Error                  ObjectiveError              `json:"error"`
 	// MemoryRead is emitted each time the agent resolves a key against the memory
 	// stack and loads an entry. Lookups that miss (key not found in any layer) do not
 	// emit this event.
@@ -696,6 +700,7 @@ type ObjectiveEventData struct {
 // [ObjectiveEventData]
 type objectiveEventDataJSON struct {
 	AssistantMessage       apijson.Field
+	Cancelled              apijson.Field
 	ContextWindowCompacted apijson.Field
 	Error                  apijson.Field
 	MemoryRead             apijson.Field
@@ -717,6 +722,33 @@ func (r *ObjectiveEventData) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveEventDataJSON) RawJSON() string {
+	return r.raw
+}
+
+// ObjectiveCancelled is the terminal event written when an objective is cancelled.
+// After this event, the objective is super-terminal: no further iterations,
+// compaction, or continuation are permitted.
+type ObjectiveEventDataCancelled struct {
+	// Optional human-readable note recorded at cancel time. Today the workflow sets
+	// "Cancelled" but this field leaves room for richer reasons (e.g. "Cancelled by
+	// user", "Cancelled by schedule sweep", "Credit balance exhausted").
+	Message string                          `json:"message"`
+	JSON    objectiveEventDataCancelledJSON `json:"-"`
+}
+
+// objectiveEventDataCancelledJSON contains the JSON metadata for the struct
+// [ObjectiveEventDataCancelled]
+type objectiveEventDataCancelledJSON struct {
+	Message     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveEventDataCancelled) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEventDataCancelledJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -751,9 +783,10 @@ func (r objectiveEventInfoJSON) RawJSON() string {
 // ObjectiveInfo provides read-only aggregated statistics about an objective's
 // execution
 type ObjectiveInfo struct {
-	// List of callable tools assigned to the agent for this objective Includes tools,
-	// agents, and cadenya-provided tools from the agent's configuration
-	CallableTools []CallableTool `json:"callableTools"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	AgentVariation shared.ResourceMetadata `json:"agentVariation"`
 	// Profile represents a human user at the account level. Profiles are
 	// account-scoped resources that can be associated with multiple workspaces through
 	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
@@ -780,7 +813,8 @@ type ObjectiveInfo struct {
 
 // objectiveInfoJSON contains the JSON metadata for the struct [ObjectiveInfo]
 type objectiveInfoJSON struct {
-	CallableTools        apijson.Field
+	Agent                apijson.Field
+	AgentVariation       apijson.Field
 	CreatedBy            apijson.Field
 	EffectiveMemoryStack apijson.Field
 	TotalContextWindows  apijson.Field
