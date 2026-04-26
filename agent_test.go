@@ -170,12 +170,14 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		Prefix:      cadenya.F("prefix"),
-		Query:       cadenya.F("query"),
-		SortOrder:   cadenya.F("sortOrder"),
+		Cursor:                 cadenya.F("cursor"),
+		IncludeInfo:            cadenya.F(true),
+		Limit:                  cadenya.F(int64(0)),
+		Prefix:                 cadenya.F("prefix"),
+		Query:                  cadenya.F("query"),
+		SortOrder:              cadenya.F("sortOrder"),
+		Status:                 cadenya.F(cadenya.AgentListParamsStatusAgentStatusUnspecified),
+		VariationSelectionMode: cadenya.F(cadenya.AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified),
 	})
 	if err != nil {
 		var apierr *cadenya.Error

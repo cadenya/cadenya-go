@@ -393,6 +393,10 @@ type AgentListParams struct {
 	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
+	// Filter by agent publication status
+	Status param.Field[AgentListParamsStatus] `query:"status"`
+	// Filter by variation selection mode
+	VariationSelectionMode param.Field[AgentListParamsVariationSelectionMode] `query:"variationSelectionMode"`
 }
 
 // URLQuery serializes [AgentListParams]'s query parameters as `url.Values`.
@@ -401,4 +405,39 @@ func (r AgentListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+// Filter by agent publication status
+type AgentListParamsStatus string
+
+const (
+	AgentListParamsStatusAgentStatusUnspecified AgentListParamsStatus = "AGENT_STATUS_UNSPECIFIED"
+	AgentListParamsStatusAgentStatusDraft       AgentListParamsStatus = "AGENT_STATUS_DRAFT"
+	AgentListParamsStatusAgentStatusPublished   AgentListParamsStatus = "AGENT_STATUS_PUBLISHED"
+	AgentListParamsStatusAgentStatusArchived    AgentListParamsStatus = "AGENT_STATUS_ARCHIVED"
+)
+
+func (r AgentListParamsStatus) IsKnown() bool {
+	switch r {
+	case AgentListParamsStatusAgentStatusUnspecified, AgentListParamsStatusAgentStatusDraft, AgentListParamsStatusAgentStatusPublished, AgentListParamsStatusAgentStatusArchived:
+		return true
+	}
+	return false
+}
+
+// Filter by variation selection mode
+type AgentListParamsVariationSelectionMode string
+
+const (
+	AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_UNSPECIFIED"
+	AgentListParamsVariationSelectionModeVariationSelectionModeRandom      AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_RANDOM"
+	AgentListParamsVariationSelectionModeVariationSelectionModeWeighted    AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_WEIGHTED"
+)
+
+func (r AgentListParamsVariationSelectionMode) IsKnown() bool {
+	switch r {
+	case AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified, AgentListParamsVariationSelectionModeVariationSelectionModeRandom, AgentListParamsVariationSelectionModeVariationSelectionModeWeighted:
+		return true
+	}
+	return false
 }
