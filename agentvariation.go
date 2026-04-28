@@ -357,10 +357,14 @@ type AgentVariationSpec struct {
 	EpisodicMemoryTtl int64 `json:"episodicMemoryTtl"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig AgentVariationSpecModelConfig `json:"modelConfig"`
+	// ProgressiveDiscovery is used to indicate that the agent should automatically
+	// discover tools that are not explicitly assigned to it. Max tools is the maximum
+	// number of tools that can be discovered per search. Hints are optional hints for
+	// tool search. These are used in conjunction with the context-aware tool search
+	// and can help select the best tools for the task.
+	ProgressiveDiscovery AgentVariationSpecProgressiveDiscovery `json:"progressiveDiscovery"`
 	// The system prompt for this variation
 	Prompt string `json:"prompt"`
-	// Tool selection strategy
-	ToolSelection AgentVariationSpecToolSelection `json:"toolSelection"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
@@ -378,8 +382,8 @@ type agentVariationSpecJSON struct {
 	EnableEpisodicMemory apijson.Field
 	EpisodicMemoryTtl    apijson.Field
 	ModelConfig          apijson.Field
+	ProgressiveDiscovery apijson.Field
 	Prompt               apijson.Field
-	ToolSelection        apijson.Field
 	Weight               apijson.Field
 	raw                  string
 	ExtraFields          map[string]apijson.Field
@@ -413,10 +417,14 @@ type AgentVariationSpecParam struct {
 	EpisodicMemoryTtl param.Field[int64] `json:"episodicMemoryTtl"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig param.Field[AgentVariationSpecModelConfigParam] `json:"modelConfig"`
+	// ProgressiveDiscovery is used to indicate that the agent should automatically
+	// discover tools that are not explicitly assigned to it. Max tools is the maximum
+	// number of tools that can be discovered per search. Hints are optional hints for
+	// tool search. These are used in conjunction with the context-aware tool search
+	// and can help select the best tools for the task.
+	ProgressiveDiscovery param.Field[AgentVariationSpecProgressiveDiscoveryParam] `json:"progressiveDiscovery"`
 	// The system prompt for this variation
 	Prompt param.Field[string] `json:"prompt"`
-	// Tool selection strategy
-	ToolSelection param.Field[AgentVariationSpecToolSelectionParam] `json:"toolSelection"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
@@ -557,51 +565,58 @@ func (r AgentVariationSpecModelConfigParam) MarshalJSON() (data []byte, err erro
 	return apijson.MarshalRoot(r)
 }
 
-type AgentVariationSpecToolSelection struct {
-	// AssignedTools is used to indicate that the agent should only use the tools/tool
-	// sets that are explicitly assigned to it. Allow discovery is used when the agent
-	// thinks it needs to discover more tools.
-	AssignedTools ToolSelectionAssignedTools `json:"assignedTools"`
-	// AutoDiscovery is used to indicate that the agent should automatically discover
-	// tools that are not explicitly assigned to it. Max tools is the maximum number of
-	// tools that can be discovered. Hints are optional hints for tool search. These
-	// are used in conjunction with the context-aware tool search and can help select
-	// the best tools for the task.
-	AutoDiscovery ToolSelectionAutoDiscovery          `json:"autoDiscovery"`
-	JSON          agentVariationSpecToolSelectionJSON `json:"-"`
+// ProgressiveDiscovery is used to indicate that the agent should automatically
+// discover tools that are not explicitly assigned to it. Max tools is the maximum
+// number of tools that can be discovered per search. Hints are optional hints for
+// tool search. These are used in conjunction with the context-aware tool search
+// and can help select the best tools for the task.
+type AgentVariationSpecProgressiveDiscovery struct {
+	Hints    []string `json:"hints"`
+	MaxTools int64    `json:"maxTools"`
+	// Rerank Threshold is an optional value that instructs whether or not to run a
+	// search result through a embedding/reranker process which can improve performance
+	// and reduce context bloat when tools reach the configured threshold. If a tool
+	// match must exceed 0.8, for example, the tool very closely match the query the
+	// tool search performed.
+	RerankThreshold float64                                    `json:"rerankThreshold"`
+	JSON            agentVariationSpecProgressiveDiscoveryJSON `json:"-"`
 }
 
-// agentVariationSpecToolSelectionJSON contains the JSON metadata for the struct
-// [AgentVariationSpecToolSelection]
-type agentVariationSpecToolSelectionJSON struct {
-	AssignedTools apijson.Field
-	AutoDiscovery apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
+// agentVariationSpecProgressiveDiscoveryJSON contains the JSON metadata for the
+// struct [AgentVariationSpecProgressiveDiscovery]
+type agentVariationSpecProgressiveDiscoveryJSON struct {
+	Hints           apijson.Field
+	MaxTools        apijson.Field
+	RerankThreshold apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
 }
 
-func (r *AgentVariationSpecToolSelection) UnmarshalJSON(data []byte) (err error) {
+func (r *AgentVariationSpecProgressiveDiscovery) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r agentVariationSpecToolSelectionJSON) RawJSON() string {
+func (r agentVariationSpecProgressiveDiscoveryJSON) RawJSON() string {
 	return r.raw
 }
 
-type AgentVariationSpecToolSelectionParam struct {
-	// AssignedTools is used to indicate that the agent should only use the tools/tool
-	// sets that are explicitly assigned to it. Allow discovery is used when the agent
-	// thinks it needs to discover more tools.
-	AssignedTools param.Field[ToolSelectionAssignedToolsParam] `json:"assignedTools"`
-	// AutoDiscovery is used to indicate that the agent should automatically discover
-	// tools that are not explicitly assigned to it. Max tools is the maximum number of
-	// tools that can be discovered. Hints are optional hints for tool search. These
-	// are used in conjunction with the context-aware tool search and can help select
-	// the best tools for the task.
-	AutoDiscovery param.Field[ToolSelectionAutoDiscoveryParam] `json:"autoDiscovery"`
+// ProgressiveDiscovery is used to indicate that the agent should automatically
+// discover tools that are not explicitly assigned to it. Max tools is the maximum
+// number of tools that can be discovered per search. Hints are optional hints for
+// tool search. These are used in conjunction with the context-aware tool search
+// and can help select the best tools for the task.
+type AgentVariationSpecProgressiveDiscoveryParam struct {
+	Hints    param.Field[[]string] `json:"hints"`
+	MaxTools param.Field[int64]    `json:"maxTools"`
+	// Rerank Threshold is an optional value that instructs whether or not to run a
+	// search result through a embedding/reranker process which can improve performance
+	// and reduce context bloat when tools reach the configured threshold. If a tool
+	// match must exceed 0.8, for example, the tool very closely match the query the
+	// tool search performed.
+	RerankThreshold param.Field[float64] `json:"rerankThreshold"`
 }
 
-func (r AgentVariationSpecToolSelectionParam) MarshalJSON() (data []byte, err error) {
+func (r AgentVariationSpecProgressiveDiscoveryParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -678,83 +693,6 @@ type CompactionConfigToolResultClearingStrategyParam struct {
 }
 
 func (r CompactionConfigToolResultClearingStrategyParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// AssignedTools is used to indicate that the agent should only use the tools/tool
-// sets that are explicitly assigned to it. Allow discovery is used when the agent
-// thinks it needs to discover more tools.
-type ToolSelectionAssignedTools struct {
-	AllowDiscovery bool                           `json:"allowDiscovery"`
-	JSON           toolSelectionAssignedToolsJSON `json:"-"`
-}
-
-// toolSelectionAssignedToolsJSON contains the JSON metadata for the struct
-// [ToolSelectionAssignedTools]
-type toolSelectionAssignedToolsJSON struct {
-	AllowDiscovery apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *ToolSelectionAssignedTools) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolSelectionAssignedToolsJSON) RawJSON() string {
-	return r.raw
-}
-
-// AssignedTools is used to indicate that the agent should only use the tools/tool
-// sets that are explicitly assigned to it. Allow discovery is used when the agent
-// thinks it needs to discover more tools.
-type ToolSelectionAssignedToolsParam struct {
-	AllowDiscovery param.Field[bool] `json:"allowDiscovery"`
-}
-
-func (r ToolSelectionAssignedToolsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// AutoDiscovery is used to indicate that the agent should automatically discover
-// tools that are not explicitly assigned to it. Max tools is the maximum number of
-// tools that can be discovered. Hints are optional hints for tool search. These
-// are used in conjunction with the context-aware tool search and can help select
-// the best tools for the task.
-type ToolSelectionAutoDiscovery struct {
-	Hints    []string                       `json:"hints"`
-	MaxTools int64                          `json:"maxTools"`
-	JSON     toolSelectionAutoDiscoveryJSON `json:"-"`
-}
-
-// toolSelectionAutoDiscoveryJSON contains the JSON metadata for the struct
-// [ToolSelectionAutoDiscovery]
-type toolSelectionAutoDiscoveryJSON struct {
-	Hints       apijson.Field
-	MaxTools    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolSelectionAutoDiscovery) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolSelectionAutoDiscoveryJSON) RawJSON() string {
-	return r.raw
-}
-
-// AutoDiscovery is used to indicate that the agent should automatically discover
-// tools that are not explicitly assigned to it. Max tools is the maximum number of
-// tools that can be discovered. Hints are optional hints for tool search. These
-// are used in conjunction with the context-aware tool search and can help select
-// the best tools for the task.
-type ToolSelectionAutoDiscoveryParam struct {
-	Hints    param.Field[[]string] `json:"hints"`
-	MaxTools param.Field[int64]    `json:"maxTools"`
-}
-
-func (r ToolSelectionAutoDiscoveryParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -978,7 +916,8 @@ func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error
 }
 
 type AgentVariationAddMemoryLayerParams struct {
-	// Layer to attach. Accepts memlyr\_… or external_id:… form.
+	// Layer to attach. Accepts canonical memlyr\_… form or external_id:<value> form
+	// (see common.proto "Path-parameter ID resolution").
 	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
 	// Position in the stack. If omitted, server appends (max existing position + 1).
 	Position param.Field[int64] `json:"position"`
