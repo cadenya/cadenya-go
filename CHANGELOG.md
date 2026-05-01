@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.9.0 (2026-05-01)
+
+Full Changelog: [v0.8.0...v0.9.0](https://github.com/cadenya/cadenya-go/compare/v0.8.0...v0.9.0)
+
+### Features
+
+* **api:** api update ([d0719ed](https://github.com/cadenya/cadenya-go/commit/d0719ed9d02436aaff9b7e65fb36383b2628ebaf))
+* **api:** api update ([ab41a51](https://github.com/cadenya/cadenya-go/commit/ab41a51a3276b713171fe827beb7a38b9e7d4d4d))
+* **api:** api update ([c37a105](https://github.com/cadenya/cadenya-go/commit/c37a1050414c011f72979dfae77e7c5761a2118c))
+* **api:** api update ([d233870](https://github.com/cadenya/cadenya-go/commit/d2338703a9ed69e49c9d8ed3622177a16dce7d6b))
+* **api:** api update ([f7f5124](https://github.com/cadenya/cadenya-go/commit/f7f512421a95c8fbc4f386174b0b70e467a26866))
+* **api:** api update ([0d4e5fb](https://github.com/cadenya/cadenya-go/commit/0d4e5fbde6e8c1acc7c5af7c6a42fefd454172e8))
+* **api:** api update ([d662518](https://github.com/cadenya/cadenya-go/commit/d66251822fad0538e034112789e2a9c29ad25a94))
+* **api:** api update ([8a72b4b](https://github.com/cadenya/cadenya-go/commit/8a72b4b40f99af178695784def10a9edb835b4b9))
+* **api:** api update ([1ef8d65](https://github.com/cadenya/cadenya-go/commit/1ef8d6550818fda85fc1e2f19cfaa6fd14685c8e))
+* **api:** api update ([d44e379](https://github.com/cadenya/cadenya-go/commit/d44e379e2027a8ece462088b078eb6c619929bd9))
+* **api:** api update ([46bbbe0](https://github.com/cadenya/cadenya-go/commit/46bbbe0ee9fd40ffe5365354838f5e1cd3b78005))
+* **api:** api update ([2c6c1e6](https://github.com/cadenya/cadenya-go/commit/2c6c1e624d6f58ae45b535f279c4147808165806))
+* **go:** add default http client with timeout ([9c128a6](https://github.com/cadenya/cadenya-go/commit/9c128a6f42ddbf56bc7d40576be679c41d26e901))
+* support setting headers via env ([f0cb3dc](https://github.com/cadenya/cadenya-go/commit/f0cb3dc6ec45b95ec9138f4bb5bd33ac8e323eac))
+
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([86dbfec](https://github.com/cadenya/cadenya-go/commit/86dbfeccf5d0c31280a2c02b2c213cfcb102e54c))
+* **internal:** codegen related update ([d9570a9](https://github.com/cadenya/cadenya-go/commit/d9570a974defea5cb14159dd3a58d416af3cf034))
+* **internal:** more robust bootstrap script ([8a9980d](https://github.com/cadenya/cadenya-go/commit/8a9980d84e4139db2d4b9a97e85abe9b894cd5f5))
+
 ## 0.8.0 (2026-04-20)
 
 Full Changelog: [v0.7.0...v0.8.0](https://github.com/cadenya/cadenya-go/compare/v0.7.0...v0.8.0)
