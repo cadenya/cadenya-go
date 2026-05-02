@@ -30,6 +30,7 @@ func TestMemoryLayerNewWithOptionalParams(t *testing.T) {
 	_, err := client.MemoryLayers.New(context.TODO(), cadenya.MemoryLayerNewParams{
 		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 			Name:       cadenya.F("name"),
+			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",
@@ -91,6 +92,7 @@ func TestMemoryLayerUpdateWithOptionalParams(t *testing.T) {
 		cadenya.MemoryLayerUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -126,6 +128,7 @@ func TestMemoryLayerListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.MemoryLayers.List(context.TODO(), cadenya.MemoryLayerListParams{
+		BundleKey:   cadenya.F("bundleKey"),
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
 		Limit:       cadenya.F(int64(0)),

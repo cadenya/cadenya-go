@@ -30,6 +30,7 @@ func TestWorkspaceSecretNewWithOptionalParams(t *testing.T) {
 	_, err := client.WorkspaceSecrets.New(context.TODO(), cadenya.WorkspaceSecretNewParams{
 		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 			Name:       cadenya.F("name"),
+			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",
@@ -90,6 +91,7 @@ func TestWorkspaceSecretUpdateWithOptionalParams(t *testing.T) {
 		cadenya.WorkspaceSecretUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -124,6 +126,7 @@ func TestWorkspaceSecretListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceSecrets.List(context.TODO(), cadenya.WorkspaceSecretListParams{
+		BundleKey:   cadenya.F("bundleKey"),
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
 		Limit:       cadenya.F(int64(0)),
