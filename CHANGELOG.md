@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0 (2026-05-02)
+
+Full Changelog: [v0.9.0...v0.10.0](https://github.com/cadenya/cadenya-go/compare/v0.9.0...v0.10.0)
+
+### Features
+
+* **api:** api update ([acb94f8](https://github.com/cadenya/cadenya-go/commit/acb94f82ae3e132c86fb22753eb2e64f6ea3a5dc))
+* **api:** BulkWorkspaceResources service for declarative workspace configuration ([5580a91](https://github.com/cadenya/cadenya-go/commit/5580a91f9d7f0ba49330a9f1b8ed15e2ff36a665))
+
 ## 0.9.0 (2026-05-01)
 
 Full Changelog: [v0.8.0...v0.9.0](https://github.com/cadenya/cadenya-go/compare/v0.8.0...v0.9.0)
