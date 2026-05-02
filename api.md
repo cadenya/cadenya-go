@@ -448,3 +448,60 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#UnsafeUnwrapWebhookEvent">UnsafeUnwrapWebhookEvent</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#UnwrapWebhookEvent">UnwrapWebhookEvent</a>
+
+# BulkWorkspaceResources
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentEntryParam">AgentEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentScheduleEntryParam">AgentScheduleEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationEntryParam">AgentVariationEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyDataParam">BulkWorkspaceApplyDataParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#MemoryEntryItemParam">MemoryEntryItemParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#MemoryLayerEntryParam">MemoryLayerEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolEntryParam">ToolEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSetEntryParam">ToolSetEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationAssignmentEntryParam">VariationAssignmentEntryParam</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationMemoryLayerEntryParam">VariationMemoryLayerEntryParam</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentEntry">AgentEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentScheduleEntry">AgentScheduleEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AgentVariationEntry">AgentVariationEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApply">BulkWorkspaceApply</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyData">BulkWorkspaceApplyData</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyInfo">BulkWorkspaceApplyInfo</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyStatus">BulkWorkspaceApplyStatus</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#MemoryEntryItem">MemoryEntryItem</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#MemoryLayerEntry">MemoryLayerEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolEntry">ToolEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolSetEntry">ToolSetEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationAssignmentEntry">VariationAssignmentEntry</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#VariationMemoryLayerEntry">VariationMemoryLayerEntry</a>
+
+Methods:
+
+- <code title="get /v1/bulk_workspace_applies/{id}">client.BulkWorkspaceResources.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApply">BulkWorkspaceApply</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/bulk_workspace_applies">client.BulkWorkspaceResources.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceListParams">BulkWorkspaceResourceListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApply">BulkWorkspaceApply</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/bulk_workspace_applies">client.BulkWorkspaceResources.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceService.Apply">Apply</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceApplyParams">BulkWorkspaceResourceApplyParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApply">BulkWorkspaceApply</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+## Results
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResult">BulkWorkspaceApplyResult</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultData">BulkWorkspaceApplyResultData</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataAgentOutcome">BulkWorkspaceApplyResultDataAgentOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataAgentScheduleOutcome">BulkWorkspaceApplyResultDataAgentScheduleOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataAgentVariationOutcome">BulkWorkspaceApplyResultDataAgentVariationOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataMemoryEntryOutcome">BulkWorkspaceApplyResultDataMemoryEntryOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataMemoryLayerOutcome">BulkWorkspaceApplyResultDataMemoryLayerOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataToolOutcome">BulkWorkspaceApplyResultDataToolOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataToolSetOutcome">BulkWorkspaceApplyResultDataToolSetOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataVariationAssignmentOutcome">BulkWorkspaceApplyResultDataVariationAssignmentOutcome</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResultDataVariationMemoryLayerOutcome">BulkWorkspaceApplyResultDataVariationMemoryLayerOutcome</a>
+
+Methods:
+
+- <code title="get /v1/bulk_workspace_applies/{bulkWorkspaceApplyId}/results">client.BulkWorkspaceResources.Results.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceResultService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, bulkWorkspaceApplyID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceResourceResultListParams">BulkWorkspaceResourceResultListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#BulkWorkspaceApplyResult">BulkWorkspaceApplyResult</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>

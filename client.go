@@ -79,6 +79,14 @@ type Client struct {
 	// workspaces themselves, not resources within workspaces)
 	Workspaces *WorkspaceService
 	Webhooks   *WebhookService
+	// BulkWorkspaceResources is the workspace-scoped service that applies a
+	// declarative bundle of workspace resources (tool sets, memory layers, agents,
+	// variations, assignments, schedules) in one async operation. See
+	// docs/superpowers/specs/2026-05-02-bulk-workspace-resources-design.md for the
+	// full design.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	BulkWorkspaceResources *BulkWorkspaceResourceService
 }
 
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
@@ -127,6 +135,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r.WorkspaceSecrets = NewWorkspaceSecretService(opts...)
 	r.Workspaces = NewWorkspaceService(opts...)
 	r.Webhooks = NewWebhookService(opts...)
+	r.BulkWorkspaceResources = NewBulkWorkspaceResourceService(opts...)
 
 	return
 }
