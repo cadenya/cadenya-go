@@ -360,6 +360,8 @@ type MemoryLayerEntryListParams struct {
 	// Filter by key prefix (e.g., "skills/postmortem/" to list all entries under that
 	// hierarchy). Matches against the entry's key, not its name.
 	Prefix param.Field[string] `query:"prefix"`
+	// Free-form search query
+	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
 }

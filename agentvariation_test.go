@@ -59,16 +59,12 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 					ModelID:     cadenya.F("modelId"),
 					Temperature: cadenya.F(0.000000),
 				}),
-				Prompt: cadenya.F("prompt"),
-				ToolSelection: cadenya.F(cadenya.AgentVariationSpecToolSelectionParam{
-					AssignedTools: cadenya.F(cadenya.ToolSelectionAssignedToolsParam{
-						AllowDiscovery: cadenya.F(true),
-					}),
-					AutoDiscovery: cadenya.F(cadenya.ToolSelectionAutoDiscoveryParam{
-						Hints:    cadenya.F([]string{"string"}),
-						MaxTools: cadenya.F(int64(0)),
-					}),
+				ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
+					Hints:           cadenya.F([]string{"string"}),
+					MaxTools:        cadenya.F(int64(0)),
+					RerankThreshold: cadenya.F(0.000000),
 				}),
+				Prompt: cadenya.F("prompt"),
 				Weight: cadenya.F(int64(0)),
 			}),
 		},
@@ -155,16 +151,12 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 					ModelID:     cadenya.F("modelId"),
 					Temperature: cadenya.F(0.000000),
 				}),
-				Prompt: cadenya.F("prompt"),
-				ToolSelection: cadenya.F(cadenya.AgentVariationSpecToolSelectionParam{
-					AssignedTools: cadenya.F(cadenya.ToolSelectionAssignedToolsParam{
-						AllowDiscovery: cadenya.F(true),
-					}),
-					AutoDiscovery: cadenya.F(cadenya.ToolSelectionAutoDiscoveryParam{
-						Hints:    cadenya.F([]string{"string"}),
-						MaxTools: cadenya.F(int64(0)),
-					}),
+				ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
+					Hints:           cadenya.F([]string{"string"}),
+					MaxTools:        cadenya.F(int64(0)),
+					RerankThreshold: cadenya.F(0.000000),
 				}),
+				Prompt: cadenya.F("prompt"),
 				Weight: cadenya.F(int64(0)),
 			}),
 			UpdateMask: cadenya.F("updateMask"),

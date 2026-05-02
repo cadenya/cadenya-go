@@ -96,6 +96,7 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.List(context.TODO(), cadenya.ObjectiveListParams{
 		AgentID:           cadenya.F("agentId"),
+		AgentScheduleID:   cadenya.F("agentScheduleId"),
 		Cursor:            cadenya.F("cursor"),
 		IncludeInfo:       cadenya.F(true),
 		Limit:             cadenya.F(int64(0)),

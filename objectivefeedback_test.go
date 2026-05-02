@@ -11,6 +11,7 @@ import (
 	"github.com/cadenya/cadenya-go"
 	"github.com/cadenya/cadenya-go/internal/testutil"
 	"github.com/cadenya/cadenya-go/option"
+	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
@@ -31,11 +32,14 @@ func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
 		"objectiveId",
 		cadenya.ObjectiveFeedbackNewParams{
 			Data: cadenya.F(cadenya.ObjectiveFeedbackDataParam{
-				Attributes: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
 				Comment: cadenya.F("comment"),
 				Score:   cadenya.F(0.000000),
+			}),
+			Metadata: cadenya.F(shared.CreateOperationMetadataParam{
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
+					"foo": "string",
+				}),
 			}),
 		},
 	)

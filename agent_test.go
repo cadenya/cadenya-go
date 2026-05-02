@@ -39,6 +39,7 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 			Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 			VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 			Description:            cadenya.F("description"),
+			InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
 			WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 		}),
 		DefaultVariation: cadenya.F(cadenya.AgentNewParamsDefaultVariation{
@@ -70,16 +71,12 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 					ModelID:     cadenya.F("modelId"),
 					Temperature: cadenya.F(0.000000),
 				}),
-				Prompt: cadenya.F("prompt"),
-				ToolSelection: cadenya.F(cadenya.AgentVariationSpecToolSelectionParam{
-					AssignedTools: cadenya.F(cadenya.ToolSelectionAssignedToolsParam{
-						AllowDiscovery: cadenya.F(true),
-					}),
-					AutoDiscovery: cadenya.F(cadenya.ToolSelectionAutoDiscoveryParam{
-						Hints:    cadenya.F([]string{"string"}),
-						MaxTools: cadenya.F(int64(0)),
-					}),
+				ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
+					Hints:           cadenya.F([]string{"string"}),
+					MaxTools:        cadenya.F(int64(0)),
+					RerankThreshold: cadenya.F(0.000000),
 				}),
+				Prompt: cadenya.F("prompt"),
 				Weight: cadenya.F(int64(0)),
 			}),
 		}),
@@ -144,6 +141,7 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 				Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 				Description:            cadenya.F("description"),
+				InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
 				WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
@@ -172,11 +170,14 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		Prefix:      cadenya.F("prefix"),
-		SortOrder:   cadenya.F("sortOrder"),
+		Cursor:                 cadenya.F("cursor"),
+		IncludeInfo:            cadenya.F(true),
+		Limit:                  cadenya.F(int64(0)),
+		Prefix:                 cadenya.F("prefix"),
+		Query:                  cadenya.F("query"),
+		SortOrder:              cadenya.F("sortOrder"),
+		Status:                 cadenya.F(cadenya.AgentListParamsStatusAgentStatusUnspecified),
+		VariationSelectionMode: cadenya.F(cadenya.AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified),
 	})
 	if err != nil {
 		var apierr *cadenya.Error

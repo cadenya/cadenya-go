@@ -38,8 +38,20 @@ type AgentService struct {
 	// operations are implicitly scoped to the workspace determined by the JWT token.
 	//
 	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Feedback *AgentFeedbackService
+	// AgentService manages AI agents at the WORKSPACE level. Agents are
+	// workspace-scoped resources that define AI behavior and tool access. All
+	// operations are implicitly scoped to the workspace determined by the JWT token.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	WebhookDeliveries *AgentWebhookDeliveryService
 	Variations        *AgentVariationService
+	// AgentScheduleService manages recurring schedules attached to agents. Schedules
+	// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
+	// operations are implicitly scoped to the workspace determined by the JWT token.
+	//
+	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	Schedules *AgentScheduleService
 }
 
 // NewAgentService generates a new service that applies the given options to each
@@ -48,8 +60,10 @@ type AgentService struct {
 func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 	r = &AgentService{}
 	r.Options = opts
+	r.Feedback = NewAgentFeedbackService(opts...)
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
 	r.Variations = NewAgentVariationService(opts...)
+	r.Schedules = NewAgentScheduleService(opts...)
 	return
 }
 
@@ -211,6 +225,12 @@ type AgentSpec struct {
 	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description string `json:"description"`
+	// InputDataSchema is used for enforcing a data input when objectives are created.
+	// This is valuable when using liquid formatting in agent variation prompts. Input
+	// data schema is also valuable when using an agent as a sub-agent, as the schema
+	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
+	// will be loaded with a simple "prompt" free text string as its schema.
+	InputDataSchema interface{} `json:"inputDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL string        `json:"webhookEventsUrl"`
 	JSON             agentSpecJSON `json:"-"`
@@ -221,6 +241,7 @@ type agentSpecJSON struct {
 	Status                 apijson.Field
 	VariationSelectionMode apijson.Field
 	Description            apijson.Field
+	InputDataSchema        apijson.Field
 	WebhookEventsURL       apijson.Field
 	raw                    string
 	ExtraFields            map[string]apijson.Field
@@ -279,6 +300,12 @@ type AgentSpecParam struct {
 	VariationSelectionMode param.Field[AgentSpecVariationSelectionMode] `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description param.Field[string] `json:"description"`
+	// InputDataSchema is used for enforcing a data input when objectives are created.
+	// This is valuable when using liquid formatting in agent variation prompts. Input
+	// data schema is also valuable when using an agent as a sub-agent, as the schema
+	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
+	// will be loaded with a simple "prompt" free text string as its schema.
+	InputDataSchema param.Field[interface{}] `json:"inputDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL param.Field[string] `json:"webhookEventsUrl"`
 }
@@ -362,8 +389,14 @@ type AgentListParams struct {
 	Limit param.Field[int64] `query:"limit"`
 	// Filter expression (query param: prefix)
 	Prefix param.Field[string] `query:"prefix"`
+	// Free-form search query
+	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
+	// Filter by agent publication status
+	Status param.Field[AgentListParamsStatus] `query:"status"`
+	// Filter by variation selection mode
+	VariationSelectionMode param.Field[AgentListParamsVariationSelectionMode] `query:"variationSelectionMode"`
 }
 
 // URLQuery serializes [AgentListParams]'s query parameters as `url.Values`.
@@ -372,4 +405,39 @@ func (r AgentListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+// Filter by agent publication status
+type AgentListParamsStatus string
+
+const (
+	AgentListParamsStatusAgentStatusUnspecified AgentListParamsStatus = "AGENT_STATUS_UNSPECIFIED"
+	AgentListParamsStatusAgentStatusDraft       AgentListParamsStatus = "AGENT_STATUS_DRAFT"
+	AgentListParamsStatusAgentStatusPublished   AgentListParamsStatus = "AGENT_STATUS_PUBLISHED"
+	AgentListParamsStatusAgentStatusArchived    AgentListParamsStatus = "AGENT_STATUS_ARCHIVED"
+)
+
+func (r AgentListParamsStatus) IsKnown() bool {
+	switch r {
+	case AgentListParamsStatusAgentStatusUnspecified, AgentListParamsStatusAgentStatusDraft, AgentListParamsStatusAgentStatusPublished, AgentListParamsStatusAgentStatusArchived:
+		return true
+	}
+	return false
+}
+
+// Filter by variation selection mode
+type AgentListParamsVariationSelectionMode string
+
+const (
+	AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_UNSPECIFIED"
+	AgentListParamsVariationSelectionModeVariationSelectionModeRandom      AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_RANDOM"
+	AgentListParamsVariationSelectionModeVariationSelectionModeWeighted    AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_WEIGHTED"
+)
+
+func (r AgentListParamsVariationSelectionMode) IsKnown() bool {
+	switch r {
+	case AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified, AgentListParamsVariationSelectionModeVariationSelectionModeRandom, AgentListParamsVariationSelectionModeVariationSelectionModeWeighted:
+		return true
+	}
+	return false
 }

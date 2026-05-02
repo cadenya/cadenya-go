@@ -182,11 +182,15 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"toolSetId",
 		cadenya.ToolSetToolListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			SortOrder:   cadenya.F("sortOrder"),
+			Cursor:           cadenya.F("cursor"),
+			IncludeInfo:      cadenya.F(true),
+			Limit:            cadenya.F(int64(0)),
+			Names:            cadenya.F([]string{"string"}),
+			Prefix:           cadenya.F("prefix"),
+			Query:            cadenya.F("query"),
+			RequiresApproval: cadenya.F(true),
+			SortOrder:        cadenya.F("sortOrder"),
+			Statuses:         cadenya.F([]cadenya.ToolSetToolListParamsStatus{cadenya.ToolSetToolListParamsStatusToolStatusUnspecified}),
 		},
 	)
 	if err != nil {

@@ -329,13 +329,13 @@ type ToolSpecStatus string
 const (
 	ToolSpecStatusToolStatusUnspecified ToolSpecStatus = "TOOL_STATUS_UNSPECIFIED"
 	ToolSpecStatusToolStatusAvailable   ToolSpecStatus = "TOOL_STATUS_AVAILABLE"
-	ToolSpecStatusToolStatusFiltered    ToolSpecStatus = "TOOL_STATUS_FILTERED"
+	ToolSpecStatusToolStatusOmitted     ToolSpecStatus = "TOOL_STATUS_OMITTED"
 	ToolSpecStatusToolStatusArchived    ToolSpecStatus = "TOOL_STATUS_ARCHIVED"
 )
 
 func (r ToolSpecStatus) IsKnown() bool {
 	switch r {
-	case ToolSpecStatusToolStatusUnspecified, ToolSpecStatusToolStatusAvailable, ToolSpecStatusToolStatusFiltered, ToolSpecStatusToolStatusArchived:
+	case ToolSpecStatusToolStatusUnspecified, ToolSpecStatusToolStatusAvailable, ToolSpecStatusToolStatusOmitted, ToolSpecStatusToolStatusArchived:
 		return true
 	}
 	return false
@@ -425,10 +425,19 @@ type ToolSetToolListParams struct {
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
+	// Filter by tool name (exact match). Multiple values are OR'd together.
+	Names param.Field[[]string] `query:"names"`
 	// Filter expression (query param: prefix)
 	Prefix param.Field[string] `query:"prefix"`
+	// Free-form search query
+	Query param.Field[string] `query:"query"`
+	// Filter by approval requirement. Omitted = no filter; true = only tools requiring
+	// approval; false = only tools not requiring approval.
+	RequiresApproval param.Field[bool] `query:"requiresApproval"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
+	// Filter by tool status. Multiple values are OR'd together.
+	Statuses param.Field[[]ToolSetToolListParamsStatus] `query:"statuses"`
 }
 
 // URLQuery serializes [ToolSetToolListParams]'s query parameters as `url.Values`.
@@ -437,4 +446,21 @@ func (r ToolSetToolListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type ToolSetToolListParamsStatus string
+
+const (
+	ToolSetToolListParamsStatusToolStatusUnspecified ToolSetToolListParamsStatus = "TOOL_STATUS_UNSPECIFIED"
+	ToolSetToolListParamsStatusToolStatusAvailable   ToolSetToolListParamsStatus = "TOOL_STATUS_AVAILABLE"
+	ToolSetToolListParamsStatusToolStatusOmitted     ToolSetToolListParamsStatus = "TOOL_STATUS_OMITTED"
+	ToolSetToolListParamsStatusToolStatusArchived    ToolSetToolListParamsStatus = "TOOL_STATUS_ARCHIVED"
+)
+
+func (r ToolSetToolListParamsStatus) IsKnown() bool {
+	switch r {
+	case ToolSetToolListParamsStatusToolStatusUnspecified, ToolSetToolListParamsStatusToolStatusAvailable, ToolSetToolListParamsStatusToolStatusOmitted, ToolSetToolListParamsStatusToolStatusArchived:
+		return true
+	}
+	return false
 }
