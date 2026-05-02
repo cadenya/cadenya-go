@@ -30,6 +30,7 @@ func TestToolSetNewWithOptionalParams(t *testing.T) {
 	_, err := client.ToolSets.New(context.TODO(), cadenya.ToolSetNewParams{
 		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 			Name:       cadenya.F("name"),
+			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",
@@ -149,6 +150,7 @@ func TestToolSetUpdateWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -242,6 +244,7 @@ func TestToolSetListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.ToolSets.List(context.TODO(), cadenya.ToolSetListParams{
+		BundleKey:   cadenya.F("bundleKey"),
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
 		Limit:       cadenya.F(int64(0)),

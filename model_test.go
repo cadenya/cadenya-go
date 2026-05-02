@@ -50,6 +50,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Models.List(context.TODO(), cadenya.ModelListParams{
+		BundleKey: cadenya.F("bundleKey"),
 		Cursor:    cadenya.F("cursor"),
 		Limit:     cadenya.F(int64(0)),
 		Prefix:    cadenya.F("prefix"),

@@ -50,11 +50,11 @@ func TestBulkWorkspaceResourceListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.BulkWorkspaceResources.List(context.TODO(), cadenya.BulkWorkspaceResourceListParams{
-		Cursor:       cadenya.F("cursor"),
-		Limit:        cadenya.F(int64(0)),
-		ManagedByKey: cadenya.F("managedByKey"),
-		SortOrder:    cadenya.F("sortOrder"),
-		State:        cadenya.F(cadenya.BulkWorkspaceResourceListParamsStateStateUnspecified),
+		BundleKey: cadenya.F("bundleKey"),
+		Cursor:    cadenya.F("cursor"),
+		Limit:     cadenya.F(int64(0)),
+		SortOrder: cadenya.F("sortOrder"),
+		State:     cadenya.F(cadenya.BulkWorkspaceResourceListParamsStateStateUnspecified),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -80,7 +80,7 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.BulkWorkspaceResources.Apply(context.TODO(), cadenya.BulkWorkspaceResourceApplyParams{
 		Data: cadenya.F(cadenya.BulkWorkspaceApplyDataParam{
-			ManagedByKey: cadenya.F("managedByKey"),
+			BundleKey: cadenya.F("bundleKey"),
 			Agents: cadenya.F(map[string]cadenya.AgentEntryParam{
 				"foo": {
 					Name: cadenya.F("name"),

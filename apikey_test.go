@@ -30,6 +30,7 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 	_, err := client.APIKeys.New(context.TODO(), cadenya.APIKeyNewParams{
 		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 			Name:       cadenya.F("name"),
+			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",
@@ -90,6 +91,7 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 		cadenya.APIKeyUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -124,6 +126,7 @@ func TestAPIKeyListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.List(context.TODO(), cadenya.APIKeyListParams{
+		BundleKey:   cadenya.F("bundleKey"),
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
 		Limit:       cadenya.F(int64(0)),

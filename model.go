@@ -173,6 +173,8 @@ func (r ModelSpecStatus) IsKnown() bool {
 }
 
 type ModelListParams struct {
+	// Filter by bundle_key — return only resources owned by this bundle.
+	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// Maximum number of results to return

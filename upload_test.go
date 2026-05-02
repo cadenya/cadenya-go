@@ -30,6 +30,7 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 	_, err := client.Uploads.New(context.TODO(), cadenya.UploadNewParams{
 		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 			Name:       cadenya.F("name"),
+			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",

@@ -33,6 +33,7 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 		cadenya.AgentVariationNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -125,6 +126,7 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 		cadenya.AgentVariationUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -188,6 +190,7 @@ func TestAgentVariationListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agentId",
 		cadenya.AgentVariationListParams{
+			BundleKey:   cadenya.F("bundleKey"),
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),
