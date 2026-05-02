@@ -268,12 +268,11 @@ func (r bulkWorkspaceApplyJSON) RawJSON() string {
 }
 
 type BulkWorkspaceApplyData struct {
-	// Required. Bundle ownership key. Resources created or updated by an Apply with
-	// this key are tagged with the reserved label
-	// `bulk.cadenya.com/managed-by=<managed_by_key>`; on subsequent applies with the
-	// same key, resources currently bearing the label but absent from the spec are
-	// soft-deleted.
-	ManagedByKey string `json:"managedByKey" api:"required"`
+	// Required. Bundle ownership key. Resources created or updated by an Apply have
+	// their `metadata.bundle_key` set to this value. On subsequent applies with the
+	// same bundle_key, resources currently bearing this bundle_key but absent from the
+	// spec are soft-deleted.
+	BundleKey string `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents map[string]AgentEntry `json:"agents"`
 	// Memory layers to upsert, keyed by external_id.
@@ -291,7 +290,7 @@ type BulkWorkspaceApplyData struct {
 // bulkWorkspaceApplyDataJSON contains the JSON metadata for the struct
 // [BulkWorkspaceApplyData]
 type bulkWorkspaceApplyDataJSON struct {
-	ManagedByKey apijson.Field
+	BundleKey    apijson.Field
 	Agents       apijson.Field
 	MemoryLayers apijson.Field
 	SourceURL    apijson.Field
@@ -309,12 +308,11 @@ func (r bulkWorkspaceApplyDataJSON) RawJSON() string {
 }
 
 type BulkWorkspaceApplyDataParam struct {
-	// Required. Bundle ownership key. Resources created or updated by an Apply with
-	// this key are tagged with the reserved label
-	// `bulk.cadenya.com/managed-by=<managed_by_key>`; on subsequent applies with the
-	// same key, resources currently bearing the label but absent from the spec are
-	// soft-deleted.
-	ManagedByKey param.Field[string] `json:"managedByKey" api:"required"`
+	// Required. Bundle ownership key. Resources created or updated by an Apply have
+	// their `metadata.bundle_key` set to this value. On subsequent applies with the
+	// same bundle_key, resources currently bearing this bundle_key but absent from the
+	// spec are soft-deleted.
+	BundleKey param.Field[string] `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents param.Field[map[string]AgentEntryParam] `json:"agents"`
 	// Memory layers to upsert, keyed by external_id.
@@ -707,12 +705,12 @@ func (r VariationMemoryLayerEntryParam) MarshalJSON() (data []byte, err error) {
 }
 
 type BulkWorkspaceResourceListParams struct {
+	// Filter by bundle_key — list every apply for a given bundle.
+	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
-	// Filter by managed_by_key — list every apply for a given bundle.
-	ManagedByKey param.Field[string] `query:"managedByKey"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
 	// Filter by lifecycle state.

@@ -419,6 +419,8 @@ func (r ToolSetToolUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type ToolSetToolListParams struct {
+	// Filter by bundle_key — return only resources owned by this bundle.
+	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// When set to true you may use more of your alloted API rate-limit

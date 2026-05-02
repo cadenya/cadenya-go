@@ -33,6 +33,7 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 		cadenya.AgentScheduleNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -143,6 +144,7 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 		cadenya.AgentScheduleUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -224,6 +226,7 @@ func TestAgentScheduleListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agentId",
 		cadenya.AgentScheduleListParams{
+			BundleKey:   cadenya.F("bundleKey"),
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),
