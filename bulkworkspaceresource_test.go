@@ -197,6 +197,7 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 					}),
 				},
 			}),
+			AutomaticallyPublishAgents: cadenya.F(true),
 			MemoryLayers: cadenya.F(map[string]cadenya.MemoryLayerEntryParam{
 				"foo": {
 					Name: cadenya.F("name"),
