@@ -275,6 +275,15 @@ type BulkWorkspaceApplyData struct {
 	BundleKey string `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents map[string]AgentEntry `json:"agents"`
+	// When true, every agent created or updated by this Apply has its status forced to
+	// AGENT_STATUS_PUBLISHED, regardless of the status declared in the agent's
+	// AgentSpec. Useful when the bundle represents a production configuration and you
+	// want all of its agents live without setting status: AGENT_STATUS_PUBLISHED on
+	// each entry.
+	//
+	// Default false: each agent's AgentSpec.status controls (which is
+	// AGENT_STATUS_DRAFT on create when unspecified).
+	AutomaticallyPublishAgents bool `json:"automaticallyPublishAgents"`
 	// Memory layers to upsert, keyed by external_id.
 	MemoryLayers map[string]MemoryLayerEntry `json:"memoryLayers"`
 	// Optional URL pointing to the source of this apply (GitHub PR, Jenkins build,
@@ -290,13 +299,14 @@ type BulkWorkspaceApplyData struct {
 // bulkWorkspaceApplyDataJSON contains the JSON metadata for the struct
 // [BulkWorkspaceApplyData]
 type bulkWorkspaceApplyDataJSON struct {
-	BundleKey    apijson.Field
-	Agents       apijson.Field
-	MemoryLayers apijson.Field
-	SourceURL    apijson.Field
-	ToolSets     apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
+	BundleKey                  apijson.Field
+	Agents                     apijson.Field
+	AutomaticallyPublishAgents apijson.Field
+	MemoryLayers               apijson.Field
+	SourceURL                  apijson.Field
+	ToolSets                   apijson.Field
+	raw                        string
+	ExtraFields                map[string]apijson.Field
 }
 
 func (r *BulkWorkspaceApplyData) UnmarshalJSON(data []byte) (err error) {
@@ -315,6 +325,15 @@ type BulkWorkspaceApplyDataParam struct {
 	BundleKey param.Field[string] `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents param.Field[map[string]AgentEntryParam] `json:"agents"`
+	// When true, every agent created or updated by this Apply has its status forced to
+	// AGENT_STATUS_PUBLISHED, regardless of the status declared in the agent's
+	// AgentSpec. Useful when the bundle represents a production configuration and you
+	// want all of its agents live without setting status: AGENT_STATUS_PUBLISHED on
+	// each entry.
+	//
+	// Default false: each agent's AgentSpec.status controls (which is
+	// AGENT_STATUS_DRAFT on create when unspecified).
+	AutomaticallyPublishAgents param.Field[bool] `json:"automaticallyPublishAgents"`
 	// Memory layers to upsert, keyed by external_id.
 	MemoryLayers param.Field[map[string]MemoryLayerEntryParam] `json:"memoryLayers"`
 	// Optional URL pointing to the source of this apply (GitHub PR, Jenkins build,
