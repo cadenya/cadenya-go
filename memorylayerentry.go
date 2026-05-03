@@ -50,21 +50,29 @@ func NewMemoryLayerEntryService(opts ...option.RequestOption) (r *MemoryLayerEnt
 
 // Creates a new entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) New(ctx context.Context, memoryLayerID string, body MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) New(ctx context.Context, workspaceID string, memoryLayerID string, body MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries", memoryLayerID)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a memory entry by ID from a memory layer. Returns the detail view,
 // including the content body.
-func (r *MemoryLayerEntryService) Get(ctx context.Context, memoryLayerID string, id string, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) Get(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
@@ -73,15 +81,19 @@ func (r *MemoryLayerEntryService) Get(ctx context.Context, memoryLayerID string,
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a memory entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) Update(ctx context.Context, memoryLayerID string, id string, body MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) Update(ctx context.Context, workspaceID string, memoryLayerID string, id string, body MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
@@ -90,21 +102,25 @@ func (r *MemoryLayerEntryService) Update(ctx context.Context, memoryLayerID stri
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) List(ctx context.Context, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
+func (r *MemoryLayerEntryService) List(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries", memoryLayerID)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -118,14 +134,18 @@ func (r *MemoryLayerEntryService) List(ctx context.Context, memoryLayerID string
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, memoryLayerID, query, opts...))
+func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, memoryLayerID, query, opts...))
 }
 
 // Deletes a memory entry from a memory layer
-func (r *MemoryLayerEntryService) Delete(ctx context.Context, memoryLayerID string, id string, opts ...option.RequestOption) (err error) {
+func (r *MemoryLayerEntryService) Delete(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return err
@@ -134,7 +154,7 @@ func (r *MemoryLayerEntryService) Delete(ctx context.Context, memoryLayerID stri
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }

@@ -39,15 +39,19 @@ func NewObjectiveToolCallService(opts ...option.RequestOption) (r *ObjectiveTool
 }
 
 // Lists all tool calls for an objective
-func (r *ObjectiveToolCallService) List(ctx context.Context, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveToolCall], err error) {
+func (r *ObjectiveToolCallService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveToolCall], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tool_calls", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -61,14 +65,18 @@ func (r *ObjectiveToolCallService) List(ctx context.Context, objectiveID string,
 }
 
 // Lists all tool calls for an objective
-func (r *ObjectiveToolCallService) ListAutoPaging(ctx context.Context, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveToolCall] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, query, opts...))
+func (r *ObjectiveToolCallService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveToolCall] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // When an agent attempts to use a tool that requires approval, use this endpoint
 // to mark it as approved.
-func (r *ObjectiveToolCallService) Approve(ctx context.Context, objectiveID string, toolCallID string, body ObjectiveToolCallApproveParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+func (r *ObjectiveToolCallService) Approve(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallApproveParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
@@ -77,7 +85,7 @@ func (r *ObjectiveToolCallService) Approve(ctx context.Context, objectiveID stri
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tool_calls/%s/approve", objectiveID, toolCallID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s/approve", workspaceID, objectiveID, toolCallID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }
@@ -85,8 +93,12 @@ func (r *ObjectiveToolCallService) Approve(ctx context.Context, objectiveID stri
 // When an agent attempts to use a tool that requires approval, use this endpoint
 // to mark it as denied. Use a memo to steer the LLM to a different decision or
 // usage of the tool.
-func (r *ObjectiveToolCallService) Deny(ctx context.Context, objectiveID string, toolCallID string, body ObjectiveToolCallDenyParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallDenyParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
@@ -95,7 +107,7 @@ func (r *ObjectiveToolCallService) Deny(ctx context.Context, objectiveID string,
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tool_calls/%s/deny", objectiveID, toolCallID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s/deny", workspaceID, objectiveID, toolCallID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }

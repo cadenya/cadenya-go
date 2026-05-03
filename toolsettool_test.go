@@ -29,6 +29,7 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.New(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		cadenya.ToolSetToolNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
@@ -91,6 +92,7 @@ func TestToolSetToolGet(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Get(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		"id",
 	)
@@ -118,6 +120,7 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Update(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		"id",
 		cadenya.ToolSetToolUpdateParams{
@@ -182,6 +185,7 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.List(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		cadenya.ToolSetToolListParams{
 			BundleKey:        cadenya.F("bundleKey"),
@@ -220,6 +224,7 @@ func TestToolSetToolDelete(t *testing.T) {
 	)
 	err := client.ToolSets.Tools.Delete(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		"id",
 	)

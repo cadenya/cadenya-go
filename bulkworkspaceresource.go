@@ -57,23 +57,31 @@ func NewBulkWorkspaceResourceService(opts ...option.RequestOption) (r *BulkWorks
 }
 
 // Retrieves a bulk workspace apply operation by ID.
-func (r *BulkWorkspaceResourceService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *BulkWorkspaceApply, err error) {
+func (r *BulkWorkspaceResourceService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *BulkWorkspaceApply, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/bulk_workspace_applies/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/bulk_workspace_applies/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists past and in-flight bulk workspace apply operations in the workspace.
-func (r *BulkWorkspaceResourceService) List(ctx context.Context, query BulkWorkspaceResourceListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[BulkWorkspaceApply], err error) {
+func (r *BulkWorkspaceResourceService) List(ctx context.Context, workspaceID string, query BulkWorkspaceResourceListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[BulkWorkspaceApply], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/bulk_workspace_applies"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/bulk_workspace_applies", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -87,15 +95,19 @@ func (r *BulkWorkspaceResourceService) List(ctx context.Context, query BulkWorks
 }
 
 // Lists past and in-flight bulk workspace apply operations in the workspace.
-func (r *BulkWorkspaceResourceService) ListAutoPaging(ctx context.Context, query BulkWorkspaceResourceListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[BulkWorkspaceApply] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *BulkWorkspaceResourceService) ListAutoPaging(ctx context.Context, workspaceID string, query BulkWorkspaceResourceListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[BulkWorkspaceApply] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Asynchronously applies a declarative bundle of workspace resources. Returns the
 // operation immediately in PENDING; clients poll Get to track progress.
-func (r *BulkWorkspaceResourceService) Apply(ctx context.Context, body BulkWorkspaceResourceApplyParams, opts ...option.RequestOption) (res *BulkWorkspaceApply, err error) {
+func (r *BulkWorkspaceResourceService) Apply(ctx context.Context, workspaceID string, body BulkWorkspaceResourceApplyParams, opts ...option.RequestOption) (res *BulkWorkspaceApply, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/bulk_workspace_applies"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/bulk_workspace_applies", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

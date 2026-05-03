@@ -40,43 +40,59 @@ func NewWorkspaceSecretService(opts ...option.RequestOption) (r *WorkspaceSecret
 }
 
 // Creates a new workspace secret in the workspace
-func (r *WorkspaceSecretService) New(ctx context.Context, body WorkspaceSecretNewParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+func (r *WorkspaceSecretService) New(ctx context.Context, workspaceID string, body WorkspaceSecretNewParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/workspace_secrets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a workspace secret by ID from the workspace
-func (r *WorkspaceSecretService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+func (r *WorkspaceSecretService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspace_secrets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a workspace secret in the workspace
-func (r *WorkspaceSecretService) Update(ctx context.Context, id string, body WorkspaceSecretUpdateParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+func (r *WorkspaceSecretService) Update(ctx context.Context, workspaceID string, id string, body WorkspaceSecretUpdateParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspace_secrets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all workspace secrets in the workspace
-func (r *WorkspaceSecretService) List(ctx context.Context, query WorkspaceSecretListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WorkspaceSecret], err error) {
+func (r *WorkspaceSecretService) List(ctx context.Context, workspaceID string, query WorkspaceSecretListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WorkspaceSecret], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/workspace_secrets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -90,19 +106,23 @@ func (r *WorkspaceSecretService) List(ctx context.Context, query WorkspaceSecret
 }
 
 // Lists all workspace secrets in the workspace
-func (r *WorkspaceSecretService) ListAutoPaging(ctx context.Context, query WorkspaceSecretListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WorkspaceSecret] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *WorkspaceSecretService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSecretListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WorkspaceSecret] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes a workspace secret from the workspace
-func (r *WorkspaceSecretService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *WorkspaceSecretService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/workspace_secrets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }

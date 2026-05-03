@@ -47,31 +47,43 @@ func NewObjectiveService(opts ...option.RequestOption) (r *ObjectiveService) {
 }
 
 // Creates a new objective in the workspace
-func (r *ObjectiveService) New(ctx context.Context, body ObjectiveNewParams, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) New(ctx context.Context, workspaceID string, body ObjectiveNewParams, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/objectives"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves an objective by ID from the workspace
-func (r *ObjectiveService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all objectives in the workspace
-func (r *ObjectiveService) List(ctx context.Context, query ObjectiveListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Objective], err error) {
+func (r *ObjectiveService) List(ctx context.Context, workspaceID string, query ObjectiveListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Objective], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/objectives"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -85,59 +97,75 @@ func (r *ObjectiveService) List(ctx context.Context, query ObjectiveListParams, 
 }
 
 // Lists all objectives in the workspace
-func (r *ObjectiveService) ListAutoPaging(ctx context.Context, query ObjectiveListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Objective] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *ObjectiveService) ListAutoPaging(ctx context.Context, workspaceID string, query ObjectiveListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Objective] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Cancels a running or pending objective. The objective's state will be set to
 // STATE_CANCELLED.
-func (r *ObjectiveService) Cancel(ctx context.Context, objectiveID string, body ObjectiveCancelParams, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) Cancel(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveCancelParams, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/cancel", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/cancel", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Triggers compaction on a running objective. Optionally override the variation's
 // compaction config.
-func (r *ObjectiveService) Compact(ctx context.Context, objectiveID string, body ObjectiveCompactParams, opts ...option.RequestOption) (res *ObjectiveCompactResponse, err error) {
+func (r *ObjectiveService) Compact(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveCompactParams, opts ...option.RequestOption) (res *ObjectiveCompactResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/compact", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/compact", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Continues an objective that has completed
-func (r *ObjectiveService) Continue(ctx context.Context, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveContinueResponse, err error) {
+func (r *ObjectiveService) Continue(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveContinueResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/continue", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/continue", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Read-only list of the last five windows of execution for this objective, ordered
 // by most recent first
-func (r *ObjectiveService) ListContextWindows(ctx context.Context, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveContextWindow], err error) {
+func (r *ObjectiveService) ListContextWindows(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveContextWindow], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/context_windows", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/context_windows", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -152,20 +180,24 @@ func (r *ObjectiveService) ListContextWindows(ctx context.Context, objectiveID s
 
 // Read-only list of the last five windows of execution for this objective, ordered
 // by most recent first
-func (r *ObjectiveService) ListContextWindowsAutoPaging(ctx context.Context, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveContextWindow] {
-	return pagination.NewCursorPaginationAutoPager(r.ListContextWindows(ctx, objectiveID, query, opts...))
+func (r *ObjectiveService) ListContextWindowsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveContextWindow] {
+	return pagination.NewCursorPaginationAutoPager(r.ListContextWindows(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEvents(ctx context.Context, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveListEventsResponse], err error) {
+func (r *ObjectiveService) ListEvents(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveListEventsResponse], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/events", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/events", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -179,8 +211,8 @@ func (r *ObjectiveService) ListEvents(ctx context.Context, objectiveID string, q
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveListEventsResponse] {
-	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, objectiveID, query, opts...))
+func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveListEventsResponse] {
+	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 type AssistantMessage struct {

@@ -44,43 +44,59 @@ func NewAPIKeyService(opts ...option.RequestOption) (r *APIKeyService) {
 }
 
 // Creates a new API key in the workspace.
-func (r *APIKeyService) New(ctx context.Context, body APIKeyNewParams, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) New(ctx context.Context, workspaceID string, body APIKeyNewParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/api_keys"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves an API key by ID from the workspace
-func (r *APIKeyService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates an API key in the workspace
-func (r *APIKeyService) Update(ctx context.Context, id string, body APIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Update(ctx context.Context, workspaceID string, id string, body APIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all API keys in the workspace
-func (r *APIKeyService) List(ctx context.Context, query APIKeyListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[APIKey], err error) {
+func (r *APIKeyService) List(ctx context.Context, workspaceID string, query APIKeyListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[APIKey], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/api_keys"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -94,32 +110,40 @@ func (r *APIKeyService) List(ctx context.Context, query APIKeyListParams, opts .
 }
 
 // Lists all API keys in the workspace
-func (r *APIKeyService) ListAutoPaging(ctx context.Context, query APIKeyListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[APIKey] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *APIKeyService) ListAutoPaging(ctx context.Context, workspaceID string, query APIKeyListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[APIKey] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes an API key from the workspace
-func (r *APIKeyService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *APIKeyService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Rotates an API Key and returns a new token. All previous API Key tokens in use
 // will be invalidated.
-func (r *APIKeyService) Rotate(ctx context.Context, id string, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Rotate(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/api_keys/%s/rotate", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s/rotate", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, nil, &res, opts...)
 	return res, err
 }
