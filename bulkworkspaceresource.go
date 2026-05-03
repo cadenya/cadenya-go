@@ -411,11 +411,12 @@ const (
 	BulkWorkspaceApplyStatusStateStateSucceeded        BulkWorkspaceApplyStatusState = "STATE_SUCCEEDED"
 	BulkWorkspaceApplyStatusStateStatePartiallyApplied BulkWorkspaceApplyStatusState = "STATE_PARTIALLY_APPLIED"
 	BulkWorkspaceApplyStatusStateStateFailed           BulkWorkspaceApplyStatusState = "STATE_FAILED"
+	BulkWorkspaceApplyStatusStateStateCancelled        BulkWorkspaceApplyStatusState = "STATE_CANCELLED"
 )
 
 func (r BulkWorkspaceApplyStatusState) IsKnown() bool {
 	switch r {
-	case BulkWorkspaceApplyStatusStateStateUnspecified, BulkWorkspaceApplyStatusStateStatePending, BulkWorkspaceApplyStatusStateStateValidating, BulkWorkspaceApplyStatusStateStateRunning, BulkWorkspaceApplyStatusStateStateSucceeded, BulkWorkspaceApplyStatusStateStatePartiallyApplied, BulkWorkspaceApplyStatusStateStateFailed:
+	case BulkWorkspaceApplyStatusStateStateUnspecified, BulkWorkspaceApplyStatusStateStatePending, BulkWorkspaceApplyStatusStateStateValidating, BulkWorkspaceApplyStatusStateStateRunning, BulkWorkspaceApplyStatusStateStateSucceeded, BulkWorkspaceApplyStatusStateStatePartiallyApplied, BulkWorkspaceApplyStatusStateStateFailed, BulkWorkspaceApplyStatusStateStateCancelled:
 		return true
 	}
 	return false
@@ -737,11 +738,12 @@ const (
 	BulkWorkspaceResourceListParamsStateStateSucceeded        BulkWorkspaceResourceListParamsState = "STATE_SUCCEEDED"
 	BulkWorkspaceResourceListParamsStateStatePartiallyApplied BulkWorkspaceResourceListParamsState = "STATE_PARTIALLY_APPLIED"
 	BulkWorkspaceResourceListParamsStateStateFailed           BulkWorkspaceResourceListParamsState = "STATE_FAILED"
+	BulkWorkspaceResourceListParamsStateStateCancelled        BulkWorkspaceResourceListParamsState = "STATE_CANCELLED"
 )
 
 func (r BulkWorkspaceResourceListParamsState) IsKnown() bool {
 	switch r {
-	case BulkWorkspaceResourceListParamsStateStateUnspecified, BulkWorkspaceResourceListParamsStateStatePending, BulkWorkspaceResourceListParamsStateStateValidating, BulkWorkspaceResourceListParamsStateStateRunning, BulkWorkspaceResourceListParamsStateStateSucceeded, BulkWorkspaceResourceListParamsStateStatePartiallyApplied, BulkWorkspaceResourceListParamsStateStateFailed:
+	case BulkWorkspaceResourceListParamsStateStateUnspecified, BulkWorkspaceResourceListParamsStateStatePending, BulkWorkspaceResourceListParamsStateStateValidating, BulkWorkspaceResourceListParamsStateStateRunning, BulkWorkspaceResourceListParamsStateStateSucceeded, BulkWorkspaceResourceListParamsStateStatePartiallyApplied, BulkWorkspaceResourceListParamsStateStateFailed, BulkWorkspaceResourceListParamsStateStateCancelled:
 		return true
 	}
 	return false
