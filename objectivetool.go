@@ -39,15 +39,19 @@ func NewObjectiveToolService(opts ...option.RequestOption) (r *ObjectiveToolServ
 }
 
 // Lists all tools that were assigned to an objective
-func (r *ObjectiveToolService) List(ctx context.Context, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTool], err error) {
+func (r *ObjectiveToolService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTool], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tools", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tools", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -61,8 +65,8 @@ func (r *ObjectiveToolService) List(ctx context.Context, objectiveID string, que
 }
 
 // Lists all tools that were assigned to an objective
-func (r *ObjectiveToolService) ListAutoPaging(ctx context.Context, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTool] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, query, opts...))
+func (r *ObjectiveToolService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTool] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // ObjectiveTool represents a tool that was assigned to an objective.

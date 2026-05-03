@@ -27,58 +27,28 @@ func TestToolSetNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.ToolSets.New(context.TODO(), cadenya.ToolSetNewParams{
-		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-			Name:       cadenya.F("name"),
-			BundleKey:  cadenya.F("bundleKey"),
-			ExternalID: cadenya.F("externalId"),
-			Labels: cadenya.F(map[string]string{
-				"foo": "string",
-			}),
-		}),
-		Spec: cadenya.F(cadenya.ToolSetSpecParam{
-			Adapter: cadenya.F(cadenya.ToolSetAdapterParam{
-				HTTP: cadenya.F(cadenya.ToolSetAdapterHTTPParam{
-					BaseURL: cadenya.F("baseUrl"),
-					Headers: cadenya.F(map[string]string{
-						"foo": "string",
-					}),
+	_, err := client.ToolSets.New(
+		context.TODO(),
+		"workspaceId",
+		cadenya.ToolSetNewParams{
+			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
+					"foo": "string",
 				}),
-				Mcp: cadenya.F(cadenya.ToolSetAdapterMcpParam{
-					ExcludeTools: cadenya.F(cadenya.McpToolFilterParam{
-						Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
-						Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
-							Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
-							Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
-								CaseSensitive: cadenya.F(true),
-								Contains:      cadenya.F("contains"),
-								EndsWith:      cadenya.F("endsWith"),
-								Exact:         cadenya.F("exact"),
-								Regex:         cadenya.F("regex"),
-								StartsWith:    cadenya.F("startsWith"),
-							}),
-						}}),
+			}),
+			Spec: cadenya.F(cadenya.ToolSetSpecParam{
+				Adapter: cadenya.F(cadenya.ToolSetAdapterParam{
+					HTTP: cadenya.F(cadenya.ToolSetAdapterHTTPParam{
+						BaseURL: cadenya.F("baseUrl"),
+						Headers: cadenya.F(map[string]string{
+							"foo": "string",
+						}),
 					}),
-					Headers: cadenya.F(map[string]string{
-						"foo": "string",
-					}),
-					IncludeTools: cadenya.F(cadenya.McpToolFilterParam{
-						Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
-						Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
-							Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
-							Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
-								CaseSensitive: cadenya.F(true),
-								Contains:      cadenya.F("contains"),
-								EndsWith:      cadenya.F("endsWith"),
-								Exact:         cadenya.F("exact"),
-								Regex:         cadenya.F("regex"),
-								StartsWith:    cadenya.F("startsWith"),
-							}),
-						}}),
-					}),
-					ToolApprovals: cadenya.F(cadenya.ToolSetAdapterMcpToolApprovalsParam{
-						Always: cadenya.F(true),
-						Only: cadenya.F(cadenya.McpToolFilterParam{
+					Mcp: cadenya.F(cadenya.ToolSetAdapterMcpParam{
+						ExcludeTools: cadenya.F(cadenya.McpToolFilterParam{
 							Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
 							Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
 								Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
@@ -92,13 +62,47 @@ func TestToolSetNewWithOptionalParams(t *testing.T) {
 								}),
 							}}),
 						}),
+						Headers: cadenya.F(map[string]string{
+							"foo": "string",
+						}),
+						IncludeTools: cadenya.F(cadenya.McpToolFilterParam{
+							Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+							Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+								Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+								Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									CaseSensitive: cadenya.F(true),
+									Contains:      cadenya.F("contains"),
+									EndsWith:      cadenya.F("endsWith"),
+									Exact:         cadenya.F("exact"),
+									Regex:         cadenya.F("regex"),
+									StartsWith:    cadenya.F("startsWith"),
+								}),
+							}}),
+						}),
+						ToolApprovals: cadenya.F(cadenya.ToolSetAdapterMcpToolApprovalsParam{
+							Always: cadenya.F(true),
+							Only: cadenya.F(cadenya.McpToolFilterParam{
+								Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
+								Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
+									Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
+									Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+										CaseSensitive: cadenya.F(true),
+										Contains:      cadenya.F("contains"),
+										EndsWith:      cadenya.F("endsWith"),
+										Exact:         cadenya.F("exact"),
+										Regex:         cadenya.F("regex"),
+										StartsWith:    cadenya.F("startsWith"),
+									}),
+								}}),
+							}),
+						}),
+						URL: cadenya.F("url"),
 					}),
-					URL: cadenya.F("url"),
 				}),
+				Description: cadenya.F("description"),
 			}),
-			Description: cadenya.F("description"),
-		}),
-	})
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -121,7 +125,11 @@ func TestToolSetGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.ToolSets.Get(context.TODO(), "id")
+	_, err := client.ToolSets.Get(
+		context.TODO(),
+		"workspaceId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -146,6 +154,7 @@ func TestToolSetUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Update(
 		context.TODO(),
+		"workspaceId",
 		"id",
 		cadenya.ToolSetUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
@@ -243,15 +252,19 @@ func TestToolSetListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.ToolSets.List(context.TODO(), cadenya.ToolSetListParams{
-		BundleKey:   cadenya.F("bundleKey"),
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		Prefix:      cadenya.F("prefix"),
-		Query:       cadenya.F("query"),
-		SortOrder:   cadenya.F("sortOrder"),
-	})
+	_, err := client.ToolSets.List(
+		context.TODO(),
+		"workspaceId",
+		cadenya.ToolSetListParams{
+			BundleKey:   cadenya.F("bundleKey"),
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			Prefix:      cadenya.F("prefix"),
+			Query:       cadenya.F("query"),
+			SortOrder:   cadenya.F("sortOrder"),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -274,7 +287,11 @@ func TestToolSetDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.ToolSets.Delete(context.TODO(), "id")
+	err := client.ToolSets.Delete(
+		context.TODO(),
+		"workspaceId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -299,6 +316,7 @@ func TestToolSetListEventsWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.ListEvents(
 		context.TODO(),
+		"workspaceId",
 		"toolSetId",
 		cadenya.ToolSetListEventsParams{
 			Cursor:      cadenya.F("cursor"),

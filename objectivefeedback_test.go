@@ -29,6 +29,7 @@ func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.New(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveFeedbackNewParams{
 			Data: cadenya.F(cadenya.ObjectiveFeedbackDataParam{
@@ -67,6 +68,7 @@ func TestObjectiveFeedbackListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.List(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveFeedbackListParams{
 			Cursor: cadenya.F("cursor"),

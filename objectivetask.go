@@ -40,8 +40,12 @@ func NewObjectiveTaskService(opts ...option.RequestOption) (r *ObjectiveTaskServ
 }
 
 // Retrieves a task by ID from an objective
-func (r *ObjectiveTaskService) Get(ctx context.Context, objectiveID string, id string, opts ...option.RequestOption) (res *ObjectiveTask, err error) {
+func (r *ObjectiveTaskService) Get(ctx context.Context, workspaceID string, objectiveID string, id string, opts ...option.RequestOption) (res *ObjectiveTask, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
@@ -50,21 +54,25 @@ func (r *ObjectiveTaskService) Get(ctx context.Context, objectiveID string, id s
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tasks/%s", objectiveID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tasks/%s", workspaceID, objectiveID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all tasks for an objective
-func (r *ObjectiveTaskService) List(ctx context.Context, objectiveID string, query ObjectiveTaskListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTask], err error) {
+func (r *ObjectiveTaskService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveTaskListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTask], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/tasks", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tasks", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -78,8 +86,8 @@ func (r *ObjectiveTaskService) List(ctx context.Context, objectiveID string, que
 }
 
 // Lists all tasks for an objective
-func (r *ObjectiveTaskService) ListAutoPaging(ctx context.Context, objectiveID string, query ObjectiveTaskListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTask] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, query, opts...))
+func (r *ObjectiveTaskService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveTaskListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTask] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // ObjectiveTask represents a task within an objective, typically created and

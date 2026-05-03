@@ -29,6 +29,7 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.New(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentScheduleNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
@@ -112,6 +113,7 @@ func TestAgentScheduleGet(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Get(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 	)
@@ -139,6 +141,7 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Update(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 		cadenya.AgentScheduleUpdateParams{
@@ -224,6 +227,7 @@ func TestAgentScheduleListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.List(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentScheduleListParams{
 			BundleKey:   cadenya.F("bundleKey"),
@@ -259,6 +263,7 @@ func TestAgentScheduleDelete(t *testing.T) {
 	)
 	err := client.Agents.Schedules.Delete(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 	)

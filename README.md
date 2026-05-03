@@ -171,7 +171,11 @@ This library provides some conveniences for working with paginated list endpoint
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
 ```go
-iter := client.Agents.ListAutoPaging(context.TODO(), cadenya.AgentListParams{})
+iter := client.Agents.ListAutoPaging(
+	context.TODO(),
+	"workspaceId",
+	cadenya.AgentListParams{},
+)
 // Automatically fetches more pages as needed.
 for iter.Next() {
 	agent := iter.Current()
@@ -186,7 +190,11 @@ Or you can use simple `.List()` methods to fetch a single page and receive a sta
 with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
-page, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{})
+page, err := client.Agents.List(
+	context.TODO(),
+	"workspaceId",
+	cadenya.AgentListParams{},
+)
 for page != nil {
 	for _, agent := range page.Items {
 		fmt.Printf("%+v\n", agent)

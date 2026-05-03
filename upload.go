@@ -46,21 +46,29 @@ func NewUploadService(opts ...option.RequestOption) (r *UploadService) {
 // Issues a short-lived presigned URL for direct upload to object storage. The
 // returned id is used to reference the upload from resources that accept binary
 // content.
-func (r *UploadService) New(ctx context.Context, body UploadNewParams, opts ...option.RequestOption) (res *Upload, err error) {
+func (r *UploadService) New(ctx context.Context, workspaceID string, body UploadNewParams, opts ...option.RequestOption) (res *Upload, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/uploads"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/uploads", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves the current state of an upload, including its lifecycle status
-func (r *UploadService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Upload, err error) {
+func (r *UploadService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Upload, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/uploads/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/uploads/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

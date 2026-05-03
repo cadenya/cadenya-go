@@ -47,15 +47,19 @@ func NewBulkWorkspaceResourceResultService(opts ...option.RequestOption) (r *Bul
 }
 
 // Lists each resource action recorded by a bulk workspace apply operation.
-func (r *BulkWorkspaceResourceResultService) List(ctx context.Context, bulkWorkspaceApplyID string, query BulkWorkspaceResourceResultListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[BulkWorkspaceApplyResult], err error) {
+func (r *BulkWorkspaceResourceResultService) List(ctx context.Context, workspaceID string, bulkWorkspaceApplyID string, query BulkWorkspaceResourceResultListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[BulkWorkspaceApplyResult], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if bulkWorkspaceApplyID == "" {
 		err = errors.New("missing required bulkWorkspaceApplyId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/bulk_workspace_applies/%s/results", bulkWorkspaceApplyID)
+	path := fmt.Sprintf("v1/workspaces/%s/bulk_workspace_applies/%s/results", workspaceID, bulkWorkspaceApplyID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -69,8 +73,8 @@ func (r *BulkWorkspaceResourceResultService) List(ctx context.Context, bulkWorks
 }
 
 // Lists each resource action recorded by a bulk workspace apply operation.
-func (r *BulkWorkspaceResourceResultService) ListAutoPaging(ctx context.Context, bulkWorkspaceApplyID string, query BulkWorkspaceResourceResultListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[BulkWorkspaceApplyResult] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, bulkWorkspaceApplyID, query, opts...))
+func (r *BulkWorkspaceResourceResultService) ListAutoPaging(ctx context.Context, workspaceID string, bulkWorkspaceApplyID string, query BulkWorkspaceResourceResultListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[BulkWorkspaceApplyResult] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, bulkWorkspaceApplyID, query, opts...))
 }
 
 // BulkWorkspaceApplyResult is one row of the per-resource result list for a

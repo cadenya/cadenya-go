@@ -46,15 +46,19 @@ func NewAgentWebhookDeliveryService(opts ...option.RequestOption) (r *AgentWebho
 }
 
 // Lists all webhook deliveries for an agent
-func (r *AgentWebhookDeliveryService) List(ctx context.Context, agentID string, query AgentWebhookDeliveryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WebhookDelivery], err error) {
+func (r *AgentWebhookDeliveryService) List(ctx context.Context, workspaceID string, agentID string, query AgentWebhookDeliveryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WebhookDelivery], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/webhook_deliveries", agentID)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/webhook_deliveries", workspaceID, agentID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -68,8 +72,8 @@ func (r *AgentWebhookDeliveryService) List(ctx context.Context, agentID string, 
 }
 
 // Lists all webhook deliveries for an agent
-func (r *AgentWebhookDeliveryService) ListAutoPaging(ctx context.Context, agentID string, query AgentWebhookDeliveryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WebhookDelivery] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, agentID, query, opts...))
+func (r *AgentWebhookDeliveryService) ListAutoPaging(ctx context.Context, workspaceID string, agentID string, query AgentWebhookDeliveryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WebhookDelivery] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, agentID, query, opts...))
 }
 
 type WebhookDelivery struct {

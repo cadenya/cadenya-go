@@ -28,6 +28,7 @@ func TestBulkWorkspaceResourceResultListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.BulkWorkspaceResources.Results.List(
 		context.TODO(),
+		"workspaceId",
 		"bulkWorkspaceApplyId",
 		cadenya.BulkWorkspaceResourceResultListParams{
 			Action:    cadenya.F(cadenya.BulkWorkspaceResourceResultListParamsActionActionUnspecified),

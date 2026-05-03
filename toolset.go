@@ -59,43 +59,59 @@ func NewToolSetService(opts ...option.RequestOption) (r *ToolSetService) {
 }
 
 // Creates a new tool set in the workspace
-func (r *ToolSetService) New(ctx context.Context, body ToolSetNewParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) New(ctx context.Context, workspaceID string, body ToolSetNewParams, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/tool_sets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a tool set by ID from the workspace
-func (r *ToolSetService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a tool set in the workspace
-func (r *ToolSetService) Update(ctx context.Context, id string, body ToolSetUpdateParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) Update(ctx context.Context, workspaceID string, id string, body ToolSetUpdateParams, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all tool sets in the workspace
-func (r *ToolSetService) List(ctx context.Context, query ToolSetListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSet], err error) {
+func (r *ToolSetService) List(ctx context.Context, workspaceID string, query ToolSetListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSet], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/tool_sets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -109,33 +125,41 @@ func (r *ToolSetService) List(ctx context.Context, query ToolSetListParams, opts
 }
 
 // Lists all tool sets in the workspace
-func (r *ToolSetService) ListAutoPaging(ctx context.Context, query ToolSetListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSet] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *ToolSetService) ListAutoPaging(ctx context.Context, workspaceID string, query ToolSetListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSet] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes a tool set in the workspace
-func (r *ToolSetService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *ToolSetService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Lists all events (including sync status) for a tool set
-func (r *ToolSetService) ListEvents(ctx context.Context, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetEvent], err error) {
+func (r *ToolSetService) ListEvents(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetEvent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/events", toolSetID)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/events", workspaceID, toolSetID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -149,8 +173,8 @@ func (r *ToolSetService) ListEvents(ctx context.Context, toolSetID string, query
 }
 
 // Lists all events (including sync status) for a tool set
-func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetEvent] {
-	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, toolSetID, query, opts...))
+func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetEvent] {
+	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, toolSetID, query, opts...))
 }
 
 // Top-level filter with simple boolean logic (no nesting)
