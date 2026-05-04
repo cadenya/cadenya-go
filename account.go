@@ -14,11 +14,8 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AccountService manages account-level operations. Accounts are the top-level
-// organizational unit in the system. All operations are scoped to the
-// authenticated account determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Account-level operations
+// Manage the authenticated account. Accounts are the top-level organizational unit
+// and contain one or more workspaces.
 //
 // AccountService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -56,14 +53,15 @@ func (r *AccountService) RotateWebhookSigningKey(ctx context.Context, opts ...op
 	return res, err
 }
 
-// Account is an account resource.
+// An account, the top-level organizational unit. Contains workspaces and
+// account-wide settings such as the webhook signing secret.
 type Account struct {
-	// AccountInfo contains information about the account.
+	// Server-populated information about the account.
 	Info AccountInfo `json:"info" api:"required"`
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
-	// AccountSpec contains the specification for an account.
+	// Configuration for an account.
 	Spec AccountSpec `json:"spec" api:"required"`
 	JSON accountJSON `json:"-"`
 }
@@ -85,7 +83,7 @@ func (r accountJSON) RawJSON() string {
 	return r.raw
 }
 
-// AccountInfo contains information about the account.
+// Server-populated information about the account.
 type AccountInfo struct {
 	// The generated secret that will sign all webhooks that are sent to your
 	// configured Webhook URL. Formatted as "wh_asdf1234" per the
@@ -109,7 +107,7 @@ func (r accountInfoJSON) RawJSON() string {
 	return r.raw
 }
 
-// AccountSpec contains the specification for an account.
+// Configuration for an account.
 type AccountSpec struct {
 	BillingEmail string          `json:"billingEmail"`
 	Description  string          `json:"description"`
@@ -136,14 +134,14 @@ func (r accountSpecJSON) RawJSON() string {
 	return r.raw
 }
 
-// Profile represents a human user at the account level. Profiles are
-// account-scoped resources that can be associated with multiple workspaces through
-// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+// A profile identifies a user or non-human principal (such as an API key) at the
+// account level. Profiles are account-scoped and can be granted access to multiple
+// workspaces.
 type Profile struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
-	// ProfileSpec contains the profile-specific fields
+	// Configuration for a profile.
 	Spec ProfileSpec `json:"spec" api:"required"`
 	JSON profileJSON `json:"-"`
 }
@@ -164,14 +162,14 @@ func (r profileJSON) RawJSON() string {
 	return r.raw
 }
 
-// Profile represents a human user at the account level. Profiles are
-// account-scoped resources that can be associated with multiple workspaces through
-// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+// A profile identifies a user or non-human principal (such as an API key) at the
+// account level. Profiles are account-scoped and can be granted access to multiple
+// workspaces.
 type ProfileParam struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata param.Field[shared.AccountResourceMetadataParam] `json:"metadata" api:"required"`
-	// ProfileSpec contains the profile-specific fields
+	// Configuration for a profile.
 	Spec param.Field[ProfileSpecParam] `json:"spec" api:"required"`
 }
 
@@ -179,14 +177,14 @@ func (r ProfileParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// ProfileSpec contains the profile-specific fields
+// Configuration for a profile.
 type ProfileSpec struct {
-	// Type is the type of profile. User's are humans, API keys are computers. You know
-	// the deal.
+	// Whether this profile represents a human user, an API key, or a system principal.
 	Type ProfileSpecType `json:"type" api:"required"`
-	// Email address of the user (required, unique per account)
+	// Email address of the profile. Required and unique within an account for user
+	// profiles.
 	Email string `json:"email"`
-	// Display name for the user (e.g., "Bobby Tables")
+	// Display name (e.g., "Bobby Tables").
 	Name string          `json:"name"`
 	JSON profileSpecJSON `json:"-"`
 }
@@ -208,8 +206,7 @@ func (r profileSpecJSON) RawJSON() string {
 	return r.raw
 }
 
-// Type is the type of profile. User's are humans, API keys are computers. You know
-// the deal.
+// Whether this profile represents a human user, an API key, or a system principal.
 type ProfileSpecType string
 
 const (
@@ -226,14 +223,14 @@ func (r ProfileSpecType) IsKnown() bool {
 	return false
 }
 
-// ProfileSpec contains the profile-specific fields
+// Configuration for a profile.
 type ProfileSpecParam struct {
-	// Type is the type of profile. User's are humans, API keys are computers. You know
-	// the deal.
+	// Whether this profile represents a human user, an API key, or a system principal.
 	Type param.Field[ProfileSpecType] `json:"type" api:"required"`
-	// Email address of the user (required, unique per account)
+	// Email address of the profile. Required and unique within an account for user
+	// profiles.
 	Email param.Field[string] `json:"email"`
-	// Display name for the user (e.g., "Bobby Tables")
+	// Display name (e.g., "Bobby Tables").
 	Name param.Field[string] `json:"name"`
 }
 
@@ -241,8 +238,7 @@ func (r ProfileSpecParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// RotateWebhookEventsHmacSecretResponse is a response to a
-// RotateWebhookEventsHmacSecretRequest.
+// Response containing the newly generated webhook signing secret.
 type RotateWebhookSigningKeyResponse struct {
 	WebhookEventsHmacSecret string                              `json:"webhookEventsHmacSecret"`
 	JSON                    rotateWebhookSigningKeyResponseJSON `json:"-"`

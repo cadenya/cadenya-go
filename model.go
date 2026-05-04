@@ -19,12 +19,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ModelService manages LLM models at the WORKSPACE level. Models represent
-// available LLM providers and families (e.g., "anthropic/claude-sonnet-4.6").
-// Models are seeded into workspaces and can be enabled or disabled. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage LLM models available to a workspace. Models represent provider and family
+// pairs (e.g., "anthropic/claude-sonnet-4.6"). Workspaces are seeded with the
+// supported models and you can enable or disable each one.
 //
 // ModelService contains methods and other services that help with interacting with
 // the cadenya API.

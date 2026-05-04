@@ -368,7 +368,7 @@ func (r memoryReadJSON) RawJSON() string {
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
-// form (external_id:my-custom-id). The same applies to memory_entry_id.
+// form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReference struct {
 	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
 	// as a single-entry layer (only this key resolves at this position). The entry
@@ -399,7 +399,7 @@ func (r memoryReferenceJSON) RawJSON() string {
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
-// form (external_id:my-custom-id). The same applies to memory_entry_id.
+// form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReferenceParam struct {
 	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
 	// as a single-entry layer (only this key resolves at this position). The entry
@@ -478,9 +478,9 @@ func (r objectiveContextWindowJSON) RawJSON() string {
 }
 
 type ObjectiveContextWindowInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -556,22 +556,18 @@ type ObjectiveData struct {
 	// Memory layers/entries to push onto this objective's memory stack on top of the
 	// baseline stack inherited from the selected variation.
 	//
-	// See "Memory stack composition" in memory.proto for lookup semantics.
-	//
 	// Array order is push order: the first element sits lower in the objective's
 	// contribution to the stack; the LAST element ends up on top of the effective
 	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
 	// position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically via the runtime based on episodic_key.
+	// themselves automatically based on episodic_key.
 	//
 	// Stack size cap: the TOTAL effective stack (variation's memory layers
 	//
 	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
-	//     themselves are capped at 10 memory layer assignments, so a variation that is
-	//     already "full" leaves no room for objective-level references.
+	//     effective stack larger than 10 is rejected with InvalidArgument.
 	MemoryStack []MemoryReference `json:"memoryStack"`
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
@@ -579,10 +575,9 @@ type ObjectiveData struct {
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets []ObjectiveDataSecret `json:"secrets"`
-	// ID of the AgentSchedule that produced this objective, when applicable.
-	// Read-only; populated by the runtime when the objective is created from a
-	// schedule fire. Empty when the objective was created via CreateObjective
-	// directly.
+	// ID of the AgentSchedule that produced this objective, when applicable. Populated
+	// when the objective is created from a schedule fire; empty when the objective was
+	// created via CreateObjective directly.
 	SourceScheduleID string `json:"sourceScheduleId"`
 	// system_prompt is read-only, derived from the selected variation's prompt
 	SystemPrompt string `json:"systemPrompt"`
@@ -624,22 +619,18 @@ type ObjectiveDataParam struct {
 	// Memory layers/entries to push onto this objective's memory stack on top of the
 	// baseline stack inherited from the selected variation.
 	//
-	// See "Memory stack composition" in memory.proto for lookup semantics.
-	//
 	// Array order is push order: the first element sits lower in the objective's
 	// contribution to the stack; the LAST element ends up on top of the effective
 	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
 	// position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically via the runtime based on episodic_key.
+	// themselves automatically based on episodic_key.
 	//
 	// Stack size cap: the TOTAL effective stack (variation's memory layers
 	//
 	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
-	//     themselves are capped at 10 memory layer assignments, so a variation that is
-	//     already "full" leaves no room for objective-level references.
+	//     effective stack larger than 10 is rejected with InvalidArgument.
 	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
@@ -785,9 +776,9 @@ func (r objectiveEventDataCancelledJSON) RawJSON() string {
 }
 
 type ObjectiveEventInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -819,9 +810,9 @@ type ObjectiveInfo struct {
 	Agent shared.ResourceMetadata `json:"agent"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	AgentVariation shared.ResourceMetadata `json:"agentVariation"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// The effective memory stack at objective creation time, flattened from the
 	// variation's baseline plus ObjectiveData.memory_stack. Order is push order (last
@@ -1188,9 +1179,8 @@ func (r ObjectiveNewParams) MarshalJSON() (data []byte, err error) {
 type ObjectiveListParams struct {
 	// Agent ID for filtering
 	AgentID param.Field[string] `query:"agentId"`
-	// Filter to objectives produced by a specific AgentSchedule. Matches
-	// ObjectiveData.source*schedule_id. Accepts canonical as*… form or
-	// external_id:<value> form (see common.proto "Path-parameter ID resolution").
+	// Filter to objectives produced by a specific AgentSchedule. Accepts canonical
+	// as\_… form or external_id:<value> form.
 	AgentScheduleID param.Field[string] `query:"agentScheduleId"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`

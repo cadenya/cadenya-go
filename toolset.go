@@ -20,14 +20,11 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-// related tools, and tools define specific capabilities for agents. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
+// Manage tool sets and the tools they contain. Tool sets group related tools, and
+// tools define specific capabilities available to agents.
 //
-// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-// Profile actors (humans) are restricted from modifying managed tool sets.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// When a tool set is managed, only API key actors can modify its tools; human
+// (profile) actors cannot.
 //
 // ToolSetService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -37,14 +34,11 @@ import (
 // the [NewToolSetService] method instead.
 type ToolSetService struct {
 	Options []option.RequestOption
-	// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-	// related tools, and tools define specific capabilities for agents. All operations
-	// are implicitly scoped to the workspace determined by the JWT token.
+	// Manage tool sets and the tools they contain. Tool sets group related tools, and
+	// tools define specific capabilities available to agents.
 	//
-	// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-	// Profile actors (humans) are restricted from modifying managed tool sets.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// When a tool set is managed, only API key actors can modify its tools; human
+	// (profile) actors cannot.
 	Tools *ToolSetToolService
 }
 
@@ -325,11 +319,11 @@ func (r McpToolFilterFiltersMatcherParam) MarshalJSON() (data []byte, err error)
 	return apijson.MarshalRoot(r)
 }
 
-// SyncCompleted is emitted when a tool set sync operation completes successfully
+// Emitted when a tool set sync operation completes successfully.
 type SyncCompleted struct {
-	// Optional message with additional details
+	// Optional message with additional details.
 	Message string `json:"message"`
-	// Number of tools synced
+	// Number of tools synced.
 	ToolsSynced int64             `json:"toolsSynced"`
 	JSON        syncCompletedJSON `json:"-"`
 }
@@ -350,13 +344,13 @@ func (r syncCompletedJSON) RawJSON() string {
 	return r.raw
 }
 
-// SyncFailed is emitted when a tool set sync operation fails
+// Emitted when a tool set sync operation fails.
 type SyncFailed struct {
-	// Indicates this is an error event
+	// Indicates this is an error event.
 	Error bool `json:"error"`
-	// Optional error type/code for programmatic handling
+	// Optional error type/code for programmatic handling.
 	ErrorType string `json:"errorType"`
-	// Error message describing what went wrong
+	// Error message describing what went wrong.
 	Message string         `json:"message"`
 	JSON    syncFailedJSON `json:"-"`
 }
@@ -378,9 +372,9 @@ func (r syncFailedJSON) RawJSON() string {
 	return r.raw
 }
 
-// SyncStarted is emitted when a tool set sync operation begins
+// Emitted when a tool set sync operation begins.
 type SyncStarted struct {
-	// Timestamp when the sync was initiated
+	// Human-readable message describing the start of the sync.
 	Message string          `json:"message"`
 	JSON    syncStartedJSON `json:"-"`
 }
@@ -576,15 +570,15 @@ func (r ToolSetAdapterMcpToolApprovalsParam) MarshalJSON() (data []byte, err err
 	return apijson.MarshalRoot(r)
 }
 
-// ToolSetEvent represents a single event in the tool set's operation timeline
+// A single event in the tool set's operation timeline.
 type ToolSetEvent struct {
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
-	// ToolSetEventData represents the actual event payload for tool set operations
+	// Event payload for a tool set operation.
 	Event ToolSetEventData `json:"event"`
 	Info  ToolSetEventInfo `json:"info"`
-	// The tool set this event is associated with
+	// The tool set this event is associated with.
 	ToolSetID string           `json:"toolSetId"`
 	JSON      toolSetEventJSON `json:"-"`
 }
@@ -608,9 +602,9 @@ func (r toolSetEventJSON) RawJSON() string {
 }
 
 type ToolSetEventInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	ToolSet shared.ResourceMetadata `json:"toolSet"`
@@ -634,15 +628,15 @@ func (r toolSetEventInfoJSON) RawJSON() string {
 	return r.raw
 }
 
-// ToolSetEventData represents the actual event payload for tool set operations
+// Event payload for a tool set operation.
 type ToolSetEventData struct {
-	// SyncCompleted is emitted when a tool set sync operation completes successfully
+	// Emitted when a tool set sync operation completes successfully.
 	SyncCompleted SyncCompleted `json:"syncCompleted"`
-	// SyncFailed is emitted when a tool set sync operation fails
+	// Emitted when a tool set sync operation fails.
 	SyncFailed SyncFailed `json:"syncFailed"`
-	// SyncStarted is emitted when a tool set sync operation begins
+	// Emitted when a tool set sync operation begins.
 	SyncStarted SyncStarted `json:"syncStarted"`
-	// Type of the event (e.g., "sync_started", "sync_completed", "sync_failed")
+	// Type of the event (e.g., "sync_started", "sync_completed", "sync_failed").
 	Type string               `json:"type"`
 	JSON toolSetEventDataJSON `json:"-"`
 }
@@ -668,9 +662,9 @@ func (r toolSetEventDataJSON) RawJSON() string {
 
 type ToolSetInfo struct {
 	AgentCount int64 `json:"agentCount"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile         `json:"createdBy"`
 	LastSync  time.Time       `json:"lastSync" format:"date-time"`
 	ToolCount int64           `json:"toolCount"`

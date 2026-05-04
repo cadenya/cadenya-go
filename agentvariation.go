@@ -19,6 +19,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
+// Manage variations of an agent and their tool, sub-agent, and memory layer
+// assignments.
+//
 // AgentVariationService contains methods and other services that help with
 // interacting with the cadenya API.
 //
@@ -310,9 +313,9 @@ type AgentVariationInfo struct {
 	// reads so clients can render a variation's full assignment list without calling
 	// the add/remove endpoints just to enumerate.
 	Assignments []VariationAssignment `json:"assignments"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Total number of objective feedbacks received for this variation
 	FeedbackCount int64 `json:"feedbackCount"`
@@ -362,9 +365,9 @@ func (r agentVariationInfoJSON) RawJSON() string {
 
 // AgentVariationInfo provides read-only summary information about a variation
 type AgentVariationInfoParam struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
 	// Total number of objective feedbacks received for this variation
 	FeedbackCount param.Field[int64] `json:"feedbackCount"`
@@ -736,15 +739,14 @@ func (r CompactionConfigToolResultClearingStrategyParam) MarshalJSON() (data []b
 	return apijson.MarshalRoot(r)
 }
 
-// VariationAssignment is a read-only reference to a single tool, tool set, or
-// sub-agent attached to a variation. Clients read the full set of assignments via
+// A read-only reference to a single tool, tool set, or sub-agent attached to a
+// variation. Read the full set of assignments via
 // `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints under
-// /v1/agents/{agent_id}/variations/{variation_id}/assignments.
+// assignment endpoints.
 //
-// The `id` identifies the assignment row itself (not the referenced resource) and
-// is the handle used to remove the assignment. It is returned by the add endpoint
-// and present on every entry in AgentVariationInfo.assignments.
+// The `id` identifies the assignment itself (not the referenced resource) and is
+// the handle used to remove the assignment. It is returned by the add endpoint and
+// present on every entry in `AgentVariationInfo.assignments`.
 type VariationAssignment struct {
 	ID string `json:"id"`
 	// BareMetadata contains the minimal metadata for a resource: the ID and an
@@ -790,15 +792,14 @@ func (r variationAssignmentJSON) RawJSON() string {
 	return r.raw
 }
 
-// VariationAssignment is a read-only reference to a single tool, tool set, or
-// sub-agent attached to a variation. Clients read the full set of assignments via
+// A read-only reference to a single tool, tool set, or sub-agent attached to a
+// variation. Read the full set of assignments via
 // `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints under
-// /v1/agents/{agent_id}/variations/{variation_id}/assignments.
+// assignment endpoints.
 //
-// The `id` identifies the assignment row itself (not the referenced resource) and
-// is the handle used to remove the assignment. It is returned by the add endpoint
-// and present on every entry in AgentVariationInfo.assignments.
+// The `id` identifies the assignment itself (not the referenced resource) and is
+// the handle used to remove the assignment. It is returned by the add endpoint and
+// present on every entry in `AgentVariationInfo.assignments`.
 type VariationAssignmentParam struct {
 	// BareMetadata contains the minimal metadata for a resource: the ID and an
 	// optional human-readable name. These are used for reference fields where the full
@@ -930,7 +931,8 @@ type AgentVariationListParams struct {
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
-	// When set to true you may use more of your alloted API rate-limit
+	// When true, the `info` field on each returned variation is populated. Requests
+	// with this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
@@ -958,8 +960,8 @@ func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error
 }
 
 type AgentVariationAddMemoryLayerParams struct {
-	// Layer to attach. Accepts canonical memlyr\_… form or external_id:<value> form
-	// (see common.proto "Path-parameter ID resolution").
+	// Layer to attach. Accepts the canonical `memlyr_…` form or the
+	// `external_id:<value>` form.
 	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
 	// Position in the stack. If omitted, server appends (max existing position + 1).
 	Position param.Field[int64] `json:"position"`
