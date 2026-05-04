@@ -44,8 +44,8 @@ type Client struct {
 	// When a tool set is managed, only API key actors can modify its tools; human
 	// (profile) actors cannot.
 	ToolSets *ToolSetService
-	// Issue, rotate, and revoke API keys for a workspace. Each API key belongs to
-	// exactly one workspace, ensuring isolation between environments.
+	// Issue, rotate, and revoke API keys for the account, and grant or revoke each
+	// key's access to individual workspaces.
 	APIKeys          *APIKeyService
 	WorkspaceSecrets *WorkspaceSecretService
 	// Manage workspaces within an account. Workspaces provide organizational grouping
