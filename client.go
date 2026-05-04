@@ -18,74 +18,43 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
-	// AccountService manages account-level operations. Accounts are the top-level
-	// organizational unit in the system. All operations are scoped to the
-	// authenticated account determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Account-level operations
+	// Manage the authenticated account. Accounts are the top-level organizational unit
+	// and contain one or more workspaces.
 	Account *AccountService
-	// AgentService manages AI agents at the WORKSPACE level. Agents are
-	// workspace-scoped resources that define AI behavior and tool access. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Agents     *AgentService
 	Objectives *ObjectiveService
-	// MemoryService manages memory layers and their entries at the WORKSPACE level.
-	// Layers are named containers that can be composed into an objective's memory
-	// stack; entries are the keyed values within a layer.
-	//
-	// All operations are implicitly scoped to the workspace determined by the JWT
-	// token. System-managed layers (e.g., episodic layers created by the runtime)
+	// Manage memory layers and their entries. Layers are named containers that can be
+	// composed into an objective's memory stack; entries are the keyed values within a
+	// layer. System-managed layers (e.g., episodic layers created by the runtime)
 	// cannot be mutated through this API.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	MemoryLayers *MemoryLayerService
-	// UploadService issues short-lived presigned URLs for direct client-to-object-
-	// storage uploads at the WORKSPACE level. Created uploads can be referenced by id
-	// when creating or updating resources that accept binary content (e.g.,
-	// MemoryEntry).
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Issue short-lived presigned URLs for direct client-to-object-storage uploads.
+	// Created uploads can be referenced by id when creating or updating resources that
+	// accept binary content (e.g., MemoryEntry).
 	Uploads *UploadService
-	// ModelService manages LLM models at the WORKSPACE level. Models represent
-	// available LLM providers and families (e.g., "anthropic/claude-sonnet-4.6").
-	// Models are seeded into workspaces and can be enabled or disabled. All operations
-	// are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage LLM models available to a workspace. Models represent provider and family
+	// pairs (e.g., "anthropic/claude-sonnet-4.6"). Workspaces are seeded with the
+	// supported models and you can enable or disable each one.
 	Models *ModelService
 	Search *SearchService
-	// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-	// related tools, and tools define specific capabilities for agents. All operations
-	// are implicitly scoped to the workspace determined by the JWT token.
+	// Manage tool sets and the tools they contain. Tool sets group related tools, and
+	// tools define specific capabilities available to agents.
 	//
-	// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-	// Profile actors (humans) are restricted from modifying managed tool sets.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// When a tool set is managed, only API key actors can modify its tools; human
+	// (profile) actors cannot.
 	ToolSets *ToolSetService
-	// APIKeyService manages workspace-scoped API Keys. Each API key belongs to a
-	// single workspace, ensuring isolation between environments.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Issue, rotate, and revoke API keys for a workspace. Each API key belongs to
+	// exactly one workspace, ensuring isolation between environments.
 	APIKeys          *APIKeyService
 	WorkspaceSecrets *WorkspaceSecretService
-	// WorkspaceService manages workspaces at the ACCOUNT level. This service is
-	// responsible for creating and listing workspaces within an account. Workspaces
-	// provide organizational grouping for resources within an account.
-	//
-	// Authentication: Bearer token (JWT) Scope: Account-level operations (manages
-	// workspaces themselves, not resources within workspaces)
+	// Manage workspaces within an account. Workspaces provide organizational grouping
+	// and isolation for resources such as agents, tools, and API keys.
 	Workspaces *WorkspaceService
 	Webhooks   *WebhookService
-	// BulkWorkspaceResources is the workspace-scoped service that applies a
-	// declarative bundle of workspace resources (tool sets, memory layers, agents,
-	// variations, assignments, schedules) in one async operation. See
-	// docs/superpowers/specs/2026-05-02-bulk-workspace-resources-design.md for the
-	// full design.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Apply a declarative bundle of workspace resources — tool sets, memory layers,
+	// agents, variations, assignments, and schedules — in a single asynchronous
+	// operation.
 	BulkWorkspaceResources *BulkWorkspaceResourceService
 }
 

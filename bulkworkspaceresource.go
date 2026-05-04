@@ -20,13 +20,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// BulkWorkspaceResources is the workspace-scoped service that applies a
-// declarative bundle of workspace resources (tool sets, memory layers, agents,
-// variations, assignments, schedules) in one async operation. See
-// docs/superpowers/specs/2026-05-02-bulk-workspace-resources-design.md for the
-// full design.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Apply a declarative bundle of workspace resources — tool sets, memory layers,
+// agents, variations, assignments, and schedules — in a single asynchronous
+// operation.
 //
 // BulkWorkspaceResourceService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -36,13 +32,9 @@ import (
 // the [NewBulkWorkspaceResourceService] method instead.
 type BulkWorkspaceResourceService struct {
 	Options []option.RequestOption
-	// BulkWorkspaceResources is the workspace-scoped service that applies a
-	// declarative bundle of workspace resources (tool sets, memory layers, agents,
-	// variations, assignments, schedules) in one async operation. See
-	// docs/superpowers/specs/2026-05-02-bulk-workspace-resources-design.md for the
-	// full design.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Apply a declarative bundle of workspace resources — tool sets, memory layers,
+	// agents, variations, assignments, and schedules — in a single asynchronous
+	// operation.
 	Results *BulkWorkspaceResourceResultService
 }
 
@@ -203,8 +195,7 @@ type AgentVariationEntry struct {
 	// when the variation is bundle-owned.
 	Assignments []VariationAssignmentEntry `json:"assignments"`
 	Labels      map[string]string          `json:"labels"`
-	// Reconciled list — capped at 10 to match the existing variation
-	// memory-layer-assignment cap.
+	// Reconciled list of memory layer assignments. Up to 10 entries.
 	MemoryLayers []VariationMemoryLayerEntry `json:"memoryLayers"`
 	JSON         agentVariationEntryJSON     `json:"-"`
 }
@@ -237,8 +228,7 @@ type AgentVariationEntryParam struct {
 	// when the variation is bundle-owned.
 	Assignments param.Field[[]VariationAssignmentEntryParam] `json:"assignments"`
 	Labels      param.Field[map[string]string]               `json:"labels"`
-	// Reconciled list — capped at 10 to match the existing variation
-	// memory-layer-assignment cap.
+	// Reconciled list of memory layer assignments. Up to 10 entries.
 	MemoryLayers param.Field[[]VariationMemoryLayerEntryParam] `json:"memoryLayers"`
 }
 
@@ -246,10 +236,9 @@ func (r AgentVariationEntryParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// BulkWorkspaceApply is the operation resource produced by a call to
-// BulkWorkspaceResources.Apply. It is operation-typed (uses OperationMetadata,
-// like Objective and ObjectiveEvent) and carries the input bundle in `data`, the
-// lifecycle state in `status`, and aggregate counts in `info`.
+// The operation resource produced by a call to BulkWorkspaceResources.Apply. It
+// carries the input bundle in `data`, the lifecycle state in `status`, and
+// aggregate counts in `info`.
 type BulkWorkspaceApply struct {
 	Data BulkWorkspaceApplyData `json:"data" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
@@ -363,9 +352,9 @@ func (r BulkWorkspaceApplyDataParam) MarshalJSON() (data []byte, err error) {
 
 type BulkWorkspaceApplyInfo struct {
 	CompletedAt time.Time `json:"completedAt" format:"date-time"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy      Profile                    `json:"createdBy"`
 	CreatedCount   int64                      `json:"createdCount"`
 	DeletedCount   int64                      `json:"deletedCount"`

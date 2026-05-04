@@ -19,15 +19,10 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// MemoryService manages memory layers and their entries at the WORKSPACE level.
-// Layers are named containers that can be composed into an objective's memory
-// stack; entries are the keyed values within a layer.
-//
-// All operations are implicitly scoped to the workspace determined by the JWT
-// token. System-managed layers (e.g., episodic layers created by the runtime)
+// Manage memory layers and their entries. Layers are named containers that can be
+// composed into an objective's memory stack; entries are the keyed values within a
+// layer. System-managed layers (e.g., episodic layers created by the runtime)
 // cannot be mutated through this API.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 //
 // MemoryLayerEntryService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -253,9 +248,9 @@ func (r memoryEntryDetailJSON) RawJSON() string {
 }
 
 type MemoryEntryInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	MemoryLayer shared.ResourceMetadata `json:"memoryLayer"`

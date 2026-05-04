@@ -20,11 +20,8 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AgentScheduleService manages recurring schedules attached to agents. Schedules
-// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage recurring schedules attached to agents. Schedules trigger objectives on a
+// cadence defined by AgentScheduleSpec.Schedule.
 //
 // AgentScheduleService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -184,9 +181,9 @@ func (r agentScheduleJSON) RawJSON() string {
 
 // AgentScheduleInfo provides read-only runtime data about a schedule.
 type AgentScheduleInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// When the schedule last fired (regardless of objective outcome).
 	LastFireAt time.Time `json:"lastFireAt" format:"date-time"`
@@ -546,7 +543,8 @@ type AgentScheduleListParams struct {
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response.
 	Cursor param.Field[string] `query:"cursor"`
-	// When set to true you may use more of your alloted API rate-limit.
+	// When true, the `info` field on each returned schedule is populated. Requests
+	// with this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return.
 	Limit param.Field[int64] `query:"limit"`

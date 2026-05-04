@@ -19,14 +19,11 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-// related tools, and tools define specific capabilities for agents. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
+// Manage tool sets and the tools they contain. Tool sets group related tools, and
+// tools define specific capabilities available to agents.
 //
-// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-// Profile actors (humans) are restricted from modifying managed tool sets.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// When a tool set is managed, only API key actors can modify its tools; human
+// (profile) actors cannot.
 //
 // ToolSetToolService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -288,9 +285,9 @@ func (r toolJSON) RawJSON() string {
 }
 
 type ToolInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	ToolSet shared.ResourceMetadata `json:"toolSet"`

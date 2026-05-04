@@ -19,13 +19,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// BulkWorkspaceResources is the workspace-scoped service that applies a
-// declarative bundle of workspace resources (tool sets, memory layers, agents,
-// variations, assignments, schedules) in one async operation. See
-// docs/superpowers/specs/2026-05-02-bulk-workspace-resources-design.md for the
-// full design.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Apply a declarative bundle of workspace resources — tool sets, memory layers,
+// agents, variations, assignments, and schedules — in a single asynchronous
+// operation.
 //
 // BulkWorkspaceResourceResultService contains methods and other services that help
 // with interacting with the cadenya API.
@@ -77,17 +73,15 @@ func (r *BulkWorkspaceResourceResultService) ListAutoPaging(ctx context.Context,
 	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, bulkWorkspaceApplyID, query, opts...))
 }
 
-// BulkWorkspaceApplyResult is one row of the per-resource result list for a
-// BulkWorkspaceApply. Each row is itself an operation (OperationMetadata-typed) so
-// it can be paginated, sorted by created_at, and individually addressed. Mirrors
-// the Objective → ObjectiveEvent relationship.
+// One row of the per-resource result list for a BulkWorkspaceApply. Each row is
+// itself an operation that can be paginated, sorted by created_at, and addressed
+// individually.
 type BulkWorkspaceApplyResult struct {
-	// BulkWorkspaceApplyResultData carries the outcome for a single resource. The
-	// `type` field is the discriminator string that names the populated `outcome`
-	// oneof variant (e.g., "toolSet", "memoryEntry"). Every Outcome shell carries an
-	// `action` enum and either a resulting resource snapshot (for ACTION_CREATED /
-	// ACTION_UPDATED / ACTION_UNCHANGED / ACTION_DELETED) or a google.rpc.Status (for
-	// ACTION_FAILED).
+	// Outcome for a single resource within a bulk apply. The `type` field is the
+	// discriminator string naming the populated `outcome` oneof variant (e.g.,
+	// "toolSet", "memoryEntry"). Every outcome shell carries an `action` enum and
+	// either a resulting resource snapshot (for ACTION_CREATED, ACTION_UPDATED,
+	// ACTION_UNCHANGED, ACTION_DELETED) or a google.rpc.Status (for ACTION_FAILED).
 	Data BulkWorkspaceApplyResultData `json:"data" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -112,12 +106,11 @@ func (r bulkWorkspaceApplyResultJSON) RawJSON() string {
 	return r.raw
 }
 
-// BulkWorkspaceApplyResultData carries the outcome for a single resource. The
-// `type` field is the discriminator string that names the populated `outcome`
-// oneof variant (e.g., "toolSet", "memoryEntry"). Every Outcome shell carries an
-// `action` enum and either a resulting resource snapshot (for ACTION_CREATED /
-// ACTION_UPDATED / ACTION_UNCHANGED / ACTION_DELETED) or a google.rpc.Status (for
-// ACTION_FAILED).
+// Outcome for a single resource within a bulk apply. The `type` field is the
+// discriminator string naming the populated `outcome` oneof variant (e.g.,
+// "toolSet", "memoryEntry"). Every outcome shell carries an `action` enum and
+// either a resulting resource snapshot (for ACTION_CREATED, ACTION_UPDATED,
+// ACTION_UNCHANGED, ACTION_DELETED) or a google.rpc.Status (for ACTION_FAILED).
 type BulkWorkspaceApplyResultData struct {
 	Agent                BulkWorkspaceApplyResultDataAgentOutcome                `json:"agent"`
 	AgentSchedule        BulkWorkspaceApplyResultDataAgentScheduleOutcome        `json:"agentSchedule"`
@@ -1001,15 +994,14 @@ type BulkWorkspaceApplyResultDataVariationAssignmentOutcome struct {
 	// this error model and how to work with it in the
 	// [API Design Guide](https://cloud.google.com/apis/design/errors).
 	Error BulkWorkspaceApplyResultDataVariationAssignmentOutcomeError `json:"error"`
-	// VariationAssignment is a read-only reference to a single tool, tool set, or
-	// sub-agent attached to a variation. Clients read the full set of assignments via
+	// A read-only reference to a single tool, tool set, or sub-agent attached to a
+	// variation. Read the full set of assignments via
 	// `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-	// assignment endpoints under
-	// /v1/agents/{agent_id}/variations/{variation_id}/assignments.
+	// assignment endpoints.
 	//
-	// The `id` identifies the assignment row itself (not the referenced resource) and
-	// is the handle used to remove the assignment. It is returned by the add endpoint
-	// and present on every entry in AgentVariationInfo.assignments.
+	// The `id` identifies the assignment itself (not the referenced resource) and is
+	// the handle used to remove the assignment. It is returned by the add endpoint and
+	// present on every entry in `AgentVariationInfo.assignments`.
 	Resource VariationAssignment                                        `json:"resource"`
 	JSON     bulkWorkspaceApplyResultDataVariationAssignmentOutcomeJSON `json:"-"`
 }

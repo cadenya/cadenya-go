@@ -19,10 +19,8 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// APIKeyService manages workspace-scoped API Keys. Each API key belongs to a
-// single workspace, ensuring isolation between environments.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Issue, rotate, and revoke API keys for a workspace. Each API key belongs to
+// exactly one workspace, ensuring isolation between environments.
 //
 // APIKeyService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -148,13 +146,12 @@ func (r *APIKeyService) Rotate(ctx context.Context, workspaceID string, id strin
 	return res, err
 }
 
-// APIKey represents a workspace-scoped API key. Each API key belongs to exactly
-// one workspace, ensuring workspace isolation. Authentication is handled via
-// Cadenya-issued JWTs signed with the key's own signing secret.
+// An API key scoped to a single workspace. The key's token is used to authenticate
+// requests against that workspace's resources.
 type APIKey struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
-	// APIKeySpec contains the API Key-specific fields
+	// Configuration for an API key.
 	Spec APIKeySpec `json:"spec" api:"required"`
 	Info APIKeyInfo `json:"info"`
 	JSON apiKeyJSON `json:"-"`
@@ -178,9 +175,9 @@ func (r apiKeyJSON) RawJSON() string {
 }
 
 type APIKeyInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile        `json:"createdBy"`
 	JSON      apiKeyInfoJSON `json:"-"`
 }
@@ -200,11 +197,12 @@ func (r apiKeyInfoJSON) RawJSON() string {
 	return r.raw
 }
 
-// APIKeySpec contains the API Key-specific fields
+// Configuration for an API key.
 type APIKeySpec struct {
-	// The actual token value (only returned on creation and rotation, read-only)
+	// The bearer token used to authenticate as this API key. Returned only on creation
+	// and rotation; subsequent reads omit this field.
 	Token string `json:"token"`
-	// Description of what this API Key is used for
+	// Free-form description of what this API key is used for.
 	Description string         `json:"description"`
 	JSON        apiKeySpecJSON `json:"-"`
 }
@@ -225,9 +223,9 @@ func (r apiKeySpecJSON) RawJSON() string {
 	return r.raw
 }
 
-// APIKeySpec contains the API Key-specific fields
+// Configuration for an API key.
 type APIKeySpecParam struct {
-	// Description of what this API Key is used for
+	// Free-form description of what this API key is used for.
 	Description param.Field[string] `json:"description"`
 }
 
@@ -240,7 +238,7 @@ type APIKeyNewParams struct {
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
 	Metadata param.Field[shared.CreateResourceMetadataParam] `json:"metadata" api:"required"`
-	// APIKeySpec contains the API Key-specific fields
+	// Configuration for an API key.
 	Spec param.Field[APIKeySpecParam] `json:"spec" api:"required"`
 }
 
@@ -253,9 +251,9 @@ type APIKeyUpdateParams struct {
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
 	Metadata param.Field[shared.UpdateResourceMetadataParam] `json:"metadata"`
-	// APIKeySpec contains the API Key-specific fields
+	// Configuration for an API key.
 	Spec param.Field[APIKeySpecParam] `json:"spec"`
-	// Fields to update
+	// Fields to update.
 	UpdateMask param.Field[string] `json:"updateMask" format:"field-mask"`
 }
 

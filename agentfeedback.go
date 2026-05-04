@@ -18,11 +18,7 @@ import (
 	"github.com/cadenya/cadenya-go/packages/pagination"
 )
 
-// AgentService manages AI agents at the WORKSPACE level. Agents are
-// workspace-scoped resources that define AI behavior and tool access. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 //
 // AgentFeedbackService contains methods and other services that help with
 // interacting with the cadenya API.

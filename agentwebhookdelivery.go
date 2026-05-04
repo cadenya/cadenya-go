@@ -20,11 +20,7 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AgentService manages AI agents at the WORKSPACE level. Agents are
-// workspace-scoped resources that define AI behavior and tool access. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 //
 // AgentWebhookDeliveryService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -77,7 +73,7 @@ func (r *AgentWebhookDeliveryService) ListAutoPaging(ctx context.Context, worksp
 }
 
 type WebhookDelivery struct {
-	// Webhook delivery data
+	// Webhook delivery details.
 	Data WebhookDeliveryData `json:"data" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -107,7 +103,7 @@ type WebhookDeliveryData struct {
 	AttemptCount int64  `json:"attemptCount" api:"required"`
 	// The type of objective event that triggered this webhook delivery
 	EventType WebhookDeliveryDataEventType `json:"eventType" api:"required"`
-	// Response details (no response_body to avoid storing large payloads)
+	// Response details. The response body is not retained.
 	HTTPStatusCode   int64     `json:"httpStatusCode" api:"required"`
 	LastAttemptAt    time.Time `json:"lastAttemptAt" api:"required" format:"date-time"`
 	LatencyMs        int64     `json:"latencyMs" api:"required"`

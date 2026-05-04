@@ -171,9 +171,9 @@ type ObjectiveFeedbackInfo struct {
 	// to an objective. Both fields are server-populated; clients provide IDs through
 	// sibling fields rather than by constructing a BareMetadata themselves.
 	Objective shared.BareMetadata `json:"objective"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	SubmittedBy Profile                   `json:"submittedBy"`
 	JSON        objectiveFeedbackInfoJSON `json:"-"`
 }

@@ -19,11 +19,7 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AgentService manages AI agents at the WORKSPACE level. Agents are
-// workspace-scoped resources that define AI behavior and tool access. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 //
 // AgentService contains methods and other services that help with interacting with
 // the cadenya API.
@@ -33,24 +29,15 @@ import (
 // the [NewAgentService] method instead.
 type AgentService struct {
 	Options []option.RequestOption
-	// AgentService manages AI agents at the WORKSPACE level. Agents are
-	// workspace-scoped resources that define AI behavior and tool access. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Feedback *AgentFeedbackService
-	// AgentService manages AI agents at the WORKSPACE level. Agents are
-	// workspace-scoped resources that define AI behavior and tool access. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	WebhookDeliveries *AgentWebhookDeliveryService
-	Variations        *AgentVariationService
-	// AgentScheduleService manages recurring schedules attached to agents. Schedules
-	// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage variations of an agent and their tool, sub-agent, and memory layer
+	// assignments.
+	Variations *AgentVariationService
+	// Manage recurring schedules attached to agents. Schedules trigger objectives on a
+	// cadence defined by AgentScheduleSpec.Schedule.
 	Schedules *AgentScheduleService
 }
 
@@ -199,9 +186,9 @@ func (r AgentParam) MarshalJSON() (data []byte, err error) {
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy      Profile       `json:"createdBy"`
 	VariationCount int64         `json:"variationCount"`
 	JSON           agentInfoJSON `json:"-"`
@@ -226,9 +213,9 @@ func (r agentInfoJSON) RawJSON() string {
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfoParam struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
 }
 
@@ -405,7 +392,8 @@ type AgentListParams struct {
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
-	// When set to true you may use more of your alloted API rate-limit
+	// When true, the `info` field on each returned agent is populated. Requests with
+	// this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
