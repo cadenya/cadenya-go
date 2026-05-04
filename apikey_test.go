@@ -11,7 +11,6 @@ import (
 	"github.com/cadenya/cadenya-go"
 	"github.com/cadenya/cadenya-go/internal/testutil"
 	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestAPIKeyNewWithOptionalParams(t *testing.T) {
@@ -27,23 +26,20 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.APIKeyNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
+	_, err := client.APIKeys.New(context.TODO(), cadenya.APIKeyNewParams{
+		Metadata: cadenya.F(cadenya.APIKeyNewParamsMetadata{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
+				"foo": "string",
 			}),
-			Spec: cadenya.F(cadenya.APIKeySpecParam{
-				Description: cadenya.F("description"),
-			}),
-		},
-	)
+		}),
+		Spec: cadenya.F(cadenya.APIKeySpecParam{
+			Description: cadenya.F("description"),
+			Permissions: cadenya.F([]string{"string"}),
+		}),
+		InitialWorkspaceIDs: cadenya.F([]string{"string"}),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -66,11 +62,7 @@ func TestAPIKeyGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.Get(
-		context.TODO(),
-		"workspaceId",
-		"id",
-	)
+	_, err := client.APIKeys.Get(context.TODO(), "id")
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -95,12 +87,10 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.APIKeys.Update(
 		context.TODO(),
-		"workspaceId",
 		"id",
 		cadenya.APIKeyUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+			Metadata: cadenya.F(cadenya.APIKeyUpdateParamsMetadata{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -108,6 +98,7 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 			}),
 			Spec: cadenya.F(cadenya.APIKeySpecParam{
 				Description: cadenya.F("description"),
+				Permissions: cadenya.F([]string{"string"}),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
@@ -134,19 +125,15 @@ func TestAPIKeyListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.APIKeyListParams{
-			BundleKey:   cadenya.F("bundleKey"),
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
-		},
-	)
+	_, err := client.APIKeys.List(context.TODO(), cadenya.APIKeyListParams{
+		BundleKey:   cadenya.F("bundleKey"),
+		Cursor:      cadenya.F("cursor"),
+		IncludeInfo: cadenya.F(true),
+		Limit:       cadenya.F(int64(0)),
+		Prefix:      cadenya.F("prefix"),
+		Query:       cadenya.F("query"),
+		SortOrder:   cadenya.F("sortOrder"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -169,11 +156,7 @@ func TestAPIKeyDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.APIKeys.Delete(
-		context.TODO(),
-		"workspaceId",
-		"id",
-	)
+	err := client.APIKeys.Delete(context.TODO(), "id")
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -196,11 +179,7 @@ func TestAPIKeyRotate(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.Rotate(
-		context.TODO(),
-		"workspaceId",
-		"id",
-	)
+	_, err := client.APIKeys.Rotate(context.TODO(), "id")
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

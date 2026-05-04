@@ -85,6 +85,10 @@ func (r accountJSON) RawJSON() string {
 
 // Server-populated information about the account.
 type AccountInfo struct {
+	// An API key for the account. Use workspace-association RPCs to grant the key
+	// access to specific workspaces; a key with zero workspaces is valid but cannot
+	// access workspace-scoped resources.
+	GlobalAPIKey APIKey `json:"globalApiKey"`
 	// The generated secret that will sign all webhooks that are sent to your
 	// configured Webhook URL. Formatted as "wh_asdf1234" per the
 	// https://www.standardwebhooks.com/ format.
@@ -94,6 +98,7 @@ type AccountInfo struct {
 
 // accountInfoJSON contains the JSON metadata for the struct [AccountInfo]
 type accountInfoJSON struct {
+	GlobalAPIKey            apijson.Field
 	WebhookEventsHmacSecret apijson.Field
 	raw                     string
 	ExtraFields             map[string]apijson.Field
