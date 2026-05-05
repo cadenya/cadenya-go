@@ -27,20 +27,24 @@ func TestMemoryLayerNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.MemoryLayers.New(context.TODO(), cadenya.MemoryLayerNewParams{
-		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-			Name:       cadenya.F("name"),
-			BundleKey:  cadenya.F("bundleKey"),
-			ExternalID: cadenya.F("externalId"),
-			Labels: cadenya.F(map[string]string{
-				"foo": "string",
+	_, err := client.MemoryLayers.New(
+		context.TODO(),
+		"workspaceId",
+		cadenya.MemoryLayerNewParams{
+			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
+					"foo": "string",
+				}),
 			}),
-		}),
-		Spec: cadenya.F(cadenya.MemoryLayerSpecParam{
-			Type:        cadenya.F(cadenya.MemoryLayerSpecTypeMemoryLayerTypeUnspecified),
-			Description: cadenya.F("description"),
-		}),
-	})
+			Spec: cadenya.F(cadenya.MemoryLayerSpecParam{
+				Type:        cadenya.F(cadenya.MemoryLayerSpecTypeMemoryLayerTypeUnspecified),
+				Description: cadenya.F("description"),
+			}),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -63,7 +67,11 @@ func TestMemoryLayerGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.MemoryLayers.Get(context.TODO(), "id")
+	_, err := client.MemoryLayers.Get(
+		context.TODO(),
+		"workspaceId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -88,6 +96,7 @@ func TestMemoryLayerUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Update(
 		context.TODO(),
+		"workspaceId",
 		"id",
 		cadenya.MemoryLayerUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
@@ -127,16 +136,20 @@ func TestMemoryLayerListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.MemoryLayers.List(context.TODO(), cadenya.MemoryLayerListParams{
-		BundleKey:   cadenya.F("bundleKey"),
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Limit:       cadenya.F(int64(0)),
-		Prefix:      cadenya.F("prefix"),
-		Query:       cadenya.F("query"),
-		SortOrder:   cadenya.F("sortOrder"),
-		Type:        cadenya.F(cadenya.MemoryLayerListParamsTypeMemoryLayerTypeUnspecified),
-	})
+	_, err := client.MemoryLayers.List(
+		context.TODO(),
+		"workspaceId",
+		cadenya.MemoryLayerListParams{
+			BundleKey:   cadenya.F("bundleKey"),
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			Prefix:      cadenya.F("prefix"),
+			Query:       cadenya.F("query"),
+			SortOrder:   cadenya.F("sortOrder"),
+			Type:        cadenya.F(cadenya.MemoryLayerListParamsTypeMemoryLayerTypeUnspecified),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -159,7 +172,11 @@ func TestMemoryLayerDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.MemoryLayers.Delete(context.TODO(), "id")
+	err := client.MemoryLayers.Delete(
+		context.TODO(),
+		"workspaceId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

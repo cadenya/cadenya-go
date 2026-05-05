@@ -29,6 +29,7 @@ func TestAgentFeedbackListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Feedback.List(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentFeedbackListParams{
 			AgentVariationID: cadenya.F("agentVariationId"),

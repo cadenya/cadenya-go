@@ -4,6 +4,8 @@ package cadenya
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -35,9 +37,13 @@ func NewSearchService(opts ...option.RequestOption) (r *SearchService) {
 }
 
 // Searches for tools or tool sets in the workspace
-func (r *SearchService) SearchToolsOrToolSets(ctx context.Context, query SearchSearchToolsOrToolSetsParams, opts ...option.RequestOption) (res *SearchSearchToolsOrToolSetsResponse, err error) {
+func (r *SearchService) SearchToolsOrToolSets(ctx context.Context, workspaceID string, query SearchSearchToolsOrToolSetsParams, opts ...option.RequestOption) (res *SearchSearchToolsOrToolSetsResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/search/tools_or_tool_sets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/search/tools_or_tool_sets", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
 }

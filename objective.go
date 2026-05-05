@@ -47,31 +47,43 @@ func NewObjectiveService(opts ...option.RequestOption) (r *ObjectiveService) {
 }
 
 // Creates a new objective in the workspace
-func (r *ObjectiveService) New(ctx context.Context, body ObjectiveNewParams, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) New(ctx context.Context, workspaceID string, body ObjectiveNewParams, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/objectives"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves an objective by ID from the workspace
-func (r *ObjectiveService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all objectives in the workspace
-func (r *ObjectiveService) List(ctx context.Context, query ObjectiveListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Objective], err error) {
+func (r *ObjectiveService) List(ctx context.Context, workspaceID string, query ObjectiveListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Objective], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/objectives"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -85,59 +97,75 @@ func (r *ObjectiveService) List(ctx context.Context, query ObjectiveListParams, 
 }
 
 // Lists all objectives in the workspace
-func (r *ObjectiveService) ListAutoPaging(ctx context.Context, query ObjectiveListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Objective] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *ObjectiveService) ListAutoPaging(ctx context.Context, workspaceID string, query ObjectiveListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Objective] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Cancels a running or pending objective. The objective's state will be set to
 // STATE_CANCELLED.
-func (r *ObjectiveService) Cancel(ctx context.Context, objectiveID string, body ObjectiveCancelParams, opts ...option.RequestOption) (res *Objective, err error) {
+func (r *ObjectiveService) Cancel(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveCancelParams, opts ...option.RequestOption) (res *Objective, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/cancel", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/cancel", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Triggers compaction on a running objective. Optionally override the variation's
 // compaction config.
-func (r *ObjectiveService) Compact(ctx context.Context, objectiveID string, body ObjectiveCompactParams, opts ...option.RequestOption) (res *ObjectiveCompactResponse, err error) {
+func (r *ObjectiveService) Compact(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveCompactParams, opts ...option.RequestOption) (res *ObjectiveCompactResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/compact", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/compact", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Continues an objective that has completed
-func (r *ObjectiveService) Continue(ctx context.Context, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveContinueResponse, err error) {
+func (r *ObjectiveService) Continue(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveContinueResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/continue", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/continue", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Read-only list of the last five windows of execution for this objective, ordered
 // by most recent first
-func (r *ObjectiveService) ListContextWindows(ctx context.Context, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveContextWindow], err error) {
+func (r *ObjectiveService) ListContextWindows(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveContextWindow], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/context_windows", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/context_windows", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -152,20 +180,24 @@ func (r *ObjectiveService) ListContextWindows(ctx context.Context, objectiveID s
 
 // Read-only list of the last five windows of execution for this objective, ordered
 // by most recent first
-func (r *ObjectiveService) ListContextWindowsAutoPaging(ctx context.Context, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveContextWindow] {
-	return pagination.NewCursorPaginationAutoPager(r.ListContextWindows(ctx, objectiveID, query, opts...))
+func (r *ObjectiveService) ListContextWindowsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListContextWindowsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveContextWindow] {
+	return pagination.NewCursorPaginationAutoPager(r.ListContextWindows(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEvents(ctx context.Context, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveListEventsResponse], err error) {
+func (r *ObjectiveService) ListEvents(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveListEventsResponse], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/events", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/events", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -179,8 +211,8 @@ func (r *ObjectiveService) ListEvents(ctx context.Context, objectiveID string, q
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveListEventsResponse] {
-	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, objectiveID, query, opts...))
+func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveListEventsResponse] {
+	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 type AssistantMessage struct {
@@ -336,7 +368,7 @@ func (r memoryReadJSON) RawJSON() string {
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
-// form (external_id:my-custom-id). The same applies to memory_entry_id.
+// form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReference struct {
 	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
 	// as a single-entry layer (only this key resolves at this position). The entry
@@ -367,7 +399,7 @@ func (r memoryReferenceJSON) RawJSON() string {
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
-// form (external_id:my-custom-id). The same applies to memory_entry_id.
+// form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReferenceParam struct {
 	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
 	// as a single-entry layer (only this key resolves at this position). The entry
@@ -446,9 +478,9 @@ func (r objectiveContextWindowJSON) RawJSON() string {
 }
 
 type ObjectiveContextWindowInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -524,22 +556,18 @@ type ObjectiveData struct {
 	// Memory layers/entries to push onto this objective's memory stack on top of the
 	// baseline stack inherited from the selected variation.
 	//
-	// See "Memory stack composition" in memory.proto for lookup semantics.
-	//
 	// Array order is push order: the first element sits lower in the objective's
 	// contribution to the stack; the LAST element ends up on top of the effective
 	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
 	// position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically via the runtime based on episodic_key.
+	// themselves automatically based on episodic_key.
 	//
 	// Stack size cap: the TOTAL effective stack (variation's memory layers
 	//
 	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
-	//     themselves are capped at 10 memory layer assignments, so a variation that is
-	//     already "full" leaves no room for objective-level references.
+	//     effective stack larger than 10 is rejected with InvalidArgument.
 	MemoryStack []MemoryReference `json:"memoryStack"`
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
@@ -547,10 +575,9 @@ type ObjectiveData struct {
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets []ObjectiveDataSecret `json:"secrets"`
-	// ID of the AgentSchedule that produced this objective, when applicable.
-	// Read-only; populated by the runtime when the objective is created from a
-	// schedule fire. Empty when the objective was created via CreateObjective
-	// directly.
+	// ID of the AgentSchedule that produced this objective, when applicable. Populated
+	// when the objective is created from a schedule fire; empty when the objective was
+	// created via CreateObjective directly.
 	SourceScheduleID string `json:"sourceScheduleId"`
 	// system_prompt is read-only, derived from the selected variation's prompt
 	SystemPrompt string `json:"systemPrompt"`
@@ -592,22 +619,18 @@ type ObjectiveDataParam struct {
 	// Memory layers/entries to push onto this objective's memory stack on top of the
 	// baseline stack inherited from the selected variation.
 	//
-	// See "Memory stack composition" in memory.proto for lookup semantics.
-	//
 	// Array order is push order: the first element sits lower in the objective's
 	// contribution to the stack; the LAST element ends up on top of the effective
 	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
 	// position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically via the runtime based on episodic_key.
+	// themselves automatically based on episodic_key.
 	//
 	// Stack size cap: the TOTAL effective stack (variation's memory layers
 	//
 	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument. Variations
-	//     themselves are capped at 10 memory layer assignments, so a variation that is
-	//     already "full" leaves no room for objective-level references.
+	//     effective stack larger than 10 is rejected with InvalidArgument.
 	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
@@ -753,9 +776,9 @@ func (r objectiveEventDataCancelledJSON) RawJSON() string {
 }
 
 type ObjectiveEventInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
@@ -787,9 +810,9 @@ type ObjectiveInfo struct {
 	Agent shared.ResourceMetadata `json:"agent"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	AgentVariation shared.ResourceMetadata `json:"agentVariation"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// The effective memory stack at objective creation time, flattened from the
 	// variation's baseline plus ObjectiveData.memory_stack. Order is push order (last
@@ -1156,9 +1179,8 @@ func (r ObjectiveNewParams) MarshalJSON() (data []byte, err error) {
 type ObjectiveListParams struct {
 	// Agent ID for filtering
 	AgentID param.Field[string] `query:"agentId"`
-	// Filter to objectives produced by a specific AgentSchedule. Matches
-	// ObjectiveData.source*schedule_id. Accepts canonical as*… form or
-	// external_id:<value> form (see common.proto "Path-parameter ID resolution").
+	// Filter to objectives produced by a specific AgentSchedule. Accepts canonical
+	// as\_… form or external_id:<value> form.
 	AgentScheduleID param.Field[string] `query:"agentScheduleId"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`

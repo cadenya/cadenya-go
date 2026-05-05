@@ -18,11 +18,7 @@ import (
 	"github.com/cadenya/cadenya-go/packages/pagination"
 )
 
-// AgentService manages AI agents at the WORKSPACE level. Agents are
-// workspace-scoped resources that define AI behavior and tool access. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 //
 // AgentFeedbackService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -46,15 +42,19 @@ func NewAgentFeedbackService(opts ...option.RequestOption) (r *AgentFeedbackServ
 // Lists feedback submitted across all objectives belonging to an agent. Supports
 // search by comment, sentiment filter, agent variation filter, and creation date
 // range. Results are ordered by creation time, newest first.
-func (r *AgentFeedbackService) List(ctx context.Context, agentID string, query AgentFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
+func (r *AgentFeedbackService) List(ctx context.Context, workspaceID string, agentID string, query AgentFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/feedback", agentID)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/feedback", workspaceID, agentID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -70,8 +70,8 @@ func (r *AgentFeedbackService) List(ctx context.Context, agentID string, query A
 // Lists feedback submitted across all objectives belonging to an agent. Supports
 // search by comment, sentiment filter, agent variation filter, and creation date
 // range. Results are ordered by creation time, newest first.
-func (r *AgentFeedbackService) ListAutoPaging(ctx context.Context, agentID string, query AgentFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, agentID, query, opts...))
+func (r *AgentFeedbackService) ListAutoPaging(ctx context.Context, workspaceID string, agentID string, query AgentFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, agentID, query, opts...))
 }
 
 type AgentFeedbackListParams struct {

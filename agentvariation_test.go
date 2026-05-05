@@ -29,6 +29,7 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.New(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentVariationNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
@@ -94,6 +95,7 @@ func TestAgentVariationGet(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.Get(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 	)
@@ -121,6 +123,7 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.Update(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 		cadenya.AgentVariationUpdateParams{
@@ -188,6 +191,7 @@ func TestAgentVariationListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.List(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentVariationListParams{
 			BundleKey:   cadenya.F("bundleKey"),
@@ -221,6 +225,7 @@ func TestAgentVariationDelete(t *testing.T) {
 	)
 	err := client.Agents.Variations.Delete(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"id",
 	)
@@ -248,6 +253,7 @@ func TestAgentVariationAddAssignmentWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.AddAssignment(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"variationId",
 		cadenya.AgentVariationAddAssignmentParams{
@@ -280,6 +286,7 @@ func TestAgentVariationAddMemoryLayerWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.AddMemoryLayer(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"variationId",
 		cadenya.AgentVariationAddMemoryLayerParams{
@@ -311,6 +318,7 @@ func TestAgentVariationRemoveAssignment(t *testing.T) {
 	)
 	err := client.Agents.Variations.RemoveAssignment(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"variationId",
 		"id",
@@ -339,6 +347,7 @@ func TestAgentVariationRemoveMemoryLayer(t *testing.T) {
 	)
 	err := client.Agents.Variations.RemoveMemoryLayer(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"variationId",
 		"id",
@@ -367,6 +376,7 @@ func TestAgentVariationUpdateMemoryLayerWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.UpdateMemoryLayer(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		"variationId",
 		"id",

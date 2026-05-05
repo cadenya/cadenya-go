@@ -25,7 +25,11 @@ func TestManualPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	page, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{})
+	page, err := client.Agents.List(
+		context.TODO(),
+		"workspaceId",
+		cadenya.AgentListParams{},
+	)
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
