@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.0 (2026-05-05)
+
+Full Changelog: [v0.11.0...v0.12.0](https://github.com/cadenya/cadenya-go/compare/v0.11.0...v0.12.0)
+
+### Features
+
+* **api:** api update ([a00329d](https://github.com/cadenya/cadenya-go/commit/a00329dea9191e34b7f770b3d22f0a9443db8dc8))
+* **api:** api update ([26639e9](https://github.com/cadenya/cadenya-go/commit/26639e9cf03f417d8f27210f2b3f1fd7efe03680))
+* **api:** api update ([4338787](https://github.com/cadenya/cadenya-go/commit/43387875b6d218be73c7bd7f288e88728ff43a00))
+
+
+### Chores
+
+* configure new SDK language ([0daa3ef](https://github.com/cadenya/cadenya-go/commit/0daa3ef584ecd5925a3cd29e59fd23473c2d7e29))
+
 ## 0.11.0 (2026-05-03)
 
 Full Changelog: [v0.10.0...v0.11.0](https://github.com/cadenya/cadenya-go/compare/v0.10.0...v0.11.0)
