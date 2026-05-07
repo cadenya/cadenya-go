@@ -707,7 +707,8 @@ type ObjectiveEventData struct {
 	// stack and loads an entry. Lookups that miss (key not found in any layer) do not
 	// emit this event.
 	MemoryRead            MemoryRead             `json:"memoryRead"`
-	SubObjectiveCreated   SubObjectiveCreated    `json:"subObjectiveCreated"`
+	SubAgentSpawned       SubAgentSpawned        `json:"subAgentSpawned"`
+	SubAgentUpdated       SubAgentUpdated        `json:"subAgentUpdated"`
 	ToolApprovalRequested ToolApprovalRequested  `json:"toolApprovalRequested"`
 	ToolApproved          ToolApproved           `json:"toolApproved"`
 	ToolCalled            ToolCalled             `json:"toolCalled"`
@@ -727,7 +728,8 @@ type objectiveEventDataJSON struct {
 	ContextWindowCompacted apijson.Field
 	Error                  apijson.Field
 	MemoryRead             apijson.Field
-	SubObjectiveCreated    apijson.Field
+	SubAgentSpawned        apijson.Field
+	SubAgentUpdated        apijson.Field
 	ToolApprovalRequested  apijson.Field
 	ToolApproved           apijson.Field
 	ToolCalled             apijson.Field
@@ -898,27 +900,88 @@ func (r ObjectiveStatusState) IsKnown() bool {
 	return false
 }
 
-type SubObjectiveCreated struct {
+type SubAgentSpawned struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Metadata shared.OperationMetadata `json:"metadata"`
-	JSON     subObjectiveCreatedJSON  `json:"-"`
+	Objective shared.OperationMetadata `json:"objective"`
+	Task      string                   `json:"task"`
+	JSON      subAgentSpawnedJSON      `json:"-"`
 }
 
-// subObjectiveCreatedJSON contains the JSON metadata for the struct
-// [SubObjectiveCreated]
-type subObjectiveCreatedJSON struct {
-	Metadata    apijson.Field
+// subAgentSpawnedJSON contains the JSON metadata for the struct [SubAgentSpawned]
+type subAgentSpawnedJSON struct {
+	Agent       apijson.Field
+	Objective   apijson.Field
+	Task        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *SubObjectiveCreated) UnmarshalJSON(data []byte) (err error) {
+func (r *SubAgentSpawned) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r subObjectiveCreatedJSON) RawJSON() string {
+func (r subAgentSpawnedJSON) RawJSON() string {
 	return r.raw
+}
+
+type SubAgentUpdated struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Agent   shared.BareMetadata `json:"agent"`
+	Message string              `json:"message"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Objective shared.BareMetadata   `json:"objective"`
+	Status    SubAgentUpdatedStatus `json:"status"`
+	JSON      subAgentUpdatedJSON   `json:"-"`
+}
+
+// subAgentUpdatedJSON contains the JSON metadata for the struct [SubAgentUpdated]
+type subAgentUpdatedJSON struct {
+	Agent       apijson.Field
+	Message     apijson.Field
+	Objective   apijson.Field
+	Status      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *SubAgentUpdated) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r subAgentUpdatedJSON) RawJSON() string {
+	return r.raw
+}
+
+type SubAgentUpdatedStatus string
+
+const (
+	SubAgentUpdatedStatusStatusUnspecified SubAgentUpdatedStatus = "STATUS_UNSPECIFIED"
+	SubAgentUpdatedStatusStatusPending     SubAgentUpdatedStatus = "STATUS_PENDING"
+	SubAgentUpdatedStatusStatusRunning     SubAgentUpdatedStatus = "STATUS_RUNNING"
+	SubAgentUpdatedStatusStatusCompleted   SubAgentUpdatedStatus = "STATUS_COMPLETED"
+	SubAgentUpdatedStatusStatusFailed      SubAgentUpdatedStatus = "STATUS_FAILED"
+	SubAgentUpdatedStatusStatusCancelled   SubAgentUpdatedStatus = "STATUS_CANCELLED"
+)
+
+func (r SubAgentUpdatedStatus) IsKnown() bool {
+	switch r {
+	case SubAgentUpdatedStatusStatusUnspecified, SubAgentUpdatedStatusStatusPending, SubAgentUpdatedStatusStatusRunning, SubAgentUpdatedStatusStatusCompleted, SubAgentUpdatedStatusStatusFailed, SubAgentUpdatedStatusStatusCancelled:
+		return true
+	}
+	return false
 }
 
 type ToolApprovalRequested struct {

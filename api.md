@@ -172,7 +172,8 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ObjectiveEventInfo">ObjectiveEventInfo</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ObjectiveInfo">ObjectiveInfo</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ObjectiveStatus">ObjectiveStatus</a>
-- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#SubObjectiveCreated">SubObjectiveCreated</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#SubAgentSpawned">SubAgentSpawned</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#SubAgentUpdated">SubAgentUpdated</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolApprovalRequested">ToolApprovalRequested</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolApproved">ToolApproved</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ToolCalled">ToolCalled</a>
