@@ -11,7 +11,6 @@ import (
 	"github.com/cadenya/cadenya-go"
 	"github.com/cadenya/cadenya-go/internal/testutil"
 	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestAPIKeyNewWithOptionalParams(t *testing.T) {
@@ -28,9 +27,8 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.New(context.TODO(), cadenya.APIKeyNewParams{
-		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+		Metadata: cadenya.F(cadenya.APIKeyNewParamsMetadata{
 			Name:       cadenya.F("name"),
-			BundleKey:  cadenya.F("bundleKey"),
 			ExternalID: cadenya.F("externalId"),
 			Labels: cadenya.F(map[string]string{
 				"foo": "string",
@@ -38,7 +36,9 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 		}),
 		Spec: cadenya.F(cadenya.APIKeySpecParam{
 			Description: cadenya.F("description"),
+			Permissions: cadenya.F([]string{"string"}),
 		}),
+		InitialWorkspaceIDs: cadenya.F([]string{"string"}),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -89,9 +89,8 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.APIKeyUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
+			Metadata: cadenya.F(cadenya.APIKeyUpdateParamsMetadata{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -99,6 +98,7 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 			}),
 			Spec: cadenya.F(cadenya.APIKeySpecParam{
 				Description: cadenya.F("description"),
+				Permissions: cadenya.F([]string{"string"}),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},

@@ -28,6 +28,7 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.WebhookDeliveries.List(
 		context.TODO(),
+		"workspaceId",
 		"agentId",
 		cadenya.AgentWebhookDeliveryListParams{
 			Cursor:      cadenya.F("cursor"),

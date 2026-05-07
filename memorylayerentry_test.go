@@ -29,6 +29,7 @@ func TestMemoryLayerEntryNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.New(
 		context.TODO(),
+		"workspaceId",
 		"memoryLayerId",
 		cadenya.MemoryLayerEntryNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
@@ -71,6 +72,7 @@ func TestMemoryLayerEntryGet(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.Get(
 		context.TODO(),
+		"workspaceId",
 		"memoryLayerId",
 		"id",
 	)
@@ -98,6 +100,7 @@ func TestMemoryLayerEntryUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.Update(
 		context.TODO(),
+		"workspaceId",
 		"memoryLayerId",
 		"id",
 		cadenya.MemoryLayerEntryUpdateParams{
@@ -142,6 +145,7 @@ func TestMemoryLayerEntryListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.List(
 		context.TODO(),
+		"workspaceId",
 		"memoryLayerId",
 		cadenya.MemoryLayerEntryListParams{
 			BundleKey:   cadenya.F("bundleKey"),
@@ -177,6 +181,7 @@ func TestMemoryLayerEntryDelete(t *testing.T) {
 	)
 	err := client.MemoryLayers.Entries.Delete(
 		context.TODO(),
+		"workspaceId",
 		"memoryLayerId",
 		"id",
 	)

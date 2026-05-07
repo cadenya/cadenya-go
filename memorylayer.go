@@ -20,15 +20,10 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// MemoryService manages memory layers and their entries at the WORKSPACE level.
-// Layers are named containers that can be composed into an objective's memory
-// stack; entries are the keyed values within a layer.
-//
-// All operations are implicitly scoped to the workspace determined by the JWT
-// token. System-managed layers (e.g., episodic layers created by the runtime)
+// Manage memory layers and their entries. Layers are named containers that can be
+// composed into an objective's memory stack; entries are the keyed values within a
+// layer. System-managed layers (e.g., episodic layers created by the runtime)
 // cannot be mutated through this API.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 //
 // MemoryLayerService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -38,15 +33,10 @@ import (
 // the [NewMemoryLayerService] method instead.
 type MemoryLayerService struct {
 	Options []option.RequestOption
-	// MemoryService manages memory layers and their entries at the WORKSPACE level.
-	// Layers are named containers that can be composed into an objective's memory
-	// stack; entries are the keyed values within a layer.
-	//
-	// All operations are implicitly scoped to the workspace determined by the JWT
-	// token. System-managed layers (e.g., episodic layers created by the runtime)
+	// Manage memory layers and their entries. Layers are named containers that can be
+	// composed into an objective's memory stack; entries are the keyed values within a
+	// layer. System-managed layers (e.g., episodic layers created by the runtime)
 	// cannot be mutated through this API.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 	Entries *MemoryLayerEntryService
 }
 
@@ -61,43 +51,59 @@ func NewMemoryLayerService(opts ...option.RequestOption) (r *MemoryLayerService)
 }
 
 // Creates a new memory layer in the workspace
-func (r *MemoryLayerService) New(ctx context.Context, body MemoryLayerNewParams, opts ...option.RequestOption) (res *MemoryLayer, err error) {
+func (r *MemoryLayerService) New(ctx context.Context, workspaceID string, body MemoryLayerNewParams, opts ...option.RequestOption) (res *MemoryLayer, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/memory_layers"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a memory layer by ID from the workspace
-func (r *MemoryLayerService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *MemoryLayer, err error) {
+func (r *MemoryLayerService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *MemoryLayer, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a memory layer in the workspace
-func (r *MemoryLayerService) Update(ctx context.Context, id string, body MemoryLayerUpdateParams, opts ...option.RequestOption) (res *MemoryLayer, err error) {
+func (r *MemoryLayerService) Update(ctx context.Context, workspaceID string, id string, body MemoryLayerUpdateParams, opts ...option.RequestOption) (res *MemoryLayer, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all memory layers in the workspace
-func (r *MemoryLayerService) List(ctx context.Context, query MemoryLayerListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryLayer], err error) {
+func (r *MemoryLayerService) List(ctx context.Context, workspaceID string, query MemoryLayerListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryLayer], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/memory_layers"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -111,19 +117,23 @@ func (r *MemoryLayerService) List(ctx context.Context, query MemoryLayerListPara
 }
 
 // Lists all memory layers in the workspace
-func (r *MemoryLayerService) ListAutoPaging(ctx context.Context, query MemoryLayerListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryLayer] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *MemoryLayerService) ListAutoPaging(ctx context.Context, workspaceID string, query MemoryLayerListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryLayer] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes a memory layer from the workspace
-func (r *MemoryLayerService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *MemoryLayerService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -160,9 +170,9 @@ func (r memoryLayerJSON) RawJSON() string {
 }
 
 type MemoryLayerInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Number of entries currently in this layer.
 	EntryCount int64 `json:"entryCount"`

@@ -19,14 +19,11 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-// related tools, and tools define specific capabilities for agents. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
+// Manage tool sets and the tools they contain. Tool sets group related tools, and
+// tools define specific capabilities available to agents.
 //
-// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-// Profile actors (humans) are restricted from modifying managed tool sets.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// When a tool set is managed, only API key actors can modify its tools; human
+// (profile) actors cannot.
 //
 // ToolSetToolService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -48,20 +45,28 @@ func NewToolSetToolService(opts ...option.RequestOption) (r *ToolSetToolService)
 }
 
 // Creates a new tool in the tool set
-func (r *ToolSetToolService) New(ctx context.Context, toolSetID string, body ToolSetToolNewParams, opts ...option.RequestOption) (res *Tool, err error) {
+func (r *ToolSetToolService) New(ctx context.Context, workspaceID string, toolSetID string, body ToolSetToolNewParams, opts ...option.RequestOption) (res *Tool, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/tools", toolSetID)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools", workspaceID, toolSetID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a tool by ID from the workspace
-func (r *ToolSetToolService) Get(ctx context.Context, toolSetID string, id string, opts ...option.RequestOption) (res *Tool, err error) {
+func (r *ToolSetToolService) Get(ctx context.Context, workspaceID string, toolSetID string, id string, opts ...option.RequestOption) (res *Tool, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
@@ -70,14 +75,18 @@ func (r *ToolSetToolService) Get(ctx context.Context, toolSetID string, id strin
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/tools/%s", toolSetID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s", workspaceID, toolSetID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a tool in the tool set
-func (r *ToolSetToolService) Update(ctx context.Context, toolSetID string, id string, body ToolSetToolUpdateParams, opts ...option.RequestOption) (res *Tool, err error) {
+func (r *ToolSetToolService) Update(ctx context.Context, workspaceID string, toolSetID string, id string, body ToolSetToolUpdateParams, opts ...option.RequestOption) (res *Tool, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
@@ -86,21 +95,25 @@ func (r *ToolSetToolService) Update(ctx context.Context, toolSetID string, id st
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/tools/%s", toolSetID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s", workspaceID, toolSetID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all tools in the tool set
-func (r *ToolSetToolService) List(ctx context.Context, toolSetID string, query ToolSetToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Tool], err error) {
+func (r *ToolSetToolService) List(ctx context.Context, workspaceID string, toolSetID string, query ToolSetToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Tool], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/tools", toolSetID)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools", workspaceID, toolSetID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -114,14 +127,18 @@ func (r *ToolSetToolService) List(ctx context.Context, toolSetID string, query T
 }
 
 // Lists all tools in the tool set
-func (r *ToolSetToolService) ListAutoPaging(ctx context.Context, toolSetID string, query ToolSetToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Tool] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, toolSetID, query, opts...))
+func (r *ToolSetToolService) ListAutoPaging(ctx context.Context, workspaceID string, toolSetID string, query ToolSetToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Tool] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, toolSetID, query, opts...))
 }
 
 // Deletes a tool in the tool set
-func (r *ToolSetToolService) Delete(ctx context.Context, toolSetID string, id string, opts ...option.RequestOption) (err error) {
+func (r *ToolSetToolService) Delete(ctx context.Context, workspaceID string, toolSetID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return err
@@ -130,7 +147,7 @@ func (r *ToolSetToolService) Delete(ctx context.Context, toolSetID string, id st
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/tools/%s", toolSetID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s", workspaceID, toolSetID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -268,9 +285,9 @@ func (r toolJSON) RawJSON() string {
 }
 
 type ToolInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	ToolSet shared.ResourceMetadata `json:"toolSet"`

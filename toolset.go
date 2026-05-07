@@ -20,14 +20,11 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-// related tools, and tools define specific capabilities for agents. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
+// Manage tool sets and the tools they contain. Tool sets group related tools, and
+// tools define specific capabilities available to agents.
 //
-// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-// Profile actors (humans) are restricted from modifying managed tool sets.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// When a tool set is managed, only API key actors can modify its tools; human
+// (profile) actors cannot.
 //
 // ToolSetService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -37,14 +34,11 @@ import (
 // the [NewToolSetService] method instead.
 type ToolSetService struct {
 	Options []option.RequestOption
-	// ToolService manages tool sets and tools at the WORKSPACE level. Tool sets group
-	// related tools, and tools define specific capabilities for agents. All operations
-	// are implicitly scoped to the workspace determined by the JWT token.
+	// Manage tool sets and the tools they contain. Tool sets group related tools, and
+	// tools define specific capabilities available to agents.
 	//
-	// Note: When a ToolSet has managed=true, only API Key actors can modify its tools.
-	// Profile actors (humans) are restricted from modifying managed tool sets.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// When a tool set is managed, only API key actors can modify its tools; human
+	// (profile) actors cannot.
 	Tools *ToolSetToolService
 }
 
@@ -59,43 +53,59 @@ func NewToolSetService(opts ...option.RequestOption) (r *ToolSetService) {
 }
 
 // Creates a new tool set in the workspace
-func (r *ToolSetService) New(ctx context.Context, body ToolSetNewParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) New(ctx context.Context, workspaceID string, body ToolSetNewParams, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/tool_sets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a tool set by ID from the workspace
-func (r *ToolSetService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a tool set in the workspace
-func (r *ToolSetService) Update(ctx context.Context, id string, body ToolSetUpdateParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+func (r *ToolSetService) Update(ctx context.Context, workspaceID string, id string, body ToolSetUpdateParams, opts ...option.RequestOption) (res *ToolSet, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all tool sets in the workspace
-func (r *ToolSetService) List(ctx context.Context, query ToolSetListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSet], err error) {
+func (r *ToolSetService) List(ctx context.Context, workspaceID string, query ToolSetListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSet], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/tool_sets"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -109,33 +119,41 @@ func (r *ToolSetService) List(ctx context.Context, query ToolSetListParams, opts
 }
 
 // Lists all tool sets in the workspace
-func (r *ToolSetService) ListAutoPaging(ctx context.Context, query ToolSetListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSet] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *ToolSetService) ListAutoPaging(ctx context.Context, workspaceID string, query ToolSetListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSet] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes a tool set in the workspace
-func (r *ToolSetService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *ToolSetService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Lists all events (including sync status) for a tool set
-func (r *ToolSetService) ListEvents(ctx context.Context, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetEvent], err error) {
+func (r *ToolSetService) ListEvents(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetEvent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if toolSetID == "" {
 		err = errors.New("missing required toolSetId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tool_sets/%s/events", toolSetID)
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/events", workspaceID, toolSetID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -149,8 +167,8 @@ func (r *ToolSetService) ListEvents(ctx context.Context, toolSetID string, query
 }
 
 // Lists all events (including sync status) for a tool set
-func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetEvent] {
-	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, toolSetID, query, opts...))
+func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetEvent] {
+	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, toolSetID, query, opts...))
 }
 
 // Top-level filter with simple boolean logic (no nesting)
@@ -301,11 +319,11 @@ func (r McpToolFilterFiltersMatcherParam) MarshalJSON() (data []byte, err error)
 	return apijson.MarshalRoot(r)
 }
 
-// SyncCompleted is emitted when a tool set sync operation completes successfully
+// Emitted when a tool set sync operation completes successfully.
 type SyncCompleted struct {
-	// Optional message with additional details
+	// Optional message with additional details.
 	Message string `json:"message"`
-	// Number of tools synced
+	// Number of tools synced.
 	ToolsSynced int64             `json:"toolsSynced"`
 	JSON        syncCompletedJSON `json:"-"`
 }
@@ -326,13 +344,13 @@ func (r syncCompletedJSON) RawJSON() string {
 	return r.raw
 }
 
-// SyncFailed is emitted when a tool set sync operation fails
+// Emitted when a tool set sync operation fails.
 type SyncFailed struct {
-	// Indicates this is an error event
+	// Indicates this is an error event.
 	Error bool `json:"error"`
-	// Optional error type/code for programmatic handling
+	// Optional error type/code for programmatic handling.
 	ErrorType string `json:"errorType"`
-	// Error message describing what went wrong
+	// Error message describing what went wrong.
 	Message string         `json:"message"`
 	JSON    syncFailedJSON `json:"-"`
 }
@@ -354,9 +372,9 @@ func (r syncFailedJSON) RawJSON() string {
 	return r.raw
 }
 
-// SyncStarted is emitted when a tool set sync operation begins
+// Emitted when a tool set sync operation begins.
 type SyncStarted struct {
-	// Timestamp when the sync was initiated
+	// Human-readable message describing the start of the sync.
 	Message string          `json:"message"`
 	JSON    syncStartedJSON `json:"-"`
 }
@@ -552,15 +570,15 @@ func (r ToolSetAdapterMcpToolApprovalsParam) MarshalJSON() (data []byte, err err
 	return apijson.MarshalRoot(r)
 }
 
-// ToolSetEvent represents a single event in the tool set's operation timeline
+// A single event in the tool set's operation timeline.
 type ToolSetEvent struct {
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
-	// ToolSetEventData represents the actual event payload for tool set operations
+	// Event payload for a tool set operation.
 	Event ToolSetEventData `json:"event"`
 	Info  ToolSetEventInfo `json:"info"`
-	// The tool set this event is associated with
+	// The tool set this event is associated with.
 	ToolSetID string           `json:"toolSetId"`
 	JSON      toolSetEventJSON `json:"-"`
 }
@@ -584,9 +602,9 @@ func (r toolSetEventJSON) RawJSON() string {
 }
 
 type ToolSetEventInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	ToolSet shared.ResourceMetadata `json:"toolSet"`
@@ -610,15 +628,15 @@ func (r toolSetEventInfoJSON) RawJSON() string {
 	return r.raw
 }
 
-// ToolSetEventData represents the actual event payload for tool set operations
+// Event payload for a tool set operation.
 type ToolSetEventData struct {
-	// SyncCompleted is emitted when a tool set sync operation completes successfully
+	// Emitted when a tool set sync operation completes successfully.
 	SyncCompleted SyncCompleted `json:"syncCompleted"`
-	// SyncFailed is emitted when a tool set sync operation fails
+	// Emitted when a tool set sync operation fails.
 	SyncFailed SyncFailed `json:"syncFailed"`
-	// SyncStarted is emitted when a tool set sync operation begins
+	// Emitted when a tool set sync operation begins.
 	SyncStarted SyncStarted `json:"syncStarted"`
-	// Type of the event (e.g., "sync_started", "sync_completed", "sync_failed")
+	// Type of the event (e.g., "sync_started", "sync_completed", "sync_failed").
 	Type string               `json:"type"`
 	JSON toolSetEventDataJSON `json:"-"`
 }
@@ -644,9 +662,9 @@ func (r toolSetEventDataJSON) RawJSON() string {
 
 type ToolSetInfo struct {
 	AgentCount int64 `json:"agentCount"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile         `json:"createdBy"`
 	LastSync  time.Time       `json:"lastSync" format:"date-time"`
 	ToolCount int64           `json:"toolCount"`

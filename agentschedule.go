@@ -20,11 +20,8 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AgentScheduleService manages recurring schedules attached to agents. Schedules
-// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage recurring schedules attached to agents. Schedules trigger objectives on a
+// cadence defined by AgentScheduleSpec.Schedule.
 //
 // AgentScheduleService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -46,20 +43,28 @@ func NewAgentScheduleService(opts ...option.RequestOption) (r *AgentScheduleServ
 }
 
 // Creates a new schedule for an agent
-func (r *AgentScheduleService) New(ctx context.Context, agentID string, body AgentScheduleNewParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+func (r *AgentScheduleService) New(ctx context.Context, workspaceID string, agentID string, body AgentScheduleNewParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/schedules", agentID)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules", workspaceID, agentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a schedule by ID from an agent
-func (r *AgentScheduleService) Get(ctx context.Context, agentID string, id string, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+func (r *AgentScheduleService) Get(ctx context.Context, workspaceID string, agentID string, id string, opts ...option.RequestOption) (res *AgentSchedule, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
@@ -68,14 +73,18 @@ func (r *AgentScheduleService) Get(ctx context.Context, agentID string, id strin
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/schedules/%s", agentID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s", workspaceID, agentID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a schedule for an agent
-func (r *AgentScheduleService) Update(ctx context.Context, agentID string, id string, body AgentScheduleUpdateParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+func (r *AgentScheduleService) Update(ctx context.Context, workspaceID string, agentID string, id string, body AgentScheduleUpdateParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
@@ -84,21 +93,25 @@ func (r *AgentScheduleService) Update(ctx context.Context, agentID string, id st
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/schedules/%s", agentID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s", workspaceID, agentID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all schedules for an agent
-func (r *AgentScheduleService) List(ctx context.Context, agentID string, query AgentScheduleListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[AgentSchedule], err error) {
+func (r *AgentScheduleService) List(ctx context.Context, workspaceID string, agentID string, query AgentScheduleListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[AgentSchedule], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/schedules", agentID)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules", workspaceID, agentID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -112,14 +125,18 @@ func (r *AgentScheduleService) List(ctx context.Context, agentID string, query A
 }
 
 // Lists all schedules for an agent
-func (r *AgentScheduleService) ListAutoPaging(ctx context.Context, agentID string, query AgentScheduleListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[AgentSchedule] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, agentID, query, opts...))
+func (r *AgentScheduleService) ListAutoPaging(ctx context.Context, workspaceID string, agentID string, query AgentScheduleListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[AgentSchedule] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, agentID, query, opts...))
 }
 
 // Deletes a schedule from an agent
-func (r *AgentScheduleService) Delete(ctx context.Context, agentID string, id string, opts ...option.RequestOption) (err error) {
+func (r *AgentScheduleService) Delete(ctx context.Context, workspaceID string, agentID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if agentID == "" {
 		err = errors.New("missing required agentId parameter")
 		return err
@@ -128,7 +145,7 @@ func (r *AgentScheduleService) Delete(ctx context.Context, agentID string, id st
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/agents/%s/schedules/%s", agentID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s", workspaceID, agentID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -164,9 +181,9 @@ func (r agentScheduleJSON) RawJSON() string {
 
 // AgentScheduleInfo provides read-only runtime data about a schedule.
 type AgentScheduleInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// When the schedule last fired (regardless of objective outcome).
 	LastFireAt time.Time `json:"lastFireAt" format:"date-time"`
@@ -526,7 +543,8 @@ type AgentScheduleListParams struct {
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response.
 	Cursor param.Field[string] `query:"cursor"`
-	// When set to true you may use more of your alloted API rate-limit.
+	// When true, the `info` field on each returned schedule is populated. Requests
+	// with this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return.
 	Limit param.Field[int64] `query:"limit"`

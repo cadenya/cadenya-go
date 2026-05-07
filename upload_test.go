@@ -27,21 +27,25 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Uploads.New(context.TODO(), cadenya.UploadNewParams{
-		Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-			Name:       cadenya.F("name"),
-			BundleKey:  cadenya.F("bundleKey"),
-			ExternalID: cadenya.F("externalId"),
-			Labels: cadenya.F(map[string]string{
-				"foo": "string",
+	_, err := client.Uploads.New(
+		context.TODO(),
+		"workspaceId",
+		cadenya.UploadNewParams{
+			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
+				Name:       cadenya.F("name"),
+				BundleKey:  cadenya.F("bundleKey"),
+				ExternalID: cadenya.F("externalId"),
+				Labels: cadenya.F(map[string]string{
+					"foo": "string",
+				}),
 			}),
-		}),
-		Spec: cadenya.F(cadenya.UploadSpecParam{
-			ContentType: cadenya.F("contentType"),
-			Filename:    cadenya.F("filename"),
-			SizeBytes:   cadenya.F("sizeBytes"),
-		}),
-	})
+			Spec: cadenya.F(cadenya.UploadSpecParam{
+				ContentType: cadenya.F("contentType"),
+				Filename:    cadenya.F("filename"),
+				SizeBytes:   cadenya.F("sizeBytes"),
+			}),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -64,7 +68,11 @@ func TestUploadGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Uploads.Get(context.TODO(), "id")
+	_, err := client.Uploads.Get(
+		context.TODO(),
+		"workspaceId",
+		"id",
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

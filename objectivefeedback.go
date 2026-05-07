@@ -40,27 +40,35 @@ func NewObjectiveFeedbackService(opts ...option.RequestOption) (r *ObjectiveFeed
 
 // Submits feedback for an objective's execution. Feedback scores are used by the
 // agent variation scoring system to evaluate and rank variation performance.
-func (r *ObjectiveFeedbackService) New(ctx context.Context, objectiveID string, body ObjectiveFeedbackNewParams, opts ...option.RequestOption) (res *ObjectiveFeedback, err error) {
+func (r *ObjectiveFeedbackService) New(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveFeedbackNewParams, opts ...option.RequestOption) (res *ObjectiveFeedback, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/feedback", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all feedback submitted for an objective
-func (r *ObjectiveFeedbackService) List(ctx context.Context, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
+func (r *ObjectiveFeedbackService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if objectiveID == "" {
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/objectives/%s/feedback", objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", workspaceID, objectiveID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -74,8 +82,8 @@ func (r *ObjectiveFeedbackService) List(ctx context.Context, objectiveID string,
 }
 
 // Lists all feedback submitted for an objective
-func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, query, opts...))
+func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
 }
 
 // ObjectiveFeedback represents feedback submitted for an objective's execution.
@@ -163,9 +171,9 @@ type ObjectiveFeedbackInfo struct {
 	// to an objective. Both fields are server-populated; clients provide IDs through
 	// sibling fields rather than by constructing a BareMetadata themselves.
 	Objective shared.BareMetadata `json:"objective"`
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	SubmittedBy Profile                   `json:"submittedBy"`
 	JSON        objectiveFeedbackInfoJSON `json:"-"`
 }

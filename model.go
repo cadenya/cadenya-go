@@ -19,12 +19,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// ModelService manages LLM models at the WORKSPACE level. Models represent
-// available LLM providers and families (e.g., "anthropic/claude-sonnet-4.6").
-// Models are seeded into workspaces and can be enabled or disabled. All operations
-// are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage LLM models available to a workspace. Models represent provider and family
+// pairs (e.g., "anthropic/claude-sonnet-4.6"). Workspaces are seeded with the
+// supported models and you can enable or disable each one.
 //
 // ModelService contains methods and other services that help with interacting with
 // the cadenya API.
@@ -46,23 +43,31 @@ func NewModelService(opts ...option.RequestOption) (r *ModelService) {
 }
 
 // Retrieves a model by ID from the workspace
-func (r *ModelService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Model, err error) {
+func (r *ModelService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Model, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all models in the workspace
-func (r *ModelService) List(ctx context.Context, query ModelListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Model], err error) {
+func (r *ModelService) List(ctx context.Context, workspaceID string, query ModelListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Model], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/models"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/models", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -76,18 +81,22 @@ func (r *ModelService) List(ctx context.Context, query ModelListParams, opts ...
 }
 
 // Lists all models in the workspace
-func (r *ModelService) ListAutoPaging(ctx context.Context, query ModelListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Model] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *ModelService) ListAutoPaging(ctx context.Context, workspaceID string, query ModelListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Model] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Enables or disables a model in the workspace
-func (r *ModelService) SetStatus(ctx context.Context, id string, body ModelSetStatusParams, opts ...option.RequestOption) (res *Model, err error) {
+func (r *ModelService) SetStatus(ctx context.Context, workspaceID string, id string, body ModelSetStatusParams, opts ...option.RequestOption) (res *Model, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s/status", id)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s/status", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
 	return res, err
 }

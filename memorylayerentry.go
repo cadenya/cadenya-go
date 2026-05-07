@@ -19,15 +19,10 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// MemoryService manages memory layers and their entries at the WORKSPACE level.
-// Layers are named containers that can be composed into an objective's memory
-// stack; entries are the keyed values within a layer.
-//
-// All operations are implicitly scoped to the workspace determined by the JWT
-// token. System-managed layers (e.g., episodic layers created by the runtime)
+// Manage memory layers and their entries. Layers are named containers that can be
+// composed into an objective's memory stack; entries are the keyed values within a
+// layer. System-managed layers (e.g., episodic layers created by the runtime)
 // cannot be mutated through this API.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
 //
 // MemoryLayerEntryService contains methods and other services that help with
 // interacting with the cadenya API.
@@ -50,21 +45,29 @@ func NewMemoryLayerEntryService(opts ...option.RequestOption) (r *MemoryLayerEnt
 
 // Creates a new entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) New(ctx context.Context, memoryLayerID string, body MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) New(ctx context.Context, workspaceID string, memoryLayerID string, body MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries", memoryLayerID)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves a memory entry by ID from a memory layer. Returns the detail view,
 // including the content body.
-func (r *MemoryLayerEntryService) Get(ctx context.Context, memoryLayerID string, id string, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) Get(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
@@ -73,15 +76,19 @@ func (r *MemoryLayerEntryService) Get(ctx context.Context, memoryLayerID string,
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a memory entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) Update(ctx context.Context, memoryLayerID string, id string, body MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+func (r *MemoryLayerEntryService) Update(ctx context.Context, workspaceID string, memoryLayerID string, id string, body MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
@@ -90,21 +97,25 @@ func (r *MemoryLayerEntryService) Update(ctx context.Context, memoryLayerID stri
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) List(ctx context.Context, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
+func (r *MemoryLayerEntryService) List(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries", memoryLayerID)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -118,14 +129,18 @@ func (r *MemoryLayerEntryService) List(ctx context.Context, memoryLayerID string
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, memoryLayerID, query, opts...))
+func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, memoryLayerID, query, opts...))
 }
 
 // Deletes a memory entry from a memory layer
-func (r *MemoryLayerEntryService) Delete(ctx context.Context, memoryLayerID string, id string, opts ...option.RequestOption) (err error) {
+func (r *MemoryLayerEntryService) Delete(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if memoryLayerID == "" {
 		err = errors.New("missing required memoryLayerId parameter")
 		return err
@@ -134,7 +149,7 @@ func (r *MemoryLayerEntryService) Delete(ctx context.Context, memoryLayerID stri
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/memory_layers/%s/entries/%s", memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -233,9 +248,9 @@ func (r memoryEntryDetailJSON) RawJSON() string {
 }
 
 type MemoryEntryInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	MemoryLayer shared.ResourceMetadata `json:"memoryLayer"`

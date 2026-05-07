@@ -13,7 +13,7 @@ import (
 	"github.com/cadenya/cadenya-go/option"
 )
 
-func TestModelGet(t *testing.T) {
+func TestAPIKeyAccessListWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,44 +26,12 @@ func TestModelGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Models.Get(
+	_, err := client.APIKeys.Access.List(
 		context.TODO(),
-		"workspaceId",
 		"id",
-	)
-	if err != nil {
-		var apierr *cadenya.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestModelListWithOptionalParams(t *testing.T) {
-	t.Skip("Mock server tests are disabled")
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := cadenya.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Models.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.ModelListParams{
-			BundleKey: cadenya.F("bundleKey"),
-			Cursor:    cadenya.F("cursor"),
-			Limit:     cadenya.F(int64(0)),
-			Prefix:    cadenya.F("prefix"),
-			Query:     cadenya.F("query"),
-			SortOrder: cadenya.F("sortOrder"),
-			Status:    cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
+		cadenya.APIKeyAccessListParams{
+			Cursor: cadenya.F("cursor"),
+			Limit:  cadenya.F(int64(0)),
 		},
 	)
 	if err != nil {
@@ -75,7 +43,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestModelSetStatusWithOptionalParams(t *testing.T) {
+func TestAPIKeyAccessAddWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -88,13 +56,39 @@ func TestModelSetStatusWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Models.SetStatus(
+	_, err := client.APIKeys.Access.Add(
 		context.TODO(),
-		"workspaceId",
 		"id",
-		cadenya.ModelSetStatusParams{
-			Status: cadenya.F(cadenya.ModelSetStatusParamsStatusModelStatusUnspecified),
+		cadenya.APIKeyAccessAddParams{
+			WorkspaceID: cadenya.F("workspaceId"),
 		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAPIKeyAccessRemove(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	err := client.APIKeys.Access.Remove(
+		context.TODO(),
+		"id",
+		"workspaceId",
 	)
 	if err != nil {
 		var apierr *cadenya.Error

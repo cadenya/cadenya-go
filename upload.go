@@ -17,12 +17,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// UploadService issues short-lived presigned URLs for direct client-to-object-
-// storage uploads at the WORKSPACE level. Created uploads can be referenced by id
-// when creating or updating resources that accept binary content (e.g.,
-// MemoryEntry).
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Issue short-lived presigned URLs for direct client-to-object-storage uploads.
+// Created uploads can be referenced by id when creating or updating resources that
+// accept binary content (e.g., MemoryEntry).
 //
 // UploadService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -46,33 +43,41 @@ func NewUploadService(opts ...option.RequestOption) (r *UploadService) {
 // Issues a short-lived presigned URL for direct upload to object storage. The
 // returned id is used to reference the upload from resources that accept binary
 // content.
-func (r *UploadService) New(ctx context.Context, body UploadNewParams, opts ...option.RequestOption) (res *Upload, err error) {
+func (r *UploadService) New(ctx context.Context, workspaceID string, body UploadNewParams, opts ...option.RequestOption) (res *Upload, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/uploads"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/uploads", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves the current state of an upload, including its lifecycle status
-func (r *UploadService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Upload, err error) {
+func (r *UploadService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Upload, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/uploads/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/uploads/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Upload is a workspace-scoped handle representing a single file upload flow.
-// Clients call CreateUpload to receive a short-lived presigned URL, PUT the file
-// directly to object storage, then reference the upload by id when creating or
-// updating resources that accept binary content.
+// A handle representing a single file upload flow. Clients call CreateUpload to
+// receive a short-lived presigned URL, PUT the file directly to object storage,
+// then reference the upload by id when creating or updating resources that accept
+// binary content.
 //
-// Uploads are one-shot: once consumed by a creating or updating resource, the
+// Uploads are one-shot: once consumed by a creating or updating resource the
 // upload transitions to UPLOAD_STATUS_CONSUMED and cannot be reused. Unused
-// uploads expire and are garbage-collected by the runtime.
+// uploads expire and are garbage-collected.
 type Upload struct {
 	Info UploadInfo `json:"info" api:"required"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
@@ -99,9 +104,9 @@ func (r uploadJSON) RawJSON() string {
 }
 
 type UploadInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
 	// Lifecycle state. Transitions PENDING → COMPLETE (storage confirms the object
 	// exists) → CONSUMED (a resource referenced this upload), or → EXPIRED (URL

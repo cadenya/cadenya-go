@@ -26,9 +26,13 @@ func TestSearchSearchToolsOrToolSetsWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Search.SearchToolsOrToolSets(context.TODO(), cadenya.SearchSearchToolsOrToolSetsParams{
-		Query: cadenya.F("query"),
-	})
+	_, err := client.Search.SearchToolsOrToolSets(
+		context.TODO(),
+		"workspaceId",
+		cadenya.SearchSearchToolsOrToolSetsParams{
+			Query: cadenya.F("query"),
+		},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

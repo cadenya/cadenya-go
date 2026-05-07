@@ -19,11 +19,7 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// AgentService manages AI agents at the WORKSPACE level. Agents are
-// workspace-scoped resources that define AI behavior and tool access. All
-// operations are implicitly scoped to the workspace determined by the JWT token.
-//
-// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 //
 // AgentService contains methods and other services that help with interacting with
 // the cadenya API.
@@ -33,24 +29,15 @@ import (
 // the [NewAgentService] method instead.
 type AgentService struct {
 	Options []option.RequestOption
-	// AgentService manages AI agents at the WORKSPACE level. Agents are
-	// workspace-scoped resources that define AI behavior and tool access. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Feedback *AgentFeedbackService
-	// AgentService manages AI agents at the WORKSPACE level. Agents are
-	// workspace-scoped resources that define AI behavior and tool access. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	WebhookDeliveries *AgentWebhookDeliveryService
-	Variations        *AgentVariationService
-	// AgentScheduleService manages recurring schedules attached to agents. Schedules
-	// trigger objectives on a cadence defined by AgentScheduleSpec.Schedule. All
-	// operations are implicitly scoped to the workspace determined by the JWT token.
-	//
-	// Authentication: Bearer token (JWT) Scope: Workspace-level operations
+	// Manage variations of an agent and their tool, sub-agent, and memory layer
+	// assignments.
+	Variations *AgentVariationService
+	// Manage recurring schedules attached to agents. Schedules trigger objectives on a
+	// cadence defined by AgentScheduleSpec.Schedule.
 	Schedules *AgentScheduleService
 }
 
@@ -68,43 +55,59 @@ func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 }
 
 // Creates a new agent in the workspace
-func (r *AgentService) New(ctx context.Context, body AgentNewParams, opts ...option.RequestOption) (res *Agent, err error) {
+func (r *AgentService) New(ctx context.Context, workspaceID string, body AgentNewParams, opts ...option.RequestOption) (res *Agent, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/agents"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves an agent by ID from the workspace
-func (r *AgentService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *Agent, err error) {
+func (r *AgentService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Agent, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates an agent in the workspace
-func (r *AgentService) Update(ctx context.Context, id string, body AgentUpdateParams, opts ...option.RequestOption) (res *Agent, err error) {
+func (r *AgentService) Update(ctx context.Context, workspaceID string, id string, body AgentUpdateParams, opts ...option.RequestOption) (res *Agent, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
 // Lists all agents in the workspace
-func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Agent], err error) {
+func (r *AgentService) List(ctx context.Context, workspaceID string, query AgentListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Agent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/agents"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -118,19 +121,23 @@ func (r *AgentService) List(ctx context.Context, query AgentListParams, opts ...
 }
 
 // Lists all agents in the workspace
-func (r *AgentService) ListAutoPaging(ctx context.Context, query AgentListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Agent] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+func (r *AgentService) ListAutoPaging(ctx context.Context, workspaceID string, query AgentListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Agent] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes an agent from the workspace
-func (r *AgentService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *AgentService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/agents/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -179,9 +186,9 @@ func (r AgentParam) MarshalJSON() (data []byte, err error) {
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfo struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy      Profile       `json:"createdBy"`
 	VariationCount int64         `json:"variationCount"`
 	JSON           agentInfoJSON `json:"-"`
@@ -206,9 +213,9 @@ func (r agentInfoJSON) RawJSON() string {
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfoParam struct {
-	// Profile represents a human user at the account level. Profiles are
-	// account-scoped resources that can be associated with multiple workspaces through
-	// the Actor model. Authentication for profiles is handled via SSO/OAuth (WorkOS).
+	// A profile identifies a user or non-human principal (such as an API key) at the
+	// account level. Profiles are account-scoped and can be granted access to multiple
+	// workspaces.
 	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
 }
 
@@ -385,7 +392,8 @@ type AgentListParams struct {
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
-	// When set to true you may use more of your alloted API rate-limit
+	// When true, the `info` field on each returned agent is populated. Requests with
+	// this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`

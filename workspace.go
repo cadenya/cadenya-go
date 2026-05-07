@@ -17,12 +17,8 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// WorkspaceService manages workspaces at the ACCOUNT level. This service is
-// responsible for creating and listing workspaces within an account. Workspaces
-// provide organizational grouping for resources within an account.
-//
-// Authentication: Bearer token (JWT) Scope: Account-level operations (manages
-// workspaces themselves, not resources within workspaces)
+// Manage workspaces within an account. Workspaces provide organizational grouping
+// and isolation for resources such as agents, tools, and API keys.
 //
 // WorkspaceService contains methods and other services that help with interacting
 // with the cadenya API.

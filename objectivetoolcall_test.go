@@ -28,6 +28,7 @@ func TestObjectiveToolCallListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.List(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveToolCallListParams{
 			Cursor:      cadenya.F("cursor"),
@@ -60,6 +61,7 @@ func TestObjectiveToolCallApprove(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.Approve(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		"toolCallId",
 		cadenya.ObjectiveToolCallApproveParams{},
@@ -88,6 +90,7 @@ func TestObjectiveToolCallDenyWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.Deny(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		"toolCallId",
 		cadenya.ObjectiveToolCallDenyParams{

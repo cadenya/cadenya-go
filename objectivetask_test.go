@@ -28,6 +28,7 @@ func TestObjectiveTaskGet(t *testing.T) {
 	)
 	_, err := client.Objectives.Tasks.Get(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		"id",
 	)
@@ -55,6 +56,7 @@ func TestObjectiveTaskListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Tasks.List(
 		context.TODO(),
+		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveTaskListParams{
 			Cursor:    cadenya.F("cursor"),
