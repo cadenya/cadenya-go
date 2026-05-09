@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.13.0 (2026-05-09)
+
+Full Changelog: [v0.12.0...v0.13.0](https://github.com/cadenya/cadenya-go/compare/v0.12.0...v0.13.0)
+
+### Features
+
+* **api:** api update ([aabd920](https://github.com/cadenya/cadenya-go/commit/aabd920c5b6263deabe83cf90f12fa4283d85aef))
+* **api:** api update ([eaccd0f](https://github.com/cadenya/cadenya-go/commit/eaccd0fa9be2260bbd0abbd42b9f009144b63fd6))
+
+
+### Bug Fixes
+
+* **go:** avoid panic when http.DefaultTransport is wrapped ([d39b014](https://github.com/cadenya/cadenya-go/commit/d39b01497aa596015d6cdea57aeb21fa0dbaf18f))
+
+
+### Chores
+
+* redact api-key headers in debug logs ([af3ee24](https://github.com/cadenya/cadenya-go/commit/af3ee2401cc0c451c4ad4af21a6b06dfc51aa417))
+
 ## 0.12.0 (2026-05-07)
 
 Full Changelog: [v0.11.0...v0.12.0](https://github.com/cadenya/cadenya-go/compare/v0.11.0...v0.12.0)

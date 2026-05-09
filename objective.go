@@ -1229,7 +1229,7 @@ type ObjectiveNewParams struct {
 	// CreateOperationMetadata contains the user-provided fields for creating an
 	// operation. Read-only fields (id, account_id, workspace_id, created_at,
 	// profile_id) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateOperationMetadataParam] `json:"metadata" api:"required"`
+	Metadata param.Field[shared.CreateOperationMetadataParam] `json:"metadata"`
 	// Optional explicit variation selection. Overrides the agent's
 	// variation_selection_mode.
 	VariationID param.Field[string] `json:"variationId"`
