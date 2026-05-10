@@ -1356,6 +1356,8 @@ type ObjectiveListEventsParams struct {
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
+	// Optional string to fetch events since an ID
+	SinceEventID param.Field[string] `query:"sinceEventId"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
 	// Optional context window ID to filter events by

@@ -279,11 +279,12 @@ func TestObjectiveListEventsWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveListEventsParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			SortOrder:   cadenya.F("sortOrder"),
-			WindowID:    cadenya.F("windowId"),
+			Cursor:       cadenya.F("cursor"),
+			IncludeInfo:  cadenya.F(true),
+			Limit:        cadenya.F(int64(0)),
+			SinceEventID: cadenya.F("sinceEventId"),
+			SortOrder:    cadenya.F("sortOrder"),
+			WindowID:     cadenya.F("windowId"),
 		},
 	)
 	if err != nil {
