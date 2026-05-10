@@ -11,7 +11,7 @@ import (
 )
 
 type CursorPaginationPagination struct {
-	NextCursor string                         `json:"next_cursor"`
+	NextCursor string                         `json:"nextCursor"`
 	JSON       cursorPaginationPaginationJSON `json:"-"`
 }
 
