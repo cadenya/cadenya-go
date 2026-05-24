@@ -100,6 +100,7 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 							VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 							Description:            cadenya.F("description"),
 							InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
+							OutputDefinition:       cadenya.F[any](map[string]interface{}{}),
 							WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 						}),
 						Labels: cadenya.F(map[string]string{
