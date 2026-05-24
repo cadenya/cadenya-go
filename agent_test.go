@@ -44,6 +44,7 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 				Description:            cadenya.F("description"),
 				InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
+				OutputDefinition:       cadenya.F[any](map[string]interface{}{}),
 				WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 			}),
 			DefaultVariation: cadenya.F(cadenya.AgentNewParamsDefaultVariation{
@@ -154,6 +155,7 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 				Description:            cadenya.F("description"),
 				InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
+				OutputDefinition:       cadenya.F[any](map[string]interface{}{}),
 				WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),

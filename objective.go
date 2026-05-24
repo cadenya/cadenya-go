@@ -569,6 +569,9 @@ type ObjectiveData struct {
 	//   - this field) must not exceed 10 entries. A request that would produce an
 	//     effective stack larger than 10 is rejected with InvalidArgument.
 	MemoryStack []MemoryReference `json:"memoryStack"`
+	// The output of the objective, populated when the objective completes. Will match
+	// the schema of output_json_schema or output_json_inferred.
+	Output interface{} `json:"output"`
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
 	ParentObjectiveID string `json:"parentObjectiveId"`
@@ -592,6 +595,7 @@ type objectiveDataJSON struct {
 	Data              apijson.Field
 	InitialMessage    apijson.Field
 	MemoryStack       apijson.Field
+	Output            apijson.Field
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
 	SourceScheduleID  apijson.Field
@@ -703,6 +707,10 @@ type ObjectiveEventData struct {
 	Cancelled              ObjectiveEventDataCancelled `json:"cancelled"`
 	ContextWindowCompacted ContextWindowCompacted      `json:"contextWindowCompacted"`
 	Error                  ObjectiveError              `json:"error"`
+	// ObjectiveFinalized is the terminal event written when an objective is finalized.
+	// After this event, the objective is super-terminal: no further iterations,
+	// compaction, or continuation are permitted.
+	Finalized ObjectiveEventDataFinalized `json:"finalized"`
 	// MemoryRead is emitted each time the agent resolves a key against the memory
 	// stack and loads an entry. Lookups that miss (key not found in any layer) do not
 	// emit this event.
@@ -727,6 +735,7 @@ type objectiveEventDataJSON struct {
 	Cancelled              apijson.Field
 	ContextWindowCompacted apijson.Field
 	Error                  apijson.Field
+	Finalized              apijson.Field
 	MemoryRead             apijson.Field
 	SubAgentSpawned        apijson.Field
 	SubAgentUpdated        apijson.Field
@@ -774,6 +783,33 @@ func (r *ObjectiveEventDataCancelled) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveEventDataCancelledJSON) RawJSON() string {
+	return r.raw
+}
+
+// ObjectiveFinalized is the terminal event written when an objective is finalized.
+// After this event, the objective is super-terminal: no further iterations,
+// compaction, or continuation are permitted.
+type ObjectiveEventDataFinalized struct {
+	// If the objective was created with an output schema, and the agent successfully
+	// completed the objective, this field will contain the structured output of the
+	// objective.
+	Output interface{}                     `json:"output"`
+	JSON   objectiveEventDataFinalizedJSON `json:"-"`
+}
+
+// objectiveEventDataFinalizedJSON contains the JSON metadata for the struct
+// [ObjectiveEventDataFinalized]
+type objectiveEventDataFinalizedJSON struct {
+	Output      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveEventDataFinalized) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEventDataFinalizedJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -887,14 +923,15 @@ const (
 	ObjectiveStatusStateStateUnspecified ObjectiveStatusState = "STATE_UNSPECIFIED"
 	ObjectiveStatusStateStatePending     ObjectiveStatusState = "STATE_PENDING"
 	ObjectiveStatusStateStateRunning     ObjectiveStatusState = "STATE_RUNNING"
-	ObjectiveStatusStateStateCompleted   ObjectiveStatusState = "STATE_COMPLETED"
+	ObjectiveStatusStateStateWaiting     ObjectiveStatusState = "STATE_WAITING"
 	ObjectiveStatusStateStateFailed      ObjectiveStatusState = "STATE_FAILED"
 	ObjectiveStatusStateStateCancelled   ObjectiveStatusState = "STATE_CANCELLED"
+	ObjectiveStatusStateStateFinalized   ObjectiveStatusState = "STATE_FINALIZED"
 )
 
 func (r ObjectiveStatusState) IsKnown() bool {
 	switch r {
-	case ObjectiveStatusStateStateUnspecified, ObjectiveStatusStateStatePending, ObjectiveStatusStateStateRunning, ObjectiveStatusStateStateCompleted, ObjectiveStatusStateStateFailed, ObjectiveStatusStateStateCancelled:
+	case ObjectiveStatusStateStateUnspecified, ObjectiveStatusStateStatePending, ObjectiveStatusStateStateRunning, ObjectiveStatusStateStateWaiting, ObjectiveStatusStateStateFailed, ObjectiveStatusStateStateCancelled, ObjectiveStatusStateStateFinalized:
 		return true
 	}
 	return false
@@ -1275,14 +1312,15 @@ const (
 	ObjectiveListParamsStateStateUnspecified ObjectiveListParamsState = "STATE_UNSPECIFIED"
 	ObjectiveListParamsStateStatePending     ObjectiveListParamsState = "STATE_PENDING"
 	ObjectiveListParamsStateStateRunning     ObjectiveListParamsState = "STATE_RUNNING"
-	ObjectiveListParamsStateStateCompleted   ObjectiveListParamsState = "STATE_COMPLETED"
+	ObjectiveListParamsStateStateWaiting     ObjectiveListParamsState = "STATE_WAITING"
 	ObjectiveListParamsStateStateFailed      ObjectiveListParamsState = "STATE_FAILED"
 	ObjectiveListParamsStateStateCancelled   ObjectiveListParamsState = "STATE_CANCELLED"
+	ObjectiveListParamsStateStateFinalized   ObjectiveListParamsState = "STATE_FINALIZED"
 )
 
 func (r ObjectiveListParamsState) IsKnown() bool {
 	switch r {
-	case ObjectiveListParamsStateStateUnspecified, ObjectiveListParamsStateStatePending, ObjectiveListParamsStateStateRunning, ObjectiveListParamsStateStateCompleted, ObjectiveListParamsStateStateFailed, ObjectiveListParamsStateStateCancelled:
+	case ObjectiveListParamsStateStateUnspecified, ObjectiveListParamsStateStatePending, ObjectiveListParamsStateStateRunning, ObjectiveListParamsStateStateWaiting, ObjectiveListParamsStateStateFailed, ObjectiveListParamsStateStateCancelled, ObjectiveListParamsStateStateFinalized:
 		return true
 	}
 	return false
