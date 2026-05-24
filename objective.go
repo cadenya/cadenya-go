@@ -572,6 +572,9 @@ type ObjectiveData struct {
 	// The output of the objective, populated when the objective completes. Will match
 	// the schema of output_json_schema or output_json_inferred.
 	Output interface{} `json:"output"`
+	// Snapshot of the agent spec's output_definition at objective creation time. When
+	// present, the objective will run an extraction step after the LLM finishes.
+	OutputDefinition interface{} `json:"outputDefinition"`
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
 	ParentObjectiveID string `json:"parentObjectiveId"`
@@ -596,6 +599,7 @@ type objectiveDataJSON struct {
 	InitialMessage    apijson.Field
 	MemoryStack       apijson.Field
 	Output            apijson.Field
+	OutputDefinition  apijson.Field
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
 	SourceScheduleID  apijson.Field
