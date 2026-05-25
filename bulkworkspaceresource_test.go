@@ -247,11 +247,11 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 									}),
 								}),
 								Mcp: cadenya.F(cadenya.ToolSetAdapterMcpParam{
-									ExcludeTools: cadenya.F(cadenya.McpToolFilterParam{
-										Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
-										Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
-											Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
-											Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									ExcludeTools: cadenya.F(cadenya.ToolFilterParam{
+										Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+										Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+											Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+											Matcher: cadenya.F(cadenya.StringMatcherParam{
 												CaseSensitive: cadenya.F(true),
 												Contains:      cadenya.F("contains"),
 												EndsWith:      cadenya.F("endsWith"),
@@ -264,11 +264,11 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 									Headers: cadenya.F(map[string]string{
 										"foo": "string",
 									}),
-									IncludeTools: cadenya.F(cadenya.McpToolFilterParam{
-										Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
-										Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
-											Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
-											Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+									IncludeTools: cadenya.F(cadenya.ToolFilterParam{
+										Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+										Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+											Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+											Matcher: cadenya.F(cadenya.StringMatcherParam{
 												CaseSensitive: cadenya.F(true),
 												Contains:      cadenya.F("contains"),
 												EndsWith:      cadenya.F("endsWith"),
@@ -278,13 +278,13 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 											}),
 										}}),
 									}),
-									ToolApprovals: cadenya.F(cadenya.ToolSetAdapterMcpToolApprovalsParam{
+									ToolApprovals: cadenya.F(cadenya.ApprovalRequirementFilterParam{
 										Always: cadenya.F(true),
-										Only: cadenya.F(cadenya.McpToolFilterParam{
-											Operator: cadenya.F(cadenya.McpToolFilterOperatorOperatorUnspecified),
-											Filters: cadenya.F([]cadenya.McpToolFilterFilterParam{{
-												Attribute: cadenya.F(cadenya.McpToolFilterFiltersAttributeAttributeUnspecified),
-												Matcher: cadenya.F(cadenya.McpToolFilterFiltersMatcherParam{
+										Only: cadenya.F(cadenya.ToolFilterParam{
+											Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+											Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+												Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+												Matcher: cadenya.F(cadenya.StringMatcherParam{
 													CaseSensitive: cadenya.F(true),
 													Contains:      cadenya.F("contains"),
 													EndsWith:      cadenya.F("endsWith"),
@@ -296,6 +296,60 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 										}),
 									}),
 									URL: cadenya.F("url"),
+								}),
+								OpenAPI: cadenya.F(cadenya.ToolSetAdapterOpenAPIParam{
+									BaseURL: cadenya.F("baseUrl"),
+									ExcludeTools: cadenya.F(cadenya.ToolFilterParam{
+										Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+										Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+											Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+											Matcher: cadenya.F(cadenya.StringMatcherParam{
+												CaseSensitive: cadenya.F(true),
+												Contains:      cadenya.F("contains"),
+												EndsWith:      cadenya.F("endsWith"),
+												Exact:         cadenya.F("exact"),
+												Regex:         cadenya.F("regex"),
+												StartsWith:    cadenya.F("startsWith"),
+											}),
+										}}),
+									}),
+									Headers: cadenya.F(map[string]string{
+										"foo": "string",
+									}),
+									IncludeTools: cadenya.F(cadenya.ToolFilterParam{
+										Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+										Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+											Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+											Matcher: cadenya.F(cadenya.StringMatcherParam{
+												CaseSensitive: cadenya.F(true),
+												Contains:      cadenya.F("contains"),
+												EndsWith:      cadenya.F("endsWith"),
+												Exact:         cadenya.F("exact"),
+												Regex:         cadenya.F("regex"),
+												StartsWith:    cadenya.F("startsWith"),
+											}),
+										}}),
+									}),
+									ServerName: cadenya.F("serverName"),
+									ToolApprovals: cadenya.F(cadenya.ApprovalRequirementFilterParam{
+										Always: cadenya.F(true),
+										Only: cadenya.F(cadenya.ToolFilterParam{
+											Operator: cadenya.F(cadenya.ToolFilterOperatorOperatorUnspecified),
+											Filters: cadenya.F([]cadenya.AttributeFilterParam{{
+												Attribute: cadenya.F(cadenya.AttributeFilterAttributeAttributeUnspecified),
+												Matcher: cadenya.F(cadenya.StringMatcherParam{
+													CaseSensitive: cadenya.F(true),
+													Contains:      cadenya.F("contains"),
+													EndsWith:      cadenya.F("endsWith"),
+													Exact:         cadenya.F("exact"),
+													Regex:         cadenya.F("regex"),
+													StartsWith:    cadenya.F("startsWith"),
+												}),
+											}}),
+										}),
+									}),
+									UploadID: cadenya.F("uploadId"),
+									URL:      cadenya.F("url"),
 								}),
 							}),
 							Description: cadenya.F("description"),
@@ -323,6 +377,11 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 											ToolDescription: cadenya.F("toolDescription"),
 											ToolName:        cadenya.F("toolName"),
 											ToolTitle:       cadenya.F("toolTitle"),
+										}),
+										OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
+											Method:      cadenya.F("method"),
+											OperationID: cadenya.F("operationId"),
+											Path:        cadenya.F("path"),
 										}),
 									}),
 									Description: cadenya.F("description"),

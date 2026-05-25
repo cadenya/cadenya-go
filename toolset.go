@@ -140,6 +140,23 @@ func (r *ToolSetService) Delete(ctx context.Context, workspaceID string, id stri
 	return err
 }
 
+// Retrieves the current OpenAPI specification JSON that has been consumed by the
+// tool set. Only applicable to tool sets using the OpenAPI adapter.
+func (r *ToolSetService) GetOpenAPISpec(ctx context.Context, workspaceID string, toolSetID string, opts ...option.RequestOption) (res *ToolSetGetOpenAPISpecResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if toolSetID == "" {
+		err = errors.New("missing required toolSetId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/openapi_spec", workspaceID, toolSetID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
 // Lists all events (including sync status) for a tool set
 func (r *ToolSetService) ListEvents(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetEvent], err error) {
 	var raw *http.Response
@@ -171,101 +188,109 @@ func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, workspaceID s
 	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, toolSetID, query, opts...))
 }
 
-// Top-level filter with simple boolean logic (no nesting)
-type McpToolFilter struct {
-	Operator McpToolFilterOperator `json:"operator" api:"required"`
-	Filters  []McpToolFilterFilter `json:"filters"`
-	JSON     mcpToolFilterJSON     `json:"-"`
+// Approval filters that will automatically set the approval requirement on tools
+// synced from an external source
+type ApprovalRequirementFilter struct {
+	Always bool `json:"always"`
+	// Top-level filter with simple boolean logic (no nesting)
+	Only ToolFilter                    `json:"only"`
+	JSON approvalRequirementFilterJSON `json:"-"`
 }
 
-// mcpToolFilterJSON contains the JSON metadata for the struct [McpToolFilter]
-type mcpToolFilterJSON struct {
-	Operator    apijson.Field
-	Filters     apijson.Field
+// approvalRequirementFilterJSON contains the JSON metadata for the struct
+// [ApprovalRequirementFilter]
+type approvalRequirementFilterJSON struct {
+	Always      apijson.Field
+	Only        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *McpToolFilter) UnmarshalJSON(data []byte) (err error) {
+func (r *ApprovalRequirementFilter) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r mcpToolFilterJSON) RawJSON() string {
+func (r approvalRequirementFilterJSON) RawJSON() string {
 	return r.raw
 }
 
-type McpToolFilterOperator string
+// Approval filters that will automatically set the approval requirement on tools
+// synced from an external source
+type ApprovalRequirementFilterParam struct {
+	Always param.Field[bool] `json:"always"`
+	// Top-level filter with simple boolean logic (no nesting)
+	Only param.Field[ToolFilterParam] `json:"only"`
+}
 
-const (
-	McpToolFilterOperatorOperatorUnspecified McpToolFilterOperator = "OPERATOR_UNSPECIFIED"
-	McpToolFilterOperatorOperatorAnd         McpToolFilterOperator = "OPERATOR_AND"
-	McpToolFilterOperatorOperatorOr          McpToolFilterOperator = "OPERATOR_OR"
-)
-
-func (r McpToolFilterOperator) IsKnown() bool {
-	switch r {
-	case McpToolFilterOperatorOperatorUnspecified, McpToolFilterOperatorOperatorAnd, McpToolFilterOperatorOperatorOr:
-		return true
-	}
-	return false
+func (r ApprovalRequirementFilterParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 // Single attribute filter
-type McpToolFilterFilter struct {
-	Attribute McpToolFilterFiltersAttribute `json:"attribute" api:"required"`
+type AttributeFilter struct {
+	Attribute AttributeFilterAttribute `json:"attribute" api:"required"`
 	// String matching operations
-	Matcher McpToolFilterFiltersMatcher `json:"matcher"`
-	JSON    mcpToolFilterFilterJSON     `json:"-"`
+	Matcher StringMatcher       `json:"matcher"`
+	JSON    attributeFilterJSON `json:"-"`
 }
 
-// mcpToolFilterFilterJSON contains the JSON metadata for the struct
-// [McpToolFilterFilter]
-type mcpToolFilterFilterJSON struct {
+// attributeFilterJSON contains the JSON metadata for the struct [AttributeFilter]
+type attributeFilterJSON struct {
 	Attribute   apijson.Field
 	Matcher     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *McpToolFilterFilter) UnmarshalJSON(data []byte) (err error) {
+func (r *AttributeFilter) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r mcpToolFilterFilterJSON) RawJSON() string {
+func (r attributeFilterJSON) RawJSON() string {
 	return r.raw
 }
 
-type McpToolFilterFiltersAttribute string
+type AttributeFilterAttribute string
 
 const (
-	McpToolFilterFiltersAttributeAttributeUnspecified McpToolFilterFiltersAttribute = "ATTRIBUTE_UNSPECIFIED"
-	McpToolFilterFiltersAttributeAttributeName        McpToolFilterFiltersAttribute = "ATTRIBUTE_NAME"
-	McpToolFilterFiltersAttributeAttributeTitle       McpToolFilterFiltersAttribute = "ATTRIBUTE_TITLE"
-	McpToolFilterFiltersAttributeAttributeDescription McpToolFilterFiltersAttribute = "ATTRIBUTE_DESCRIPTION"
+	AttributeFilterAttributeAttributeUnspecified AttributeFilterAttribute = "ATTRIBUTE_UNSPECIFIED"
+	AttributeFilterAttributeAttributeName        AttributeFilterAttribute = "ATTRIBUTE_NAME"
+	AttributeFilterAttributeAttributeTitle       AttributeFilterAttribute = "ATTRIBUTE_TITLE"
+	AttributeFilterAttributeAttributeDescription AttributeFilterAttribute = "ATTRIBUTE_DESCRIPTION"
 )
 
-func (r McpToolFilterFiltersAttribute) IsKnown() bool {
+func (r AttributeFilterAttribute) IsKnown() bool {
 	switch r {
-	case McpToolFilterFiltersAttributeAttributeUnspecified, McpToolFilterFiltersAttributeAttributeName, McpToolFilterFiltersAttributeAttributeTitle, McpToolFilterFiltersAttributeAttributeDescription:
+	case AttributeFilterAttributeAttributeUnspecified, AttributeFilterAttributeAttributeName, AttributeFilterAttributeAttributeTitle, AttributeFilterAttributeAttributeDescription:
 		return true
 	}
 	return false
 }
 
-// String matching operations
-type McpToolFilterFiltersMatcher struct {
-	CaseSensitive bool                            `json:"caseSensitive"`
-	Contains      string                          `json:"contains"`
-	EndsWith      string                          `json:"endsWith"`
-	Exact         string                          `json:"exact"`
-	Regex         string                          `json:"regex"`
-	StartsWith    string                          `json:"startsWith"`
-	JSON          mcpToolFilterFiltersMatcherJSON `json:"-"`
+// Single attribute filter
+type AttributeFilterParam struct {
+	Attribute param.Field[AttributeFilterAttribute] `json:"attribute" api:"required"`
+	// String matching operations
+	Matcher param.Field[StringMatcherParam] `json:"matcher"`
 }
 
-// mcpToolFilterFiltersMatcherJSON contains the JSON metadata for the struct
-// [McpToolFilterFiltersMatcher]
-type mcpToolFilterFiltersMatcherJSON struct {
+func (r AttributeFilterParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// String matching operations
+type StringMatcher struct {
+	CaseSensitive bool              `json:"caseSensitive"`
+	Contains      string            `json:"contains"`
+	EndsWith      string            `json:"endsWith"`
+	Exact         string            `json:"exact"`
+	Regex         string            `json:"regex"`
+	StartsWith    string            `json:"startsWith"`
+	JSON          stringMatcherJSON `json:"-"`
+}
+
+// stringMatcherJSON contains the JSON metadata for the struct [StringMatcher]
+type stringMatcherJSON struct {
 	CaseSensitive apijson.Field
 	Contains      apijson.Field
 	EndsWith      apijson.Field
@@ -276,37 +301,16 @@ type mcpToolFilterFiltersMatcherJSON struct {
 	ExtraFields   map[string]apijson.Field
 }
 
-func (r *McpToolFilterFiltersMatcher) UnmarshalJSON(data []byte) (err error) {
+func (r *StringMatcher) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r mcpToolFilterFiltersMatcherJSON) RawJSON() string {
+func (r stringMatcherJSON) RawJSON() string {
 	return r.raw
 }
 
-// Top-level filter with simple boolean logic (no nesting)
-type McpToolFilterParam struct {
-	Operator param.Field[McpToolFilterOperator]      `json:"operator" api:"required"`
-	Filters  param.Field[[]McpToolFilterFilterParam] `json:"filters"`
-}
-
-func (r McpToolFilterParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// Single attribute filter
-type McpToolFilterFilterParam struct {
-	Attribute param.Field[McpToolFilterFiltersAttribute] `json:"attribute" api:"required"`
-	// String matching operations
-	Matcher param.Field[McpToolFilterFiltersMatcherParam] `json:"matcher"`
-}
-
-func (r McpToolFilterFilterParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // String matching operations
-type McpToolFilterFiltersMatcherParam struct {
+type StringMatcherParam struct {
 	CaseSensitive param.Field[bool]   `json:"caseSensitive"`
 	Contains      param.Field[string] `json:"contains"`
 	EndsWith      param.Field[string] `json:"endsWith"`
@@ -315,7 +319,7 @@ type McpToolFilterFiltersMatcherParam struct {
 	StartsWith    param.Field[string] `json:"startsWith"`
 }
 
-func (r McpToolFilterFiltersMatcherParam) MarshalJSON() (data []byte, err error) {
+func (r StringMatcherParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -394,6 +398,55 @@ func (r syncStartedJSON) RawJSON() string {
 	return r.raw
 }
 
+// Top-level filter with simple boolean logic (no nesting)
+type ToolFilter struct {
+	Operator ToolFilterOperator `json:"operator" api:"required"`
+	Filters  []AttributeFilter  `json:"filters"`
+	JSON     toolFilterJSON     `json:"-"`
+}
+
+// toolFilterJSON contains the JSON metadata for the struct [ToolFilter]
+type toolFilterJSON struct {
+	Operator    apijson.Field
+	Filters     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolFilter) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolFilterJSON) RawJSON() string {
+	return r.raw
+}
+
+type ToolFilterOperator string
+
+const (
+	ToolFilterOperatorOperatorUnspecified ToolFilterOperator = "OPERATOR_UNSPECIFIED"
+	ToolFilterOperatorOperatorAnd         ToolFilterOperator = "OPERATOR_AND"
+	ToolFilterOperatorOperatorOr          ToolFilterOperator = "OPERATOR_OR"
+)
+
+func (r ToolFilterOperator) IsKnown() bool {
+	switch r {
+	case ToolFilterOperatorOperatorUnspecified, ToolFilterOperatorOperatorAnd, ToolFilterOperatorOperatorOr:
+		return true
+	}
+	return false
+}
+
+// Top-level filter with simple boolean logic (no nesting)
+type ToolFilterParam struct {
+	Operator param.Field[ToolFilterOperator]     `json:"operator" api:"required"`
+	Filters  param.Field[[]AttributeFilterParam] `json:"filters"`
+}
+
+func (r ToolFilterParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type ToolSet struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
@@ -421,15 +474,17 @@ func (r toolSetJSON) RawJSON() string {
 }
 
 type ToolSetAdapter struct {
-	HTTP ToolSetAdapterHTTP `json:"http"`
-	Mcp  ToolSetAdapterMcp  `json:"mcp"`
-	JSON toolSetAdapterJSON `json:"-"`
+	HTTP    ToolSetAdapterHTTP    `json:"http"`
+	Mcp     ToolSetAdapterMcp     `json:"mcp"`
+	OpenAPI ToolSetAdapterOpenAPI `json:"openapi"`
+	JSON    toolSetAdapterJSON    `json:"-"`
 }
 
 // toolSetAdapterJSON contains the JSON metadata for the struct [ToolSetAdapter]
 type toolSetAdapterJSON struct {
 	HTTP        apijson.Field
 	Mcp         apijson.Field
+	OpenAPI     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -443,8 +498,9 @@ func (r toolSetAdapterJSON) RawJSON() string {
 }
 
 type ToolSetAdapterParam struct {
-	HTTP param.Field[ToolSetAdapterHTTPParam] `json:"http"`
-	Mcp  param.Field[ToolSetAdapterMcpParam]  `json:"mcp"`
+	HTTP    param.Field[ToolSetAdapterHTTPParam]    `json:"http"`
+	Mcp     param.Field[ToolSetAdapterMcpParam]     `json:"mcp"`
+	OpenAPI param.Field[ToolSetAdapterOpenAPIParam] `json:"openapi"`
 }
 
 func (r ToolSetAdapterParam) MarshalJSON() (data []byte, err error) {
@@ -485,15 +541,15 @@ func (r ToolSetAdapterHTTPParam) MarshalJSON() (data []byte, err error) {
 
 type ToolSetAdapterMcp struct {
 	// Top-level filter with simple boolean logic (no nesting)
-	ExcludeTools McpToolFilter     `json:"excludeTools"`
+	ExcludeTools ToolFilter        `json:"excludeTools"`
 	Headers      map[string]string `json:"headers"`
 	// Top-level filter with simple boolean logic (no nesting)
-	IncludeTools McpToolFilter `json:"includeTools"`
-	// Approval filters that will automatically set the approval requirement on the
-	// tools synced from the MCP server
-	ToolApprovals ToolSetAdapterMcpToolApprovals `json:"toolApprovals"`
-	URL           string                         `json:"url"`
-	JSON          toolSetAdapterMcpJSON          `json:"-"`
+	IncludeTools ToolFilter `json:"includeTools"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals ApprovalRequirementFilter `json:"toolApprovals"`
+	URL           string                    `json:"url"`
+	JSON          toolSetAdapterMcpJSON     `json:"-"`
 }
 
 // toolSetAdapterMcpJSON contains the JSON metadata for the struct
@@ -516,57 +572,93 @@ func (r toolSetAdapterMcpJSON) RawJSON() string {
 	return r.raw
 }
 
-// Approval filters that will automatically set the approval requirement on the
-// tools synced from the MCP server
-type ToolSetAdapterMcpToolApprovals struct {
-	Always bool `json:"always"`
-	// Top-level filter with simple boolean logic (no nesting)
-	Only McpToolFilter                      `json:"only"`
-	JSON toolSetAdapterMcpToolApprovalsJSON `json:"-"`
-}
-
-// toolSetAdapterMcpToolApprovalsJSON contains the JSON metadata for the struct
-// [ToolSetAdapterMcpToolApprovals]
-type toolSetAdapterMcpToolApprovalsJSON struct {
-	Always      apijson.Field
-	Only        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolSetAdapterMcpToolApprovals) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolSetAdapterMcpToolApprovalsJSON) RawJSON() string {
-	return r.raw
-}
-
 type ToolSetAdapterMcpParam struct {
 	// Top-level filter with simple boolean logic (no nesting)
-	ExcludeTools param.Field[McpToolFilterParam] `json:"excludeTools"`
-	Headers      param.Field[map[string]string]  `json:"headers"`
+	ExcludeTools param.Field[ToolFilterParam]   `json:"excludeTools"`
+	Headers      param.Field[map[string]string] `json:"headers"`
 	// Top-level filter with simple boolean logic (no nesting)
-	IncludeTools param.Field[McpToolFilterParam] `json:"includeTools"`
-	// Approval filters that will automatically set the approval requirement on the
-	// tools synced from the MCP server
-	ToolApprovals param.Field[ToolSetAdapterMcpToolApprovalsParam] `json:"toolApprovals"`
-	URL           param.Field[string]                              `json:"url"`
+	IncludeTools param.Field[ToolFilterParam] `json:"includeTools"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals param.Field[ApprovalRequirementFilterParam] `json:"toolApprovals"`
+	URL           param.Field[string]                         `json:"url"`
 }
 
 func (r ToolSetAdapterMcpParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// Approval filters that will automatically set the approval requirement on the
-// tools synced from the MCP server
-type ToolSetAdapterMcpToolApprovalsParam struct {
-	Always param.Field[bool] `json:"always"`
+type ToolSetAdapterOpenAPI struct {
+	// Base URL for dispatching tool calls. If set, overrides the server resolved from
+	// the spec's servers array.
+	BaseURL string `json:"baseUrl"`
 	// Top-level filter with simple boolean logic (no nesting)
-	Only param.Field[McpToolFilterParam] `json:"only"`
+	ExcludeTools ToolFilter `json:"excludeTools"`
+	// Headers sent when fetching the spec from a URL and when dispatching tool calls.
+	Headers map[string]string `json:"headers"`
+	// Top-level filter with simple boolean logic (no nesting)
+	IncludeTools ToolFilter `json:"includeTools"`
+	// Name of the server entry in the spec's servers array (OpenAPI 3.2 server.name
+	// field). Used to select which server URL to dispatch to when base_url is not set.
+	// If unset, the first server is used. Ignored when base_url is set.
+	ServerName string `json:"serverName"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals ApprovalRequirementFilter `json:"toolApprovals"`
+	// ID of a COMPLETE Upload containing the OpenAPI spec document.
+	UploadID string `json:"uploadId"`
+	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
+	URL  string                    `json:"url"`
+	JSON toolSetAdapterOpenAPIJSON `json:"-"`
 }
 
-func (r ToolSetAdapterMcpToolApprovalsParam) MarshalJSON() (data []byte, err error) {
+// toolSetAdapterOpenAPIJSON contains the JSON metadata for the struct
+// [ToolSetAdapterOpenAPI]
+type toolSetAdapterOpenAPIJSON struct {
+	BaseURL       apijson.Field
+	ExcludeTools  apijson.Field
+	Headers       apijson.Field
+	IncludeTools  apijson.Field
+	ServerName    apijson.Field
+	ToolApprovals apijson.Field
+	UploadID      apijson.Field
+	URL           apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *ToolSetAdapterOpenAPI) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolSetAdapterOpenAPIJSON) RawJSON() string {
+	return r.raw
+}
+
+type ToolSetAdapterOpenAPIParam struct {
+	// Base URL for dispatching tool calls. If set, overrides the server resolved from
+	// the spec's servers array.
+	BaseURL param.Field[string] `json:"baseUrl"`
+	// Top-level filter with simple boolean logic (no nesting)
+	ExcludeTools param.Field[ToolFilterParam] `json:"excludeTools"`
+	// Headers sent when fetching the spec from a URL and when dispatching tool calls.
+	Headers param.Field[map[string]string] `json:"headers"`
+	// Top-level filter with simple boolean logic (no nesting)
+	IncludeTools param.Field[ToolFilterParam] `json:"includeTools"`
+	// Name of the server entry in the spec's servers array (OpenAPI 3.2 server.name
+	// field). Used to select which server URL to dispatch to when base_url is not set.
+	// If unset, the first server is used. Ignored when base_url is set.
+	ServerName param.Field[string] `json:"serverName"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals param.Field[ApprovalRequirementFilterParam] `json:"toolApprovals"`
+	// ID of a COMPLETE Upload containing the OpenAPI spec document.
+	UploadID param.Field[string] `json:"uploadId"`
+	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
+	URL param.Field[string] `json:"url"`
+}
+
+func (r ToolSetAdapterOpenAPIParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -718,6 +810,28 @@ type ToolSetSpecParam struct {
 
 func (r ToolSetSpecParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+type ToolSetGetOpenAPISpecResponse struct {
+	// The consumed OpenAPI specification as a JSON string.
+	Spec string                            `json:"spec"`
+	JSON toolSetGetOpenAPISpecResponseJSON `json:"-"`
+}
+
+// toolSetGetOpenAPISpecResponseJSON contains the JSON metadata for the struct
+// [ToolSetGetOpenAPISpecResponse]
+type toolSetGetOpenAPISpecResponseJSON struct {
+	Spec        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolSetGetOpenAPISpecResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolSetGetOpenAPISpecResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 type ToolSetNewParams struct {

@@ -259,6 +259,40 @@ func (r ConfigMcpParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+type ConfigOpenAPI struct {
+	Method      string            `json:"method"`
+	OperationID string            `json:"operationId"`
+	Path        string            `json:"path"`
+	JSON        configOpenAPIJSON `json:"-"`
+}
+
+// configOpenAPIJSON contains the JSON metadata for the struct [ConfigOpenAPI]
+type configOpenAPIJSON struct {
+	Method      apijson.Field
+	OperationID apijson.Field
+	Path        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ConfigOpenAPI) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r configOpenAPIJSON) RawJSON() string {
+	return r.raw
+}
+
+type ConfigOpenAPIParam struct {
+	Method      param.Field[string] `json:"method"`
+	OperationID param.Field[string] `json:"operationId"`
+	Path        param.Field[string] `json:"path"`
+}
+
+func (r ConfigOpenAPIParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type Tool struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
@@ -377,15 +411,17 @@ func (r ToolSpecParam) MarshalJSON() (data []byte, err error) {
 // the tool is called. For example, if the tool is an HTTP tool, the adapter will
 // be Http. If the tool is an inline tool, the adapter will be Inline.
 type ToolSpecConfig struct {
-	HTTP ConfigHTTP         `json:"http"`
-	Mcp  ConfigMcp          `json:"mcp"`
-	JSON toolSpecConfigJSON `json:"-"`
+	HTTP    ConfigHTTP         `json:"http"`
+	Mcp     ConfigMcp          `json:"mcp"`
+	OpenAPI ConfigOpenAPI      `json:"openapi"`
+	JSON    toolSpecConfigJSON `json:"-"`
 }
 
 // toolSpecConfigJSON contains the JSON metadata for the struct [ToolSpecConfig]
 type toolSpecConfigJSON struct {
 	HTTP        apijson.Field
 	Mcp         apijson.Field
+	OpenAPI     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -402,8 +438,9 @@ func (r toolSpecConfigJSON) RawJSON() string {
 // the tool is called. For example, if the tool is an HTTP tool, the adapter will
 // be Http. If the tool is an inline tool, the adapter will be Inline.
 type ToolSpecConfigParam struct {
-	HTTP param.Field[ConfigHTTPParam] `json:"http"`
-	Mcp  param.Field[ConfigMcpParam]  `json:"mcp"`
+	HTTP    param.Field[ConfigHTTPParam]    `json:"http"`
+	Mcp     param.Field[ConfigMcpParam]     `json:"mcp"`
+	OpenAPI param.Field[ConfigOpenAPIParam] `json:"openapi"`
 }
 
 func (r ToolSpecConfigParam) MarshalJSON() (data []byte, err error) {
