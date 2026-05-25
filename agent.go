@@ -237,12 +237,12 @@ type AgentSpec struct {
 	// data schema is also valuable when using an agent as a sub-agent, as the schema
 	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
 	// will be loaded with a simple "prompt" free text string as its schema.
-	InputDataSchema interface{} `json:"inputDataSchema"`
+	InputDataSchema map[string]interface{} `json:"inputDataSchema"`
 	// Optional output definition for objectives created for this agent. When provided,
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
-	OutputDefinition interface{} `json:"outputDefinition"`
+	OutputDefinition map[string]interface{} `json:"outputDefinition"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL string        `json:"webhookEventsUrl"`
 	JSON             agentSpecJSON `json:"-"`
@@ -318,12 +318,12 @@ type AgentSpecParam struct {
 	// data schema is also valuable when using an agent as a sub-agent, as the schema
 	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
 	// will be loaded with a simple "prompt" free text string as its schema.
-	InputDataSchema param.Field[interface{}] `json:"inputDataSchema"`
+	InputDataSchema param.Field[map[string]interface{}] `json:"inputDataSchema"`
 	// Optional output definition for objectives created for this agent. When provided,
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
-	OutputDefinition param.Field[interface{}] `json:"outputDefinition"`
+	OutputDefinition param.Field[map[string]interface{}] `json:"outputDefinition"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL param.Field[string] `json:"webhookEventsUrl"`
 }

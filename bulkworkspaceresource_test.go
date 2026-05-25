@@ -99,9 +99,13 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 							Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 							VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 							Description:            cadenya.F("description"),
-							InputDataSchema:        cadenya.F[any](map[string]interface{}{}),
-							OutputDefinition:       cadenya.F[any](map[string]interface{}{}),
-							WebhookEventsURL:       cadenya.F("webhookEventsUrl"),
+							InputDataSchema: cadenya.F(map[string]interface{}{
+								"foo": "bar",
+							}),
+							OutputDefinition: cadenya.F(map[string]interface{}{
+								"foo": "bar",
+							}),
+							WebhookEventsURL: cadenya.F("webhookEventsUrl"),
 						}),
 						Labels: cadenya.F(map[string]string{
 							"foo": "string",
