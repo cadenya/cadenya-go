@@ -58,6 +58,11 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 						ToolName:        cadenya.F("toolName"),
 						ToolTitle:       cadenya.F("toolTitle"),
 					}),
+					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
+						Method:      cadenya.F("method"),
+						OperationID: cadenya.F("operationId"),
+						Path:        cadenya.F("path"),
+					}),
 				}),
 				Description: cadenya.F("description"),
 				Parameters: cadenya.F(map[string]interface{}{
@@ -149,6 +154,11 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 						ToolDescription: cadenya.F("toolDescription"),
 						ToolName:        cadenya.F("toolName"),
 						ToolTitle:       cadenya.F("toolTitle"),
+					}),
+					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
+						Method:      cadenya.F("method"),
+						OperationID: cadenya.F("operationId"),
+						Path:        cadenya.F("path"),
 					}),
 				}),
 				Description: cadenya.F("description"),
