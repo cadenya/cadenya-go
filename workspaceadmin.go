@@ -99,7 +99,9 @@ func (r *WorkspaceAdminService) ListAutoPaging(ctx context.Context, query Worksp
 }
 
 // Archives a workspace (soft delete). The workspace is retained, but any
-// subsequent request scoped to it returns a permission error. Admin only.
+// subsequent request scoped to it returns a permission error. Archiving the
+// account's last active (non-archived) workspace is not allowed and returns
+// FailedPrecondition. Admin only.
 func (r *WorkspaceAdminService) Archive(ctx context.Context, workspaceID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
