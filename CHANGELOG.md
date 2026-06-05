@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.23.0 (2026-06-05)
+
+Full Changelog: [v0.22.0...v0.23.0](https://github.com/cadenya/cadenya-go/compare/v0.22.0...v0.23.0)
+
+### Features
+
+* Add admin profile search (workspaceAdmin.profiles.list) — ENG-308 ([dbaa9c6](https://github.com/cadenya/cadenya-go/commit/dbaa9c6eea3a1eff66adeffc5dfd68ca7df54807))
+
 ## 0.22.0 (2026-06-05)
 
 Full Changelog: [v0.21.0...v0.22.0](https://github.com/cadenya/cadenya-go/compare/v0.21.0...v0.22.0)
