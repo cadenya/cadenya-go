@@ -25,11 +25,15 @@ func TestAutoPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	iter := client.Profiles.ListAutoPaging(context.TODO(), cadenya.ProfileListParams{})
+	iter := client.Agents.ListAutoPaging(
+		context.TODO(),
+		"workspaceId",
+		cadenya.AgentListParams{},
+	)
 	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
-		profile := iter.Current()
-		t.Logf("%+v\n", profile.Metadata)
+		agent := iter.Current()
+		t.Logf("%+v\n", agent.Metadata)
 	}
 	if err := iter.Err(); err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
