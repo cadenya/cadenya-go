@@ -81,6 +81,18 @@ func (r *WorkspaceAdminService) Get(ctx context.Context, workspaceID string, opt
 	return res, err
 }
 
+// Updates a workspace's metadata (e.g. name) and spec. Admin only.
+func (r *WorkspaceAdminService) Update(ctx context.Context, workspaceID string, body WorkspaceAdminUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/account/workspaces/%s", workspaceID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	return res, err
+}
+
 // Lists every workspace in the account, optionally including archived ones. Admin
 // only.
 func (r *WorkspaceAdminService) List(ctx context.Context, query WorkspaceAdminListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Workspace], err error) {
@@ -184,6 +196,38 @@ type WorkspaceAdminNewParamsMetadata struct {
 }
 
 func (r WorkspaceAdminNewParamsMetadata) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type WorkspaceAdminUpdateParams struct {
+	// UpdateAccountResourceMetadata contains the user-provided fields for updating an
+	// account-scoped resource. Read-only fields (id, account_id, profile_id) are
+	// excluded since they are set by the server.
+	Metadata param.Field[WorkspaceAdminUpdateParamsMetadata] `json:"metadata"`
+	Spec     param.Field[WorkspaceSpecParam]                 `json:"spec"`
+	// Fields to update.
+	UpdateMask param.Field[string] `json:"updateMask" format:"field-mask"`
+}
+
+func (r WorkspaceAdminUpdateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// UpdateAccountResourceMetadata contains the user-provided fields for updating an
+// account-scoped resource. Read-only fields (id, account_id, profile_id) are
+// excluded since they are set by the server.
+type WorkspaceAdminUpdateParamsMetadata struct {
+	// Human-readable name for the resource (e.g., "Production API Key", "Staging
+	// Workspace")
+	Name param.Field[string] `json:"name" api:"required"`
+	// External ID for the resource (e.g., a workflow ID from an external system)
+	ExternalID param.Field[string] `json:"externalId"`
+	// Arbitrary key-value pairs for categorization and filtering Examples:
+	// {"environment": "production", "team": "platform", "version": "v2"}
+	Labels param.Field[map[string]string] `json:"labels"`
+}
+
+func (r WorkspaceAdminUpdateParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
