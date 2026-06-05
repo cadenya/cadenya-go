@@ -21,6 +21,9 @@ type Client struct {
 	// Manage the authenticated account. Accounts are the top-level organizational unit
 	// and contain one or more workspaces.
 	Account *AccountService
+	// Read account profiles. Profiles are the account-level principals (users and API
+	// keys) that can be granted access to workspaces.
+	Profiles *ProfileService
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Agents     *AgentService
 	Objectives *ObjectiveService
@@ -49,7 +52,9 @@ type Client struct {
 	APIKeys          *APIKeyService
 	WorkspaceSecrets *WorkspaceSecretService
 	// Manage workspaces within an account. Workspaces provide organizational grouping
-	// and isolation for resources such as agents, tools, and API keys.
+	// and isolation for resources such as agents, tools, and API keys. Workspace
+	// creation, archival, and membership management require an account administrator
+	// (a token whose profile holds the admin role).
 	Workspaces *WorkspaceService
 	Webhooks   *WebhookService
 	// Apply a declarative bundle of workspace resources — tool sets, memory layers,
@@ -93,6 +98,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r = &Client{Options: opts}
 
 	r.Account = NewAccountService(opts...)
+	r.Profiles = NewProfileService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
 	r.MemoryLayers = NewMemoryLayerService(opts...)
