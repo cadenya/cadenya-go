@@ -4,6 +4,7 @@ package cadenya_test
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/cadenya/cadenya-go/option"
 )
 
-func TestManualPagination(t *testing.T) {
+func TestProfileListWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -25,21 +26,17 @@ func TestManualPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	page, err := client.Profiles.List(context.TODO(), cadenya.ProfileListParams{})
+	_, err := client.Profiles.List(context.TODO(), cadenya.ProfileListParams{
+		Cursor: cadenya.F("cursor"),
+		Limit:  cadenya.F(int64(0)),
+		Query:  cadenya.F("query"),
+		Type:   cadenya.F(cadenya.ProfileListParamsTypeProfileTypeUser),
+	})
 	if err != nil {
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-	for _, profile := range page.Items {
-		t.Logf("%+v\n", profile.Metadata)
-	}
-	// The mock server isn't going to give us real pagination
-	page, err = page.GetNextPage()
-	if err != nil {
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-	if page != nil {
-		for _, profile := range page.Items {
-			t.Logf("%+v\n", profile.Metadata)
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
 		}
+		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
