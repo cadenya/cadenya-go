@@ -30,7 +30,6 @@ func TestWorkspaceAdminProfileListWithOptionalParams(t *testing.T) {
 		Cursor: cadenya.F("cursor"),
 		Limit:  cadenya.F(int64(0)),
 		Query:  cadenya.F("query"),
-		Type:   cadenya.F(cadenya.WorkspaceAdminProfileListParamsTypeProfileTypeUser),
 	})
 	if err != nil {
 		var apierr *cadenya.Error

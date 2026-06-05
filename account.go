@@ -215,14 +215,15 @@ func (r profileSpecJSON) RawJSON() string {
 type ProfileSpecType string
 
 const (
-	ProfileSpecTypeProfileTypeUser   ProfileSpecType = "PROFILE_TYPE_USER"
-	ProfileSpecTypeProfileTypeAPIKey ProfileSpecType = "PROFILE_TYPE_API_KEY"
-	ProfileSpecTypeProfileTypeSystem ProfileSpecType = "PROFILE_TYPE_SYSTEM"
+	ProfileSpecTypeProfileTypeUnspecified ProfileSpecType = "PROFILE_TYPE_UNSPECIFIED"
+	ProfileSpecTypeProfileTypeUser        ProfileSpecType = "PROFILE_TYPE_USER"
+	ProfileSpecTypeProfileTypeAPIKey      ProfileSpecType = "PROFILE_TYPE_API_KEY"
+	ProfileSpecTypeProfileTypeSystem      ProfileSpecType = "PROFILE_TYPE_SYSTEM"
 )
 
 func (r ProfileSpecType) IsKnown() bool {
 	switch r {
-	case ProfileSpecTypeProfileTypeUser, ProfileSpecTypeProfileTypeAPIKey, ProfileSpecTypeProfileTypeSystem:
+	case ProfileSpecTypeProfileTypeUnspecified, ProfileSpecTypeProfileTypeUser, ProfileSpecTypeProfileTypeAPIKey, ProfileSpecTypeProfileTypeSystem:
 		return true
 	}
 	return false
