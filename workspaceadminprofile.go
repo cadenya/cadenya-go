@@ -72,11 +72,8 @@ type WorkspaceAdminProfileListParams struct {
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Free-form search over profile name and email. Case-insensitive substring match;
-	// empty returns all profiles (subject to the type filter).
+	// empty returns all profiles.
 	Query param.Field[string] `query:"query"`
-	// Filter by profile type. Defaults to all types when unset; pass PROFILE_TYPE_USER
-	// to list only human users (the common case for a member picker).
-	Type param.Field[WorkspaceAdminProfileListParamsType] `query:"type"`
 }
 
 // URLQuery serializes [WorkspaceAdminProfileListParams]'s query parameters as
@@ -86,22 +83,4 @@ func (r WorkspaceAdminProfileListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
-}
-
-// Filter by profile type. Defaults to all types when unset; pass PROFILE_TYPE_USER
-// to list only human users (the common case for a member picker).
-type WorkspaceAdminProfileListParamsType string
-
-const (
-	WorkspaceAdminProfileListParamsTypeProfileTypeUser   WorkspaceAdminProfileListParamsType = "PROFILE_TYPE_USER"
-	WorkspaceAdminProfileListParamsTypeProfileTypeAPIKey WorkspaceAdminProfileListParamsType = "PROFILE_TYPE_API_KEY"
-	WorkspaceAdminProfileListParamsTypeProfileTypeSystem WorkspaceAdminProfileListParamsType = "PROFILE_TYPE_SYSTEM"
-)
-
-func (r WorkspaceAdminProfileListParamsType) IsKnown() bool {
-	switch r {
-	case WorkspaceAdminProfileListParamsTypeProfileTypeUser, WorkspaceAdminProfileListParamsTypeProfileTypeAPIKey, WorkspaceAdminProfileListParamsTypeProfileTypeSystem:
-		return true
-	}
-	return false
 }
