@@ -489,6 +489,12 @@ Methods:
 - <code title="post /v1/account/workspaces/{workspaceId}/members">client.WorkspaceAdmin.Members.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceAdminMemberService.Add">Add</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceAdminMemberAddParams">WorkspaceAdminMemberAddParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceMember">WorkspaceMember</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="delete /v1/account/workspaces/{workspaceId}/members/{profileId}">client.WorkspaceAdmin.Members.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceAdminMemberService.Remove">Remove</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, profileID <a href="https://pkg.go.dev/builtin#string">string</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
 
+## Profiles
+
+Methods:
+
+- <code title="get /v1/account/profiles">client.WorkspaceAdmin.Profiles.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceAdminProfileService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceAdminProfileListParams">WorkspaceAdminProfileListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#Profile">Profile</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 # Webhooks
 
 Response Types:
