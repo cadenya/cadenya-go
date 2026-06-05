@@ -21,9 +21,6 @@ type Client struct {
 	// Manage the authenticated account. Accounts are the top-level organizational unit
 	// and contain one or more workspaces.
 	Account *AccountService
-	// Read account profiles. Profiles are the account-level principals (users and API
-	// keys) that can be granted access to workspaces.
-	Profiles *ProfileService
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Agents     *AgentService
 	Objectives *ObjectiveService
@@ -52,11 +49,20 @@ type Client struct {
 	APIKeys          *APIKeyService
 	WorkspaceSecrets *WorkspaceSecretService
 	// Manage workspaces within an account. Workspaces provide organizational grouping
-	// and isolation for resources such as agents, tools, and API keys. Workspace
-	// creation, archival, and membership management require an account administrator
-	// (a token whose profile holds the admin role).
+	// and isolation for resources such as agents, tools, and API keys.
+	//
+	// This is the workspace-scoped, end-user surface. Administrative operations
+	// (create / archive workspaces, manage members) live in WorkspaceAdminService
+	// under /v1/account/workspaces and require the admin role.
 	Workspaces *WorkspaceService
-	Webhooks   *WebhookService
+	// Administer workspaces across the account: create and archive workspaces and
+	// manage their membership. These operations are account-scoped and require the
+	// admin role (a token whose profile holds the WorkOS admin role); they live under
+	// /v1/account/workspaces rather than the workspace-scoped /v1/workspaces tree so
+	// an admin can manage any workspace in the account, including ones they are not
+	// themselves a member of.
+	WorkspaceAdmin *WorkspaceAdminService
+	Webhooks       *WebhookService
 	// Apply a declarative bundle of workspace resources — tool sets, memory layers,
 	// agents, variations, assignments, and schedules — in a single asynchronous
 	// operation.
@@ -98,7 +104,6 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r = &Client{Options: opts}
 
 	r.Account = NewAccountService(opts...)
-	r.Profiles = NewProfileService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
 	r.MemoryLayers = NewMemoryLayerService(opts...)
@@ -109,6 +114,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r.APIKeys = NewAPIKeyService(opts...)
 	r.WorkspaceSecrets = NewWorkspaceSecretService(opts...)
 	r.Workspaces = NewWorkspaceService(opts...)
+	r.WorkspaceAdmin = NewWorkspaceAdminService(opts...)
 	r.Webhooks = NewWebhookService(opts...)
 	r.BulkWorkspaceResources = NewBulkWorkspaceResourceService(opts...)
 
