@@ -13,7 +13,7 @@ import (
 	"github.com/cadenya/cadenya-go/option"
 )
 
-func TestWorkspaceMemberListWithOptionalParams(t *testing.T) {
+func TestWorkspaceAdminNewWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,14 +26,18 @@ func TestWorkspaceMemberListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Members.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.WorkspaceMemberListParams{
-			Cursor: cadenya.F("cursor"),
-			Limit:  cadenya.F(int64(0)),
-		},
-	)
+	_, err := client.WorkspaceAdmin.New(context.TODO(), cadenya.WorkspaceAdminNewParams{
+		Metadata: cadenya.F(cadenya.WorkspaceAdminNewParamsMetadata{
+			Name:       cadenya.F("name"),
+			ExternalID: cadenya.F("externalId"),
+			Labels: cadenya.F(map[string]string{
+				"foo": "string",
+			}),
+		}),
+		Spec: cadenya.F(cadenya.WorkspaceSpecParam{
+			Description: cadenya.F("description"),
+		}),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -43,7 +47,7 @@ func TestWorkspaceMemberListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceMemberAddWithOptionalParams(t *testing.T) {
+func TestWorkspaceAdminGet(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -56,13 +60,7 @@ func TestWorkspaceMemberAddWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Members.Add(
-		context.TODO(),
-		"workspaceId",
-		cadenya.WorkspaceMemberAddParams{
-			ProfileID: cadenya.F("profileId"),
-		},
-	)
+	_, err := client.WorkspaceAdmin.Get(context.TODO(), "workspaceId")
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -72,7 +70,7 @@ func TestWorkspaceMemberAddWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceMemberRemove(t *testing.T) {
+func TestWorkspaceAdminListWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -85,11 +83,34 @@ func TestWorkspaceMemberRemove(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.Workspaces.Members.Remove(
-		context.TODO(),
-		"workspaceId",
-		"id",
+	_, err := client.WorkspaceAdmin.List(context.TODO(), cadenya.WorkspaceAdminListParams{
+		Cursor:          cadenya.F("cursor"),
+		IncludeArchived: cadenya.F(true),
+		Limit:           cadenya.F(int64(0)),
+	})
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkspaceAdminArchive(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
 	)
+	err := client.WorkspaceAdmin.Archive(context.TODO(), "workspaceId")
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
