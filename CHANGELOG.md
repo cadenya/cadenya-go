@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.26.0 (2026-06-07)
+
+Full Changelog: [v0.25.0...v0.26.0](https://github.com/cadenya/cadenya-go/compare/v0.25.0...v0.26.0)
+
+### Features
+
+* Add AI Provider CRUD endpoints ([61e83d1](https://github.com/cadenya/cadenya-go/commit/61e83d1eb4a7a315054d70f1e481f24ceabded74))
+
 ## 0.25.0 (2026-06-05)
 
 Full Changelog: [v0.24.0...v0.25.0](https://github.com/cadenya/cadenya-go/compare/v0.24.0...v0.25.0)
