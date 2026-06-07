@@ -101,6 +101,19 @@ func (r *ModelService) SetStatus(ctx context.Context, workspaceID string, id str
 	return res, err
 }
 
+// Reassigns agent variations from one model to another in bulk. Runs
+// asynchronously and returns immediately.
+func (r *ModelService) Swap(ctx context.Context, workspaceID string, body ModelSwapParams, opts ...option.RequestOption) (res *ModelSwapResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/models:swapModelOnVariations", workspaceID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 type Model struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
@@ -130,6 +143,9 @@ func (r modelJSON) RawJSON() string {
 
 // ModelInfo carries server-derived, read-only details about a model.
 type ModelInfo struct {
+	// Number of agent variations currently provisioned on this model. Useful for
+	// previewing how many variations a swap would affect.
+	AgentVariationCount int64 `json:"agentVariationCount"`
 	// BareMetadata contains the minimal metadata for a resource: the ID and an
 	// optional human-readable name. These are used for reference fields where the full
 	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
@@ -144,10 +160,11 @@ type ModelInfo struct {
 
 // modelInfoJSON contains the JSON metadata for the struct [ModelInfo]
 type modelInfoJSON struct {
-	AIProviderKey apijson.Field
-	Provider      apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
+	AgentVariationCount apijson.Field
+	AIProviderKey       apijson.Field
+	Provider            apijson.Field
+	raw                 string
+	ExtraFields         map[string]apijson.Field
 }
 
 func (r *ModelInfo) UnmarshalJSON(data []byte) (err error) {
@@ -230,6 +247,8 @@ func (r ModelSpecStatus) IsKnown() bool {
 	return false
 }
 
+type ModelSwapResponse = interface{}
+
 type ModelListParams struct {
 	// Filter to models provisioned on a specific AI provider key. Accepts the key's id
 	// or an "external_id:"-prefixed slug.
@@ -302,4 +321,24 @@ func (r ModelSetStatusParamsStatus) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+type ModelSwapParams struct {
+	// The swaps to perform.
+	ModelSwaps param.Field[[]ModelSwapParamsModelSwap] `json:"modelSwaps"`
+}
+
+func (r ModelSwapParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ModelSwapParamsModelSwap struct {
+	// The model variations are currently on. Accepts an id or "external_id:" slug.
+	CurrentModelID param.Field[string] `json:"currentModelId"`
+	// The model to move variations to. Accepts an id or "external_id:" slug.
+	NextModelID param.Field[string] `json:"nextModelId"`
+}
+
+func (r ModelSwapParamsModelSwap) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
