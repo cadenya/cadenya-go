@@ -17,7 +17,8 @@ import (
 // interacting with the cadenya API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options []option.RequestOption
+	Options        []option.RequestOption
+	AIProviderKeys *AIProviderKeyService
 	// Manage the authenticated account. Accounts are the top-level organizational unit
 	// and contain one or more workspaces.
 	Account *AccountService
@@ -103,6 +104,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r = &Client{Options: opts}
 
+	r.AIProviderKeys = NewAIProviderKeyService(opts...)
 	r.Account = NewAccountService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Objectives = NewObjectiveService(opts...)

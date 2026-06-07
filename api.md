@@ -14,6 +14,25 @@
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/shared#OperationMetadata">OperationMetadata</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/shared#ResourceMetadata">ResourceMetadata</a>
 
+# AIProviderKeys
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeySpecParam">AIProviderKeySpecParam</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKey">AIProviderKey</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeySpec">AIProviderKeySpec</a>
+
+Methods:
+
+- <code title="post /v1/workspaces/{workspaceId}/ai_provider_keys">client.AIProviderKeys.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyNewParams">AIProviderKeyNewParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKey">AIProviderKey</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/workspaces/{workspaceId}/ai_provider_keys/{id}">client.AIProviderKeys.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKey">AIProviderKey</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="patch /v1/workspaces/{workspaceId}/ai_provider_keys/{id}">client.AIProviderKeys.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyUpdateParams">AIProviderKeyUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKey">AIProviderKey</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/workspaces/{workspaceId}/ai_provider_keys">client.AIProviderKeys.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyListParams">AIProviderKeyListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKey">AIProviderKey</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="delete /v1/workspaces/{workspaceId}/ai_provider_keys/{id}">client.AIProviderKeys.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AIProviderKeyService.Delete">Delete</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
+
 # Account
 
 Params Types:
