@@ -25,16 +25,16 @@ func TestManualPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	page, err := client.Agents.List(
+	page, err := client.AIProviderKeys.List(
 		context.TODO(),
 		"workspaceId",
-		cadenya.AgentListParams{},
+		cadenya.AIProviderKeyListParams{},
 	)
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	for _, agent := range page.Items {
-		t.Logf("%+v\n", agent.Metadata)
+	for _, aiProviderKey := range page.Items {
+		t.Logf("%+v\n", aiProviderKey.Metadata)
 	}
 	// The mock server isn't going to give us real pagination
 	page, err = page.GetNextPage()
@@ -42,8 +42,8 @@ func TestManualPagination(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 	if page != nil {
-		for _, agent := range page.Items {
-			t.Logf("%+v\n", agent.Metadata)
+		for _, aiProviderKey := range page.Items {
+			t.Logf("%+v\n", aiProviderKey.Metadata)
 		}
 	}
 }
