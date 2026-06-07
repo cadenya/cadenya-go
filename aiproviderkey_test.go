@@ -40,9 +40,9 @@ func TestAIProviderKeyNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				APIKey:   cadenya.F("apiKey"),
-				Provider: cadenya.F("provider"),
-				Region:   cadenya.F("region"),
+				APIKey:     cadenya.F("apiKey"),
+				Openrouter: cadenya.F[any](map[string]interface{}{}),
+				Provider:   cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
 			}),
 		},
 	)
@@ -109,9 +109,9 @@ func TestAIProviderKeyUpdateWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				APIKey:   cadenya.F("apiKey"),
-				Provider: cadenya.F("provider"),
-				Region:   cadenya.F("region"),
+				APIKey:     cadenya.F("apiKey"),
+				Openrouter: cadenya.F[any](map[string]interface{}{}),
+				Provider:   cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
@@ -142,11 +142,12 @@ func TestAIProviderKeyListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"workspaceId",
 		cadenya.AIProviderKeyListParams{
-			Cursor:    cadenya.F("cursor"),
-			Limit:     cadenya.F(int64(0)),
-			Prefix:    cadenya.F("prefix"),
-			Query:     cadenya.F("query"),
-			SortOrder: cadenya.F("sortOrder"),
+			Cursor:      cadenya.F("cursor"),
+			IncludeInfo: cadenya.F(true),
+			Limit:       cadenya.F(int64(0)),
+			Prefix:      cadenya.F("prefix"),
+			Query:       cadenya.F("query"),
+			SortOrder:   cadenya.F("sortOrder"),
 		},
 	)
 	if err != nil {

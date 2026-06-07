@@ -57,13 +57,15 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"workspaceId",
 		cadenya.ModelListParams{
-			BundleKey: cadenya.F("bundleKey"),
-			Cursor:    cadenya.F("cursor"),
-			Limit:     cadenya.F(int64(0)),
-			Prefix:    cadenya.F("prefix"),
-			Query:     cadenya.F("query"),
-			SortOrder: cadenya.F("sortOrder"),
-			Status:    cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
+			AIProviderKeyID: cadenya.F("aiProviderKeyId"),
+			BundleKey:       cadenya.F("bundleKey"),
+			Cursor:          cadenya.F("cursor"),
+			IncludeInfo:     cadenya.F(true),
+			Limit:           cadenya.F(int64(0)),
+			Prefix:          cadenya.F("prefix"),
+			Query:           cadenya.F("query"),
+			SortOrder:       cadenya.F("sortOrder"),
+			Status:          cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
 		},
 	)
 	if err != nil {

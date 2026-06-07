@@ -106,6 +106,8 @@ type Model struct {
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	// Model specification
 	Spec ModelSpec `json:"spec" api:"required"`
+	// ModelInfo carries server-derived, read-only details about a model.
+	Info ModelInfo `json:"info"`
 	JSON modelJSON `json:"-"`
 }
 
@@ -113,6 +115,7 @@ type Model struct {
 type modelJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -123,6 +126,52 @@ func (r *Model) UnmarshalJSON(data []byte) (err error) {
 
 func (r modelJSON) RawJSON() string {
 	return r.raw
+}
+
+// ModelInfo carries server-derived, read-only details about a model.
+type ModelInfo struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	AIProviderKey shared.BareMetadata `json:"aiProviderKey"`
+	// The AI provider this model routes through (via its provider key).
+	Provider ModelInfoProvider `json:"provider"`
+	JSON     modelInfoJSON     `json:"-"`
+}
+
+// modelInfoJSON contains the JSON metadata for the struct [ModelInfo]
+type modelInfoJSON struct {
+	AIProviderKey apijson.Field
+	Provider      apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *ModelInfo) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r modelInfoJSON) RawJSON() string {
+	return r.raw
+}
+
+// The AI provider this model routes through (via its provider key).
+type ModelInfoProvider string
+
+const (
+	ModelInfoProviderAIProviderUnspecified ModelInfoProvider = "AI_PROVIDER_UNSPECIFIED"
+	ModelInfoProviderAIProviderOpenrouter  ModelInfoProvider = "AI_PROVIDER_OPENROUTER"
+)
+
+func (r ModelInfoProvider) IsKnown() bool {
+	switch r {
+	case ModelInfoProviderAIProviderUnspecified, ModelInfoProviderAIProviderOpenrouter:
+		return true
+	}
+	return false
 }
 
 type ModelSpec struct {
@@ -182,10 +231,16 @@ func (r ModelSpecStatus) IsKnown() bool {
 }
 
 type ModelListParams struct {
+	// Filter to models provisioned on a specific AI provider key. Accepts the key's id
+	// or an "external_id:"-prefixed slug.
+	AIProviderKeyID param.Field[string] `query:"aiProviderKeyId"`
 	// Filter by bundle_key — return only resources owned by this bundle.
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
+	// When true, populate each item's info (e.g. the AI provider), at the cost of
+	// extra lookups.
+	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Filter by name prefix
