@@ -132,13 +132,17 @@ type AIProviderKey struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	Spec     AIProviderKeySpec       `json:"spec" api:"required"`
-	JSON     aiProviderKeyJSON       `json:"-"`
+	// AIProviderKeyInfo carries server-derived, read-only details about a key, for AI
+	// provider management UIs.
+	Info AIProviderKeyInfo `json:"info"`
+	JSON aiProviderKeyJSON `json:"-"`
 }
 
 // aiProviderKeyJSON contains the JSON metadata for the struct [AIProviderKey]
 type aiProviderKeyJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -151,23 +155,52 @@ func (r aiProviderKeyJSON) RawJSON() string {
 	return r.raw
 }
 
+// AIProviderKeyInfo carries server-derived, read-only details about a key, for AI
+// provider management UIs.
+type AIProviderKeyInfo struct {
+	// Number of disabled models provisioned on this key.
+	DisabledModelCount int64 `json:"disabledModelCount"`
+	// Number of enabled models provisioned on this key.
+	EnabledModelCount int64                 `json:"enabledModelCount"`
+	JSON              aiProviderKeyInfoJSON `json:"-"`
+}
+
+// aiProviderKeyInfoJSON contains the JSON metadata for the struct
+// [AIProviderKeyInfo]
+type aiProviderKeyInfoJSON struct {
+	DisabledModelCount apijson.Field
+	EnabledModelCount  apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
+}
+
+func (r *AIProviderKeyInfo) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r aiProviderKeyInfoJSON) RawJSON() string {
+	return r.raw
+}
+
 type AIProviderKeySpec struct {
 	// The provider credential. Accepted on create/update; never populated in responses
 	// (the server returns an empty value to avoid leaking it).
 	APIKey string `json:"apiKey"`
-	// The AI provider this key authenticates against. Currently "openrouter".
-	Provider string `json:"provider"`
-	// The provider region. "us" or "eu". Defaults to "us".
-	Region string                `json:"region"`
-	JSON   aiProviderKeySpecJSON `json:"-"`
+	// OpenRouterConfig holds OpenRouter-specific settings. Empty for now; it exists as
+	// the oneof seam so provider-specific options (region, base URL, etc.) can be
+	// added later without restructuring the spec.
+	Openrouter interface{} `json:"openrouter"`
+	// The AI provider this key authenticates against.
+	Provider AIProviderKeySpecProvider `json:"provider"`
+	JSON     aiProviderKeySpecJSON     `json:"-"`
 }
 
 // aiProviderKeySpecJSON contains the JSON metadata for the struct
 // [AIProviderKeySpec]
 type aiProviderKeySpecJSON struct {
 	APIKey      apijson.Field
+	Openrouter  apijson.Field
 	Provider    apijson.Field
-	Region      apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -180,14 +213,32 @@ func (r aiProviderKeySpecJSON) RawJSON() string {
 	return r.raw
 }
 
+// The AI provider this key authenticates against.
+type AIProviderKeySpecProvider string
+
+const (
+	AIProviderKeySpecProviderAIProviderUnspecified AIProviderKeySpecProvider = "AI_PROVIDER_UNSPECIFIED"
+	AIProviderKeySpecProviderAIProviderOpenrouter  AIProviderKeySpecProvider = "AI_PROVIDER_OPENROUTER"
+)
+
+func (r AIProviderKeySpecProvider) IsKnown() bool {
+	switch r {
+	case AIProviderKeySpecProviderAIProviderUnspecified, AIProviderKeySpecProviderAIProviderOpenrouter:
+		return true
+	}
+	return false
+}
+
 type AIProviderKeySpecParam struct {
 	// The provider credential. Accepted on create/update; never populated in responses
 	// (the server returns an empty value to avoid leaking it).
 	APIKey param.Field[string] `json:"apiKey"`
-	// The AI provider this key authenticates against. Currently "openrouter".
-	Provider param.Field[string] `json:"provider"`
-	// The provider region. "us" or "eu". Defaults to "us".
-	Region param.Field[string] `json:"region"`
+	// OpenRouterConfig holds OpenRouter-specific settings. Empty for now; it exists as
+	// the oneof seam so provider-specific options (region, base URL, etc.) can be
+	// added later without restructuring the spec.
+	Openrouter param.Field[interface{}] `json:"openrouter"`
+	// The AI provider this key authenticates against.
+	Provider param.Field[AIProviderKeySpecProvider] `json:"provider"`
 }
 
 func (r AIProviderKeySpecParam) MarshalJSON() (data []byte, err error) {
@@ -223,6 +274,9 @@ func (r AIProviderKeyUpdateParams) MarshalJSON() (data []byte, err error) {
 type AIProviderKeyListParams struct {
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
+	// When true, populate each item's info (model counts), at the cost of extra
+	// lookups.
+	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Filter expression (query param: prefix)
