@@ -146,13 +146,8 @@ type ModelInfo struct {
 	// Number of agent variations currently provisioned on this model. Useful for
 	// previewing how many variations a swap would affect.
 	AgentVariationCount int64 `json:"agentVariationCount"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	AIProviderKey shared.BareMetadata `json:"aiProviderKey"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	AIProviderKey shared.ResourceMetadata `json:"aiProviderKey"`
 	// The AI provider this model routes through (via its provider key).
 	Provider ModelInfoProvider `json:"provider"`
 	JSON     modelInfoJSON     `json:"-"`
