@@ -49,23 +49,6 @@ func (r accountResourceMetadataJSON) RawJSON() string {
 	return r.raw
 }
 
-// AccountResourceMetadata is used to represent a resource that is associated to an
-// account but not to a workspace.
-type AccountResourceMetadataParam struct {
-	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
-	// Tool") Required for resources that users interact with directly
-	Name param.Field[string] `json:"name" api:"required"`
-	// External ID for the resource (e.g., a workflow ID from an external system)
-	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
-	Labels param.Field[map[string]string] `json:"labels"`
-}
-
-func (r AccountResourceMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // BareMetadata contains the minimal metadata for a resource: the ID and an
 // optional human-readable name. These are used for reference fields where the full
 // metadata (account scoping, timestamps, labels, external IDs) is not needed —
@@ -95,19 +78,6 @@ func (r *BareMetadata) UnmarshalJSON(data []byte) (err error) {
 
 func (r bareMetadataJSON) RawJSON() string {
 	return r.raw
-}
-
-// BareMetadata contains the minimal metadata for a resource: the ID and an
-// optional human-readable name. These are used for reference fields where the full
-// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-// e.g., the tool references inside an agent variation spec or the tools assigned
-// to an objective. Both fields are server-populated; clients provide IDs through
-// sibling fields rather than by constructing a BareMetadata themselves.
-type BareMetadataParam struct {
-}
-
-func (r BareMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 // CreateOperationMetadata contains the user-provided fields for creating an
@@ -239,27 +209,6 @@ func (r *ResourceMetadata) UnmarshalJSON(data []byte) (err error) {
 
 func (r resourceMetadataJSON) RawJSON() string {
 	return r.raw
-}
-
-// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-type ResourceMetadataParam struct {
-	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
-	// Tool") Required for resources that users interact with directly
-	Name param.Field[string] `json:"name" api:"required"`
-	// Optional bundle ownership key. When set, indicates the resource is managed by a
-	// configuration bundle identified by this key. Used by
-	// BulkWorkspaceResources.Apply to track which resources belong to which bundle for
-	// reconciliation / soft-delete on re-apply.
-	BundleKey param.Field[string] `json:"bundleKey"`
-	// External ID for the resource (e.g., a workflow ID from an external system)
-	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
-	Labels param.Field[map[string]string] `json:"labels"`
-}
-
-func (r ResourceMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 // UpdateResourceMetadata contains the user-provided fields for updating a

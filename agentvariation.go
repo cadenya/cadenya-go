@@ -295,18 +295,6 @@ func (r agentVariationJSON) RawJSON() string {
 	return r.raw
 }
 
-// AgentVariation resource
-type AgentVariationParam struct {
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Metadata param.Field[shared.ResourceMetadataParam] `json:"metadata" api:"required"`
-	// AgentVariationSpec defines the operational configuration for a variation
-	Spec param.Field[AgentVariationSpecParam] `json:"spec" api:"required"`
-}
-
-func (r AgentVariationParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // AgentVariationInfo provides read-only summary information about a variation
 type AgentVariationInfo struct {
 	// All tools, tool sets, and sub-agents assigned to this variation. Populated on
@@ -361,23 +349,6 @@ func (r *AgentVariationInfo) UnmarshalJSON(data []byte) (err error) {
 
 func (r agentVariationInfoJSON) RawJSON() string {
 	return r.raw
-}
-
-// AgentVariationInfo provides read-only summary information about a variation
-type AgentVariationInfoParam struct {
-	// A profile identifies a user or non-human principal (such as an API key) at the
-	// account level. Profiles are account-scoped and can be granted access to multiple
-	// workspaces.
-	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
-	// Total number of objective feedbacks received for this variation
-	FeedbackCount param.Field[int64] `json:"feedbackCount"`
-	// Thompson Sampling score: posterior mean of Beta(ts_alpha, ts_beta). Range [0, 1]
-	// where 0.5 = neutral, >0.5 = positive, <0.5 = negative.
-	Score param.Field[float64] `json:"score"`
-}
-
-func (r AgentVariationInfoParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 // AgentVariationSpec defines the operational configuration for a variation
@@ -792,42 +763,6 @@ func (r variationAssignmentJSON) RawJSON() string {
 	return r.raw
 }
 
-// A read-only reference to a single tool, tool set, or sub-agent attached to a
-// variation. Read the full set of assignments via
-// `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints.
-//
-// The `id` identifies the assignment itself (not the referenced resource) and is
-// the handle used to remove the assignment. It is returned by the add endpoint and
-// present on every entry in `AgentVariationInfo.assignments`.
-type VariationAssignmentParam struct {
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	Agent param.Field[shared.BareMetadataParam] `json:"agent"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	Tool param.Field[shared.BareMetadataParam] `json:"tool"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	ToolSet param.Field[shared.BareMetadataParam] `json:"toolSet"`
-}
-
-func (r VariationAssignmentParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
 // given position in the variation's baseline memory stack. A variation has at most
 // one assignment per memory_layer_id.
@@ -870,32 +805,6 @@ func (r *VariationMemoryLayerAssignment) UnmarshalJSON(data []byte) (err error) 
 
 func (r variationMemoryLayerAssignmentJSON) RawJSON() string {
 	return r.raw
-}
-
-// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
-// given position in the variation's baseline memory stack. A variation has at most
-// one assignment per memory_layer_id.
-//
-// Variations only support whole-layer attachments — entry pinning is an
-// objective-level capability.
-type VariationMemoryLayerAssignmentParam struct {
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	MemoryLayer param.Field[shared.BareMetadataParam] `json:"memoryLayer"`
-	// Position in the variation's baseline stack. Lower values sit lower; the
-	// highest-position assignment is on top of the variation's baseline. Gaps are fine
-	// — only relative position matters. Positions must be unique within a variation; a
-	// request that would collide with an existing assignment's position is rejected
-	// with InvalidArgument.
-	Position param.Field[int64] `json:"position"`
-}
-
-func (r VariationMemoryLayerAssignmentParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 type AgentVariationNewParams struct {
