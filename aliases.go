@@ -15,12 +15,6 @@ type Error = apierror.Error
 // This is an alias to an internal type.
 type AccountResourceMetadata = shared.AccountResourceMetadata
 
-// AccountResourceMetadata is used to represent a resource that is associated to an
-// account but not to a workspace.
-//
-// This is an alias to an internal type.
-type AccountResourceMetadataParam = shared.AccountResourceMetadataParam
-
 // BareMetadata contains the minimal metadata for a resource: the ID and an
 // optional human-readable name. These are used for reference fields where the full
 // metadata (account scoping, timestamps, labels, external IDs) is not needed —
@@ -30,16 +24,6 @@ type AccountResourceMetadataParam = shared.AccountResourceMetadataParam
 //
 // This is an alias to an internal type.
 type BareMetadata = shared.BareMetadata
-
-// BareMetadata contains the minimal metadata for a resource: the ID and an
-// optional human-readable name. These are used for reference fields where the full
-// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-// e.g., the tool references inside an agent variation spec or the tools assigned
-// to an objective. Both fields are server-populated; clients provide IDs through
-// sibling fields rather than by constructing a BareMetadata themselves.
-//
-// This is an alias to an internal type.
-type BareMetadataParam = shared.BareMetadataParam
 
 // CreateOperationMetadata contains the user-provided fields for creating an
 // operation. Read-only fields (id, account_id, workspace_id, created_at,
@@ -65,11 +49,6 @@ type OperationMetadata = shared.OperationMetadata
 //
 // This is an alias to an internal type.
 type ResourceMetadata = shared.ResourceMetadata
-
-// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-//
-// This is an alias to an internal type.
-type ResourceMetadataParam = shared.ResourceMetadataParam
 
 // UpdateResourceMetadata contains the user-provided fields for updating a
 // workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
