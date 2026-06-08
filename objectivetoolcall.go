@@ -85,8 +85,8 @@ func (r *ObjectiveToolCallService) Approve(ctx context.Context, workspaceID stri
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s/approve", workspaceID, objectiveID, toolCallID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:approve", workspaceID, objectiveID, toolCallID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -107,8 +107,8 @@ func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string,
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s/deny", workspaceID, objectiveID, toolCallID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:deny", workspaceID, objectiveID, toolCallID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -116,24 +116,24 @@ func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string,
 // execution. Tool calls are mutable — their status changes as they are approved,
 // denied, or executed.
 type ObjectiveToolCall struct {
-	Data ObjectiveToolCallData `json:"data" api:"required"`
+	Data            ObjectiveToolCallData            `json:"data" api:"required"`
+	ExecutionStatus ObjectiveToolCallExecutionStatus `json:"executionStatus" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	// Current status of the tool call
-	Status          ObjectiveToolCallStatus          `json:"status" api:"required"`
-	ExecutionStatus ObjectiveToolCallExecutionStatus `json:"executionStatus"`
-	Info            ObjectiveToolCallInfo            `json:"info"`
-	JSON            objectiveToolCallJSON            `json:"-"`
+	Status ObjectiveToolCallStatus `json:"status" api:"required"`
+	Info   ObjectiveToolCallInfo   `json:"info"`
+	JSON   objectiveToolCallJSON   `json:"-"`
 }
 
 // objectiveToolCallJSON contains the JSON metadata for the struct
 // [ObjectiveToolCall]
 type objectiveToolCallJSON struct {
 	Data            apijson.Field
+	ExecutionStatus apijson.Field
 	Metadata        apijson.Field
 	Status          apijson.Field
-	ExecutionStatus apijson.Field
 	Info            apijson.Field
 	raw             string
 	ExtraFields     map[string]apijson.Field
@@ -145,6 +145,24 @@ func (r *ObjectiveToolCall) UnmarshalJSON(data []byte) (err error) {
 
 func (r objectiveToolCallJSON) RawJSON() string {
 	return r.raw
+}
+
+type ObjectiveToolCallExecutionStatus string
+
+const (
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted   ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+)
+
+func (r ObjectiveToolCallExecutionStatus) IsKnown() bool {
+	switch r {
+	case ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored:
+		return true
+	}
+	return false
 }
 
 // Current status of the tool call
@@ -161,24 +179,6 @@ const (
 func (r ObjectiveToolCallStatus) IsKnown() bool {
 	switch r {
 	case ObjectiveToolCallStatusToolCallStatusUnspecified, ObjectiveToolCallStatusToolCallStatusAutoApproved, ObjectiveToolCallStatusToolCallStatusWaitingForApproval, ObjectiveToolCallStatusToolCallStatusApproved, ObjectiveToolCallStatusToolCallStatusDenied:
-		return true
-	}
-	return false
-}
-
-type ObjectiveToolCallExecutionStatus string
-
-const (
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted   ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
-)
-
-func (r ObjectiveToolCallExecutionStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored:
 		return true
 	}
 	return false

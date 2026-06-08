@@ -8,7 +8,6 @@ import (
 	"slices"
 
 	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/param"
 	"github.com/cadenya/cadenya-go/internal/requestconfig"
 	"github.com/cadenya/cadenya-go/option"
 	"github.com/cadenya/cadenya-go/shared"
@@ -167,21 +166,6 @@ func (r profileJSON) RawJSON() string {
 	return r.raw
 }
 
-// A profile identifies a user or non-human principal (such as an API key) at the
-// account level. Profiles are account-scoped and can be granted access to multiple
-// workspaces.
-type ProfileParam struct {
-	// AccountResourceMetadata is used to represent a resource that is associated to an
-	// account but not to a workspace.
-	Metadata param.Field[shared.AccountResourceMetadataParam] `json:"metadata" api:"required"`
-	// Configuration for a profile.
-	Spec param.Field[ProfileSpecParam] `json:"spec" api:"required"`
-}
-
-func (r ProfileParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // Configuration for a profile.
 type ProfileSpec struct {
 	// Whether this profile represents a human user, an API key, or a system principal.
@@ -227,21 +211,6 @@ func (r ProfileSpecType) IsKnown() bool {
 		return true
 	}
 	return false
-}
-
-// Configuration for a profile.
-type ProfileSpecParam struct {
-	// Whether this profile represents a human user, an API key, or a system principal.
-	Type param.Field[ProfileSpecType] `json:"type" api:"required"`
-	// Email address of the profile. Required and unique within an account for user
-	// profiles.
-	Email param.Field[string] `json:"email"`
-	// Display name (e.g., "Bobby Tables").
-	Name param.Field[string] `json:"name"`
-}
-
-func (r ProfileSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 // Response containing the newly generated webhook signing secret.

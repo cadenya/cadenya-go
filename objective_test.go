@@ -32,24 +32,24 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		cadenya.ObjectiveNewParams{
 			AgentID: cadenya.F("agentId"),
-			Data: cadenya.F(cadenya.ObjectiveDataParam{
-				Data:           cadenya.F[any](map[string]interface{}{}),
-				InitialMessage: cadenya.F("initialMessage"),
-				MemoryStack: cadenya.F([]cadenya.MemoryReferenceParam{{
-					MemoryEntryID: cadenya.F("memoryEntryId"),
-					MemoryLayerID: cadenya.F("memoryLayerId"),
-				}}),
-				Secrets: cadenya.F([]cadenya.ObjectiveDataSecretParam{{
-					Name:  cadenya.F("name"),
-					Value: cadenya.F("value"),
-				}}),
+			Data: cadenya.F(map[string]interface{}{
+				"foo": "bar",
 			}),
+			InitialMessage: cadenya.F("initialMessage"),
+			MemoryStack: cadenya.F([]cadenya.MemoryReferenceParam{{
+				MemoryEntryID: cadenya.F("memoryEntryId"),
+				MemoryLayerID: cadenya.F("memoryLayerId"),
+			}}),
 			Metadata: cadenya.F(shared.CreateOperationMetadataParam{
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
 				}),
 			}),
+			Secrets: cadenya.F([]cadenya.ObjectiveNewParamsSecret{{
+				Name:  cadenya.F("name"),
+				Value: cadenya.F("value"),
+			}}),
 			VariationID: cadenya.F("variationId"),
 		},
 	)

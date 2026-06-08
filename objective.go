@@ -113,7 +113,7 @@ func (r *ObjectiveService) Cancel(ctx context.Context, workspaceID string, objec
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/cancel", workspaceID, objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s:cancel", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -130,7 +130,7 @@ func (r *ObjectiveService) Compact(ctx context.Context, workspaceID string, obje
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/compact", workspaceID, objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s:compact", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -146,7 +146,7 @@ func (r *ObjectiveService) Continue(ctx context.Context, workspaceID string, obj
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/continue", workspaceID, objectiveID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s:continue", workspaceID, objectiveID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -412,31 +412,75 @@ func (r MemoryReferenceParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// Objective is the data for an objective. It contains the snapshotted fields for
+// the selected agent and variation. Secrets are returned only with their names,
+// and the output definition is copied from the agent's configuration.
 type Objective struct {
-	Data ObjectiveData `json:"data" api:"required"`
+	// ObjectiveConfigSnapshot is the point-in-time snapshot of the agent, variation,
+	// and (when applicable) schedule that an objective was started with.
+	ConfigSnapshot ObjectiveConfigSnapshot `json:"configSnapshot" api:"required"`
+	// The initial message sent to the agent. This becomes the first user message in
+	// the LLM chat history.
+	InitialMessage string `json:"initialMessage" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
-	Status   ObjectiveStatus          `json:"status" api:"required"`
+	// The current lifecycle state of the objective.
+	State ObjectiveState `json:"state" api:"required"`
+	// system_prompt is read-only, derived from the selected variation's prompt
+	SystemPrompt string `json:"systemPrompt" api:"required"`
+	// Arbitrary data for the objective
+	Data map[string]interface{} `json:"data"`
 	// ObjectiveInfo provides read-only aggregated statistics about an objective's
 	// execution
 	Info ObjectiveInfo `json:"info"`
-	// Read-only list of the last five windows of execution for this objective, ordered
-	// by most recent first. Is only included in singular RPC calls (GetObjective, for
-	// example).
-	LastFiveWindows []ObjectiveContextWindow `json:"lastFiveWindows"`
-	JSON            objectiveJSON            `json:"-"`
+	// Memory layers/entries to push onto this objective's memory stack on top of the
+	// baseline stack inherited from the selected variation.
+	//
+	// Array order is push order: the first element sits lower in the objective's
+	// contribution to the stack; the LAST element ends up on top of the effective
+	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
+	// position.
+	//
+	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
+	// themselves automatically based on episodic_key.
+	//
+	// Stack size cap: the TOTAL effective stack (variation's memory layers
+	//
+	//   - this field) must not exceed 10 entries. A request that would produce an
+	//     effective stack larger than 10 is rejected with InvalidArgument.
+	MemoryStack []MemoryReference `json:"memoryStack"`
+	// The output of the objective, populated when the objective completes. Will match
+	// the schema of output_json_schema or output_json_inferred. This will only be set
+	// if the state of the objective is set to STATE_FINALIZED
+	Output map[string]interface{} `json:"output"`
+	// A parent objective means the objective was spawned off using a separate agent to
+	// complete an objective
+	ParentObjectiveID string `json:"parentObjectiveId"`
+	// Secrets that can be used in the headers for tool calls using the secret
+	// interpolation format.
+	Secrets []ObjectiveSecret `json:"secrets"`
+	// Optional human-readable detail about the current state (e.g. a failure reason).
+	StateMessage string        `json:"stateMessage"`
+	JSON         objectiveJSON `json:"-"`
 }
 
 // objectiveJSON contains the JSON metadata for the struct [Objective]
 type objectiveJSON struct {
-	Data            apijson.Field
-	Metadata        apijson.Field
-	Status          apijson.Field
-	Info            apijson.Field
-	LastFiveWindows apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
+	ConfigSnapshot    apijson.Field
+	InitialMessage    apijson.Field
+	Metadata          apijson.Field
+	State             apijson.Field
+	SystemPrompt      apijson.Field
+	Data              apijson.Field
+	Info              apijson.Field
+	MemoryStack       apijson.Field
+	Output            apijson.Field
+	ParentObjectiveID apijson.Field
+	Secrets           apijson.Field
+	StateMessage      apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
 }
 
 func (r *Objective) UnmarshalJSON(data []byte) (err error) {
@@ -444,6 +488,58 @@ func (r *Objective) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveJSON) RawJSON() string {
+	return r.raw
+}
+
+// The current lifecycle state of the objective.
+type ObjectiveState string
+
+const (
+	ObjectiveStateStateUnspecified ObjectiveState = "STATE_UNSPECIFIED"
+	ObjectiveStateStatePending     ObjectiveState = "STATE_PENDING"
+	ObjectiveStateStateRunning     ObjectiveState = "STATE_RUNNING"
+	ObjectiveStateStateWaiting     ObjectiveState = "STATE_WAITING"
+	ObjectiveStateStateFailed      ObjectiveState = "STATE_FAILED"
+	ObjectiveStateStateCancelled   ObjectiveState = "STATE_CANCELLED"
+	ObjectiveStateStateFinalized   ObjectiveState = "STATE_FINALIZED"
+)
+
+func (r ObjectiveState) IsKnown() bool {
+	switch r {
+	case ObjectiveStateStateUnspecified, ObjectiveStateStatePending, ObjectiveStateStateRunning, ObjectiveStateStateWaiting, ObjectiveStateStateFailed, ObjectiveStateStateCancelled, ObjectiveStateStateFinalized:
+		return true
+	}
+	return false
+}
+
+// ObjectiveConfigSnapshot is the point-in-time snapshot of the agent, variation,
+// and (when applicable) schedule that an objective was started with.
+type ObjectiveConfigSnapshot struct {
+	// Agent resource
+	Agent Agent `json:"agent"`
+	// AgentSchedule resource — a recurring trigger attached to an agent that creates
+	// objectives on its cadence.
+	AgentSchedule AgentSchedule `json:"agentSchedule"`
+	// AgentVariation resource
+	AgentVariation AgentVariation              `json:"agentVariation"`
+	JSON           objectiveConfigSnapshotJSON `json:"-"`
+}
+
+// objectiveConfigSnapshotJSON contains the JSON metadata for the struct
+// [ObjectiveConfigSnapshot]
+type objectiveConfigSnapshotJSON struct {
+	Agent          apijson.Field
+	AgentSchedule  apijson.Field
+	AgentVariation apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *ObjectiveConfigSnapshot) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveConfigSnapshotJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -542,143 +638,6 @@ func (r *ObjectiveContextWindowData) UnmarshalJSON(data []byte) (err error) {
 
 func (r objectiveContextWindowDataJSON) RawJSON() string {
 	return r.raw
-}
-
-type ObjectiveData struct {
-	// Agent resource
-	Agent Agent `json:"agent"`
-	// Represents a dynamically typed value which can be either null, a number, a
-	// string, a boolean, a recursive struct value, or a list of values.
-	Data interface{} `json:"data"`
-	// The initial message sent to the agent. This becomes the first user message in
-	// the LLM chat history.
-	InitialMessage string `json:"initialMessage"`
-	// Memory layers/entries to push onto this objective's memory stack on top of the
-	// baseline stack inherited from the selected variation.
-	//
-	// Array order is push order: the first element sits lower in the objective's
-	// contribution to the stack; the LAST element ends up on top of the effective
-	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
-	// position.
-	//
-	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically based on episodic_key.
-	//
-	// Stack size cap: the TOTAL effective stack (variation's memory layers
-	//
-	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument.
-	MemoryStack []MemoryReference `json:"memoryStack"`
-	// The output of the objective, populated when the objective completes. Will match
-	// the schema of output_json_schema or output_json_inferred.
-	Output map[string]interface{} `json:"output"`
-	// Snapshot of the agent spec's output_definition at objective creation time. When
-	// present, the objective will run an extraction step after the LLM finishes.
-	OutputDefinition map[string]interface{} `json:"outputDefinition"`
-	// A parent objective means the objective was spawned off using a separate agent to
-	// complete an objective
-	ParentObjectiveID string `json:"parentObjectiveId"`
-	// Secrets that can be used in the headers for tool calls using the secret
-	// interpolation format.
-	Secrets []ObjectiveDataSecret `json:"secrets"`
-	// ID of the AgentSchedule that produced this objective, when applicable. Populated
-	// when the objective is created from a schedule fire; empty when the objective was
-	// created via CreateObjective directly.
-	SourceScheduleID string `json:"sourceScheduleId"`
-	// system_prompt is read-only, derived from the selected variation's prompt
-	SystemPrompt string `json:"systemPrompt"`
-	// AgentVariation resource
-	Variation AgentVariation    `json:"variation"`
-	JSON      objectiveDataJSON `json:"-"`
-}
-
-// objectiveDataJSON contains the JSON metadata for the struct [ObjectiveData]
-type objectiveDataJSON struct {
-	Agent             apijson.Field
-	Data              apijson.Field
-	InitialMessage    apijson.Field
-	MemoryStack       apijson.Field
-	Output            apijson.Field
-	OutputDefinition  apijson.Field
-	ParentObjectiveID apijson.Field
-	Secrets           apijson.Field
-	SourceScheduleID  apijson.Field
-	SystemPrompt      apijson.Field
-	Variation         apijson.Field
-	raw               string
-	ExtraFields       map[string]apijson.Field
-}
-
-func (r *ObjectiveData) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveDataJSON) RawJSON() string {
-	return r.raw
-}
-
-type ObjectiveDataParam struct {
-	// Represents a dynamically typed value which can be either null, a number, a
-	// string, a boolean, a recursive struct value, or a list of values.
-	Data param.Field[interface{}] `json:"data"`
-	// The initial message sent to the agent. This becomes the first user message in
-	// the LLM chat history.
-	InitialMessage param.Field[string] `json:"initialMessage"`
-	// Memory layers/entries to push onto this objective's memory stack on top of the
-	// baseline stack inherited from the selected variation.
-	//
-	// Array order is push order: the first element sits lower in the objective's
-	// contribution to the stack; the LAST element ends up on top of the effective
-	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
-	// position.
-	//
-	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically based on episodic_key.
-	//
-	// Stack size cap: the TOTAL effective stack (variation's memory layers
-	//
-	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument.
-	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
-	// Secrets that can be used in the headers for tool calls using the secret
-	// interpolation format.
-	Secrets param.Field[[]ObjectiveDataSecretParam] `json:"secrets"`
-}
-
-func (r ObjectiveDataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-type ObjectiveDataSecret struct {
-	Name  string                  `json:"name"`
-	Value string                  `json:"value"`
-	JSON  objectiveDataSecretJSON `json:"-"`
-}
-
-// objectiveDataSecretJSON contains the JSON metadata for the struct
-// [ObjectiveDataSecret]
-type objectiveDataSecretJSON struct {
-	Name        apijson.Field
-	Value       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveDataSecret) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveDataSecretJSON) RawJSON() string {
-	return r.raw
-}
-
-type ObjectiveDataSecretParam struct {
-	Name  param.Field[string] `json:"name"`
-	Value param.Field[string] `json:"value"`
-}
-
-func (r ObjectiveDataSecretParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 type ObjectiveError struct {
@@ -849,46 +808,52 @@ func (r objectiveEventInfoJSON) RawJSON() string {
 // execution
 type ObjectiveInfo struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Agent shared.ResourceMetadata `json:"agent"`
+	Agent shared.ResourceMetadata `json:"agent" api:"required"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	AgentVariation shared.ResourceMetadata `json:"agentVariation"`
+	AgentVariation shared.ResourceMetadata `json:"agentVariation" api:"required"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	CreatedBy Profile `json:"createdBy"`
+	CreatedBy Profile `json:"createdBy" api:"required"`
+	// ID of the objective's current (most recent) context window. Hydrated on demand;
+	// empty when the objective has not yet produced a context window.
+	CurrentContextWindowID string `json:"currentContextWindowId" api:"required"`
 	// The effective memory stack at objective creation time, flattened from the
-	// variation's baseline plus ObjectiveData.memory_stack. Order is push order (last
-	// = top). Returned on reads so clients can see exactly what stack the objective is
+	// variation's baseline plus Objective.memory_stack. Order is push order (last =
+	// top). Returned on reads so clients can see exactly what stack the objective is
 	// using without having to re-join variation state.
-	EffectiveMemoryStack []MemoryReference `json:"effectiveMemoryStack"`
+	EffectiveMemoryStack []MemoryReference `json:"effectiveMemoryStack" api:"required"`
 	// Total number of context windows that this objective has generated
-	TotalContextWindows int64 `json:"totalContextWindows"`
+	TotalContextWindows int64 `json:"totalContextWindows" api:"required"`
 	// Total number of events generated during this objective's execution
-	TotalEvents int64 `json:"totalEvents"`
+	TotalEvents int64 `json:"totalEvents" api:"required"`
 	// Total input tokens consumed across all LLM completions across all context
 	// windows
-	TotalInputTokens int64 `json:"totalInputTokens"`
+	TotalInputTokens int64 `json:"totalInputTokens" api:"required"`
+	TotalIterations  int64 `json:"totalIterations" api:"required"`
 	// Total output tokens generated across all LLM completions across all context
 	// windows
-	TotalOutputTokens int64 `json:"totalOutputTokens"`
+	TotalOutputTokens int64 `json:"totalOutputTokens" api:"required"`
 	// Total number of tool calls made during execution
-	TotalToolCalls int64             `json:"totalToolCalls"`
+	TotalToolCalls int64             `json:"totalToolCalls" api:"required"`
 	JSON           objectiveInfoJSON `json:"-"`
 }
 
 // objectiveInfoJSON contains the JSON metadata for the struct [ObjectiveInfo]
 type objectiveInfoJSON struct {
-	Agent                apijson.Field
-	AgentVariation       apijson.Field
-	CreatedBy            apijson.Field
-	EffectiveMemoryStack apijson.Field
-	TotalContextWindows  apijson.Field
-	TotalEvents          apijson.Field
-	TotalInputTokens     apijson.Field
-	TotalOutputTokens    apijson.Field
-	TotalToolCalls       apijson.Field
-	raw                  string
-	ExtraFields          map[string]apijson.Field
+	Agent                  apijson.Field
+	AgentVariation         apijson.Field
+	CreatedBy              apijson.Field
+	CurrentContextWindowID apijson.Field
+	EffectiveMemoryStack   apijson.Field
+	TotalContextWindows    apijson.Field
+	TotalEvents            apijson.Field
+	TotalInputTokens       apijson.Field
+	TotalIterations        apijson.Field
+	TotalOutputTokens      apijson.Field
+	TotalToolCalls         apijson.Field
+	raw                    string
+	ExtraFields            map[string]apijson.Field
 }
 
 func (r *ObjectiveInfo) UnmarshalJSON(data []byte) (err error) {
@@ -899,46 +864,24 @@ func (r objectiveInfoJSON) RawJSON() string {
 	return r.raw
 }
 
-type ObjectiveStatus struct {
-	State   ObjectiveStatusState `json:"state" api:"required"`
-	Message string               `json:"message"`
-	JSON    objectiveStatusJSON  `json:"-"`
+type ObjectiveSecret struct {
+	Name string              `json:"name"`
+	JSON objectiveSecretJSON `json:"-"`
 }
 
-// objectiveStatusJSON contains the JSON metadata for the struct [ObjectiveStatus]
-type objectiveStatusJSON struct {
-	State       apijson.Field
-	Message     apijson.Field
+// objectiveSecretJSON contains the JSON metadata for the struct [ObjectiveSecret]
+type objectiveSecretJSON struct {
+	Name        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *ObjectiveStatus) UnmarshalJSON(data []byte) (err error) {
+func (r *ObjectiveSecret) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveStatusJSON) RawJSON() string {
+func (r objectiveSecretJSON) RawJSON() string {
 	return r.raw
-}
-
-type ObjectiveStatusState string
-
-const (
-	ObjectiveStatusStateStateUnspecified ObjectiveStatusState = "STATE_UNSPECIFIED"
-	ObjectiveStatusStateStatePending     ObjectiveStatusState = "STATE_PENDING"
-	ObjectiveStatusStateStateRunning     ObjectiveStatusState = "STATE_RUNNING"
-	ObjectiveStatusStateStateWaiting     ObjectiveStatusState = "STATE_WAITING"
-	ObjectiveStatusStateStateFailed      ObjectiveStatusState = "STATE_FAILED"
-	ObjectiveStatusStateStateCancelled   ObjectiveStatusState = "STATE_CANCELLED"
-	ObjectiveStatusStateStateFinalized   ObjectiveStatusState = "STATE_FINALIZED"
-)
-
-func (r ObjectiveStatusState) IsKnown() bool {
-	switch r {
-	case ObjectiveStatusStateStateUnspecified, ObjectiveStatusStateStatePending, ObjectiveStatusStateStateRunning, ObjectiveStatusStateStateWaiting, ObjectiveStatusStateStateFailed, ObjectiveStatusStateStateCancelled, ObjectiveStatusStateStateFinalized:
-		return true
-	}
-	return false
 }
 
 type SubAgentSpawned struct {
@@ -1265,18 +1208,52 @@ func (r objectiveListEventsResponseJSON) RawJSON() string {
 }
 
 type ObjectiveNewParams struct {
-	AgentID param.Field[string]             `json:"agentId" api:"required"`
-	Data    param.Field[ObjectiveDataParam] `json:"data" api:"required"`
+	AgentID param.Field[string] `json:"agentId" api:"required"`
+	// Arbitrary data for the objective. May be used in liquid templates for prompts
+	// configured on the agent variation
+	Data param.Field[map[string]interface{}] `json:"data" api:"required"`
+	// Optional override for initial message sent to the agent. This becomes the first
+	// user message in the LLM chat history. The agent variation is used to set this if
+	// not present.
+	InitialMessage param.Field[string] `json:"initialMessage"`
+	// Memory layers/entries to push onto this objective's memory stack on top of the
+	// baseline stack inherited from the selected variation.
+	//
+	// Array order is push order: the first element sits lower in the objective's
+	// contribution to the stack; the LAST element ends up on top of the effective
+	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
+	// position.
+	//
+	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
+	// themselves automatically based on episodic_key.
+	//
+	// Stack size cap: the TOTAL effective stack (variation's memory layers
+	//
+	//   - this field) must not exceed 10 entries. A request that would produce an
+	//     effective stack larger than 10 is rejected with InvalidArgument.
+	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
 	// CreateOperationMetadata contains the user-provided fields for creating an
 	// operation. Read-only fields (id, account_id, workspace_id, created_at,
 	// profile_id) are excluded since they are set by the server.
 	Metadata param.Field[shared.CreateOperationMetadataParam] `json:"metadata"`
+	// Secrets that can be used in the headers for tool calls using the secret
+	// interpolation format.
+	Secrets param.Field[[]ObjectiveNewParamsSecret] `json:"secrets"`
 	// Optional explicit variation selection. Overrides the agent's
 	// variation_selection_mode.
 	VariationID param.Field[string] `json:"variationId"`
 }
 
 func (r ObjectiveNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ObjectiveNewParamsSecret struct {
+	Name  param.Field[string] `json:"name"`
+	Value param.Field[string] `json:"value"`
+}
+
+func (r ObjectiveNewParamsSecret) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

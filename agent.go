@@ -171,18 +171,6 @@ func (r agentJSON) RawJSON() string {
 	return r.raw
 }
 
-// Agent resource
-type AgentParam struct {
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Metadata param.Field[shared.ResourceMetadataParam] `json:"metadata" api:"required"`
-	// Agent specification (user-provided configuration)
-	Spec param.Field[AgentSpecParam] `json:"spec" api:"required"`
-}
-
-func (r AgentParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfo struct {
@@ -208,19 +196,6 @@ func (r *AgentInfo) UnmarshalJSON(data []byte) (err error) {
 
 func (r agentInfoJSON) RawJSON() string {
 	return r.raw
-}
-
-// AgentInfo contains simple information about an agent for display or quick
-// reference
-type AgentInfoParam struct {
-	// A profile identifies a user or non-human principal (such as an API key) at the
-	// account level. Profiles are account-scoped and can be granted access to multiple
-	// workspaces.
-	CreatedBy param.Field[ProfileParam] `json:"createdBy"`
-}
-
-func (r AgentInfoParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 // Agent specification (user-provided configuration)
