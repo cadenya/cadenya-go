@@ -183,8 +183,10 @@ type ResourceMetadata struct {
 	ExternalID string `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:
 	// {"environment": "production", "team": "platform", "version": "v2"}
-	Labels map[string]string    `json:"labels"`
-	JSON   resourceMetadataJSON `json:"-"`
+	Labels map[string]string `json:"labels"`
+	// Timestamp when this resource was last updated
+	UpdatedAt time.Time            `json:"updatedAt" format:"date-time"`
+	JSON      resourceMetadataJSON `json:"-"`
 }
 
 // resourceMetadataJSON contains the JSON metadata for the struct
@@ -199,6 +201,7 @@ type resourceMetadataJSON struct {
 	BundleKey   apijson.Field
 	ExternalID  apijson.Field
 	Labels      apijson.Field
+	UpdatedAt   apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }

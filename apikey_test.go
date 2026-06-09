@@ -179,7 +179,11 @@ func TestAPIKeyRotate(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.Rotate(context.TODO(), "id")
+	_, err := client.APIKeys.Rotate(
+		context.TODO(),
+		"id",
+		cadenya.APIKeyRotateParams{},
+	)
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

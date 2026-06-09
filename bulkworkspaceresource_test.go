@@ -96,7 +96,6 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 					"foo": {
 						Name: cadenya.F("name"),
 						Spec: cadenya.F(cadenya.AgentSpecParam{
-							Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 							VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 							Description:            cadenya.F("description"),
 							InputDataSchema: cadenya.F(map[string]interface{}{
@@ -157,14 +156,15 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 									}),
 									Data:          cadenya.F[any](map[string]interface{}{}),
 									OverlapPolicy: cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-									Status:        cadenya.F(cadenya.AgentScheduleSpecStatusAgentScheduleStatusUnspecified),
 									VariationID:   cadenya.F("variationId"),
 								}),
 								Labels: cadenya.F(map[string]string{
 									"foo": "string",
 								}),
+								State: cadenya.F(cadenya.AgentScheduleEntryStateStateUnspecified),
 							},
 						}),
+						State: cadenya.F(cadenya.AgentEntryStateStateUnspecified),
 						Variations: cadenya.F(map[string]cadenya.AgentVariationEntryParam{
 							"foo": {
 								Name: cadenya.F("name"),
@@ -388,12 +388,12 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 									Parameters: cadenya.F(map[string]interface{}{
 										"foo": "bar",
 									}),
-									Status:           cadenya.F(cadenya.ToolSpecStatusToolStatusUnspecified),
 									RequiresApproval: cadenya.F(true),
 								}),
 								Labels: cadenya.F(map[string]string{
 									"foo": "string",
 								}),
+								State: cadenya.F(cadenya.ToolEntryStateStateUnspecified),
 							},
 						}),
 					},

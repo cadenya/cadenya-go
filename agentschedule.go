@@ -150,6 +150,70 @@ func (r *AgentScheduleService) Delete(ctx context.Context, workspaceID string, a
 	return err
 }
 
+// Transitions a schedule to STATE_ARCHIVED and removes its underlying timer.
+// Archiving is terminal: archived schedules never fire and cannot be reactivated;
+// create a new schedule instead.
+func (r *AgentScheduleService) Archive(ctx context.Context, workspaceID string, agentID string, id string, body AgentScheduleArchiveParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s:archive", workspaceID, agentID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions a schedule to STATE_PAUSED. Paused schedules retain history but do
+// not fire.
+func (r *AgentScheduleService) Pause(ctx context.Context, workspaceID string, agentID string, id string, body AgentSchedulePauseParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s:pause", workspaceID, agentID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions a paused schedule back to STATE_ACTIVE so it fires on its cadence
+// again. Archived schedules cannot be resumed.
+func (r *AgentScheduleService) Resume(ctx context.Context, workspaceID string, agentID string, id string, body AgentScheduleResumeParams, opts ...option.RequestOption) (res *AgentSchedule, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if agentID == "" {
+		err = errors.New("missing required agentId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s/schedules/%s:resume", workspaceID, agentID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // AgentSchedule resource — a recurring trigger attached to an agent that creates
 // objectives on its cadence.
 type AgentSchedule struct {
@@ -157,6 +221,10 @@ type AgentSchedule struct {
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	// AgentScheduleSpec is the user-provided configuration for a schedule.
 	Spec AgentScheduleSpec `json:"spec" api:"required"`
+	// The current lifecycle state of the schedule. Output only. Schedules are created
+	// STATE_ACTIVE; use the :pause, :resume, and :archive actions to transition
+	// between states.
+	State AgentScheduleState `json:"state" api:"required"`
 	// AgentScheduleInfo provides read-only runtime data about a schedule.
 	Info AgentScheduleInfo `json:"info"`
 	JSON agentScheduleJSON `json:"-"`
@@ -166,6 +234,7 @@ type AgentSchedule struct {
 type agentScheduleJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -177,6 +246,26 @@ func (r *AgentSchedule) UnmarshalJSON(data []byte) (err error) {
 
 func (r agentScheduleJSON) RawJSON() string {
 	return r.raw
+}
+
+// The current lifecycle state of the schedule. Output only. Schedules are created
+// STATE_ACTIVE; use the :pause, :resume, and :archive actions to transition
+// between states.
+type AgentScheduleState string
+
+const (
+	AgentScheduleStateStateUnspecified AgentScheduleState = "STATE_UNSPECIFIED"
+	AgentScheduleStateStateActive      AgentScheduleState = "STATE_ACTIVE"
+	AgentScheduleStateStatePaused      AgentScheduleState = "STATE_PAUSED"
+	AgentScheduleStateStateArchived    AgentScheduleState = "STATE_ARCHIVED"
+)
+
+func (r AgentScheduleState) IsKnown() bool {
+	switch r {
+	case AgentScheduleStateStateUnspecified, AgentScheduleStateStateActive, AgentScheduleStateStatePaused, AgentScheduleStateStateArchived:
+		return true
+	}
+	return false
 }
 
 // AgentScheduleInfo provides read-only runtime data about a schedule.
@@ -194,7 +283,7 @@ type AgentScheduleInfo struct {
 	// Reason for the most recent skip (e.g. "previous objective still running").
 	LastSkipReason string `json:"lastSkipReason"`
 	// When the schedule will next fire. Computed from the spec; absent when the
-	// schedule is PAUSED/ARCHIVED or has no future fire times.
+	// schedule is STATE_PAUSED/STATE_ARCHIVED or has no future fire times.
 	NextFireAt time.Time `json:"nextFireAt" format:"date-time"`
 	// Lifetime count of objectives created by this schedule.
 	TotalFires int64                 `json:"totalFires"`
@@ -237,8 +326,6 @@ type AgentScheduleSpec struct {
 	Data interface{} `json:"data"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy AgentScheduleSpecOverlapPolicy `json:"overlapPolicy"`
-	// Lifecycle. Defaults to ACTIVE on create when unspecified.
-	Status AgentScheduleSpecStatus `json:"status"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID string                `json:"variationId"`
@@ -252,7 +339,6 @@ type agentScheduleSpecJSON struct {
 	Schedule       apijson.Field
 	Data           apijson.Field
 	OverlapPolicy  apijson.Field
-	Status         apijson.Field
 	VariationID    apijson.Field
 	raw            string
 	ExtraFields    map[string]apijson.Field
@@ -283,24 +369,6 @@ func (r AgentScheduleSpecOverlapPolicy) IsKnown() bool {
 	return false
 }
 
-// Lifecycle. Defaults to ACTIVE on create when unspecified.
-type AgentScheduleSpecStatus string
-
-const (
-	AgentScheduleSpecStatusAgentScheduleStatusUnspecified AgentScheduleSpecStatus = "AGENT_SCHEDULE_STATUS_UNSPECIFIED"
-	AgentScheduleSpecStatusAgentScheduleStatusActive      AgentScheduleSpecStatus = "AGENT_SCHEDULE_STATUS_ACTIVE"
-	AgentScheduleSpecStatusAgentScheduleStatusPaused      AgentScheduleSpecStatus = "AGENT_SCHEDULE_STATUS_PAUSED"
-	AgentScheduleSpecStatusAgentScheduleStatusArchived    AgentScheduleSpecStatus = "AGENT_SCHEDULE_STATUS_ARCHIVED"
-)
-
-func (r AgentScheduleSpecStatus) IsKnown() bool {
-	switch r {
-	case AgentScheduleSpecStatusAgentScheduleStatusUnspecified, AgentScheduleSpecStatusAgentScheduleStatusActive, AgentScheduleSpecStatusAgentScheduleStatusPaused, AgentScheduleSpecStatusAgentScheduleStatusArchived:
-		return true
-	}
-	return false
-}
-
 // AgentScheduleSpec is the user-provided configuration for a schedule.
 type AgentScheduleSpecParam struct {
 	// The initial message passed to CreateObjective on each fire. Becomes the first
@@ -315,8 +383,6 @@ type AgentScheduleSpecParam struct {
 	Data param.Field[interface{}] `json:"data"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy param.Field[AgentScheduleSpecOverlapPolicy] `json:"overlapPolicy"`
-	// Lifecycle. Defaults to ACTIVE on create when unspecified.
-	Status param.Field[AgentScheduleSpecStatus] `json:"status"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID param.Field[string] `json:"variationId"`
@@ -563,4 +629,25 @@ func (r AgentScheduleListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type AgentScheduleArchiveParams struct {
+}
+
+func (r AgentScheduleArchiveParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentSchedulePauseParams struct {
+}
+
+func (r AgentSchedulePauseParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentScheduleResumeParams struct {
+}
+
+func (r AgentScheduleResumeParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }

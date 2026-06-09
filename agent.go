@@ -142,12 +142,84 @@ func (r *AgentService) Delete(ctx context.Context, workspaceID string, id string
 	return err
 }
 
+// Transitions an agent to STATE_ARCHIVED. Archived agents are hidden from list
+// results and cannot be used for objectives; active schedules are paused.
+func (r *AgentService) Archive(ctx context.Context, workspaceID string, id string, body AgentArchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:archive", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions an agent to STATE_PUBLISHED, making it available for objectives. The
+// agent must have at least one variation.
+func (r *AgentService) Publish(ctx context.Context, workspaceID string, id string, body AgentPublishParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:publish", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions an archived agent back to STATE_DRAFT. Publish the agent again to
+// make it available for objectives.
+func (r *AgentService) Unarchive(ctx context.Context, workspaceID string, id string, body AgentUnarchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unarchive", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions a published agent back to STATE_DRAFT. Active schedules for the
+// agent are paused until it is published again.
+func (r *AgentService) Unpublish(ctx context.Context, workspaceID string, id string, body AgentUnpublishParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unpublish", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // Agent resource
 type Agent struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	// Agent specification (user-provided configuration)
 	Spec AgentSpec `json:"spec" api:"required"`
+	// The current lifecycle state of the agent. Output only. Agents are created in
+	// STATE_DRAFT; use the :publish, :unpublish, :archive, and :unarchive actions to
+	// transition between states.
+	State AgentState `json:"state" api:"required"`
 	// AgentInfo contains simple information about an agent for display or quick
 	// reference
 	Info AgentInfo `json:"info"`
@@ -158,6 +230,7 @@ type Agent struct {
 type agentJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -169,6 +242,26 @@ func (r *Agent) UnmarshalJSON(data []byte) (err error) {
 
 func (r agentJSON) RawJSON() string {
 	return r.raw
+}
+
+// The current lifecycle state of the agent. Output only. Agents are created in
+// STATE_DRAFT; use the :publish, :unpublish, :archive, and :unarchive actions to
+// transition between states.
+type AgentState string
+
+const (
+	AgentStateStateUnspecified AgentState = "STATE_UNSPECIFIED"
+	AgentStateStateDraft       AgentState = "STATE_DRAFT"
+	AgentStateStatePublished   AgentState = "STATE_PUBLISHED"
+	AgentStateStateArchived    AgentState = "STATE_ARCHIVED"
+)
+
+func (r AgentState) IsKnown() bool {
+	switch r {
+	case AgentStateStateUnspecified, AgentStateStateDraft, AgentStateStatePublished, AgentStateStateArchived:
+		return true
+	}
+	return false
 }
 
 // AgentInfo contains simple information about an agent for display or quick
@@ -200,8 +293,6 @@ func (r agentInfoJSON) RawJSON() string {
 
 // Agent specification (user-provided configuration)
 type AgentSpec struct {
-	// Status of the agent
-	Status AgentSpecStatus `json:"status" api:"required"`
 	// Controls how variations are automatically selected when creating objectives
 	// Defaults to RANDOM when unspecified
 	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode" api:"required"`
@@ -225,7 +316,6 @@ type AgentSpec struct {
 
 // agentSpecJSON contains the JSON metadata for the struct [AgentSpec]
 type agentSpecJSON struct {
-	Status                 apijson.Field
 	VariationSelectionMode apijson.Field
 	Description            apijson.Field
 	InputDataSchema        apijson.Field
@@ -241,24 +331,6 @@ func (r *AgentSpec) UnmarshalJSON(data []byte) (err error) {
 
 func (r agentSpecJSON) RawJSON() string {
 	return r.raw
-}
-
-// Status of the agent
-type AgentSpecStatus string
-
-const (
-	AgentSpecStatusAgentStatusUnspecified AgentSpecStatus = "AGENT_STATUS_UNSPECIFIED"
-	AgentSpecStatusAgentStatusDraft       AgentSpecStatus = "AGENT_STATUS_DRAFT"
-	AgentSpecStatusAgentStatusPublished   AgentSpecStatus = "AGENT_STATUS_PUBLISHED"
-	AgentSpecStatusAgentStatusArchived    AgentSpecStatus = "AGENT_STATUS_ARCHIVED"
-)
-
-func (r AgentSpecStatus) IsKnown() bool {
-	switch r {
-	case AgentSpecStatusAgentStatusUnspecified, AgentSpecStatusAgentStatusDraft, AgentSpecStatusAgentStatusPublished, AgentSpecStatusAgentStatusArchived:
-		return true
-	}
-	return false
 }
 
 // Controls how variations are automatically selected when creating objectives
@@ -281,8 +353,6 @@ func (r AgentSpecVariationSelectionMode) IsKnown() bool {
 
 // Agent specification (user-provided configuration)
 type AgentSpecParam struct {
-	// Status of the agent
-	Status param.Field[AgentSpecStatus] `json:"status" api:"required"`
 	// Controls how variations are automatically selected when creating objectives
 	// Defaults to RANDOM when unspecified
 	VariationSelectionMode param.Field[AgentSpecVariationSelectionMode] `json:"variationSelectionMode" api:"required"`
@@ -389,8 +459,8 @@ type AgentListParams struct {
 	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
-	// Filter by agent publication status
-	Status param.Field[AgentListParamsStatus] `query:"status"`
+	// Filter by agent lifecycle state
+	State param.Field[AgentListParamsState] `query:"state"`
 	// Filter by variation selection mode
 	VariationSelectionMode param.Field[AgentListParamsVariationSelectionMode] `query:"variationSelectionMode"`
 }
@@ -403,19 +473,19 @@ func (r AgentListParams) URLQuery() (v url.Values) {
 	})
 }
 
-// Filter by agent publication status
-type AgentListParamsStatus string
+// Filter by agent lifecycle state
+type AgentListParamsState string
 
 const (
-	AgentListParamsStatusAgentStatusUnspecified AgentListParamsStatus = "AGENT_STATUS_UNSPECIFIED"
-	AgentListParamsStatusAgentStatusDraft       AgentListParamsStatus = "AGENT_STATUS_DRAFT"
-	AgentListParamsStatusAgentStatusPublished   AgentListParamsStatus = "AGENT_STATUS_PUBLISHED"
-	AgentListParamsStatusAgentStatusArchived    AgentListParamsStatus = "AGENT_STATUS_ARCHIVED"
+	AgentListParamsStateStateUnspecified AgentListParamsState = "STATE_UNSPECIFIED"
+	AgentListParamsStateStateDraft       AgentListParamsState = "STATE_DRAFT"
+	AgentListParamsStateStatePublished   AgentListParamsState = "STATE_PUBLISHED"
+	AgentListParamsStateStateArchived    AgentListParamsState = "STATE_ARCHIVED"
 )
 
-func (r AgentListParamsStatus) IsKnown() bool {
+func (r AgentListParamsState) IsKnown() bool {
 	switch r {
-	case AgentListParamsStatusAgentStatusUnspecified, AgentListParamsStatusAgentStatusDraft, AgentListParamsStatusAgentStatusPublished, AgentListParamsStatusAgentStatusArchived:
+	case AgentListParamsStateStateUnspecified, AgentListParamsStateStateDraft, AgentListParamsStateStatePublished, AgentListParamsStateStateArchived:
 		return true
 	}
 	return false
@@ -436,4 +506,32 @@ func (r AgentListParamsVariationSelectionMode) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+type AgentArchiveParams struct {
+}
+
+func (r AgentArchiveParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentPublishParams struct {
+}
+
+func (r AgentPublishParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentUnarchiveParams struct {
+}
+
+func (r AgentUnarchiveParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AgentUnpublishParams struct {
+}
+
+func (r AgentUnpublishParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }

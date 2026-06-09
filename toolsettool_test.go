@@ -68,7 +68,6 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 				Parameters: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				Status:           cadenya.F(cadenya.ToolSpecStatusToolStatusUnspecified),
 				RequiresApproval: cadenya.F(true),
 			}),
 		},
@@ -165,7 +164,6 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 				Parameters: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				Status:           cadenya.F(cadenya.ToolSpecStatusToolStatusUnspecified),
 				RequiresApproval: cadenya.F(true),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
@@ -207,7 +205,7 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 			Query:            cadenya.F("query"),
 			RequiresApproval: cadenya.F(true),
 			SortOrder:        cadenya.F("sortOrder"),
-			Statuses:         cadenya.F([]cadenya.ToolSetToolListParamsStatus{cadenya.ToolSetToolListParamsStatusToolStatusUnspecified}),
+			States:           cadenya.F([]cadenya.ToolSetToolListParamsState{cadenya.ToolSetToolListParamsStateStateUnspecified}),
 		},
 	)
 	if err != nil {
@@ -237,6 +235,64 @@ func TestToolSetToolDelete(t *testing.T) {
 		"workspaceId",
 		"toolSetId",
 		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestToolSetToolOmit(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.ToolSets.Tools.Omit(
+		context.TODO(),
+		"workspaceId",
+		"toolSetId",
+		"id",
+		cadenya.ToolSetToolOmitParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestToolSetToolRestore(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.ToolSets.Tools.Restore(
+		context.TODO(),
+		"workspaceId",
+		"toolSetId",
+		"id",
+		cadenya.ToolSetToolRestoreParams{},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

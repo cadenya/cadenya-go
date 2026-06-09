@@ -40,7 +40,6 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentSpecParam{
-				Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 				Description:            cadenya.F("description"),
 				InputDataSchema: cadenya.F(map[string]interface{}{
@@ -155,7 +154,6 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentSpecParam{
-				Status:                 cadenya.F(cadenya.AgentSpecStatusAgentStatusUnspecified),
 				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 				Description:            cadenya.F("description"),
 				InputDataSchema: cadenya.F(map[string]interface{}{
@@ -202,7 +200,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 			Prefix:                 cadenya.F("prefix"),
 			Query:                  cadenya.F("query"),
 			SortOrder:              cadenya.F("sortOrder"),
-			Status:                 cadenya.F(cadenya.AgentListParamsStatusAgentStatusUnspecified),
+			State:                  cadenya.F(cadenya.AgentListParamsStateStateUnspecified),
 			VariationSelectionMode: cadenya.F(cadenya.AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified),
 		},
 	)
@@ -232,6 +230,118 @@ func TestAgentDelete(t *testing.T) {
 		context.TODO(),
 		"workspaceId",
 		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentArchive(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Archive(
+		context.TODO(),
+		"workspaceId",
+		"id",
+		cadenya.AgentArchiveParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentPublish(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Publish(
+		context.TODO(),
+		"workspaceId",
+		"id",
+		cadenya.AgentPublishParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentUnarchive(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Unarchive(
+		context.TODO(),
+		"workspaceId",
+		"id",
+		cadenya.AgentUnarchiveParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentUnpublish(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Unpublish(
+		context.TODO(),
+		"workspaceId",
+		"id",
+		cadenya.AgentUnpublishParams{},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
