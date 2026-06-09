@@ -65,7 +65,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 			Prefix:          cadenya.F("prefix"),
 			Query:           cadenya.F("query"),
 			SortOrder:       cadenya.F("sortOrder"),
-			Status:          cadenya.F(cadenya.ModelListParamsStatusModelStatusUnspecified),
+			State:           cadenya.F(cadenya.ModelListParamsStateStateUnspecified),
 		},
 	)
 	if err != nil {
@@ -77,7 +77,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestModelSetStatusWithOptionalParams(t *testing.T) {
+func TestModelDisable(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -90,13 +90,39 @@ func TestModelSetStatusWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Models.SetStatus(
+	_, err := client.Models.Disable(
 		context.TODO(),
 		"workspaceId",
 		"id",
-		cadenya.ModelSetStatusParams{
-			Status: cadenya.F(cadenya.ModelSetStatusParamsStatusModelStatusUnspecified),
-		},
+		cadenya.ModelDisableParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestModelEnable(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Models.Enable(
+		context.TODO(),
+		"workspaceId",
+		"id",
+		cadenya.ModelEnableParams{},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

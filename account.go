@@ -47,7 +47,7 @@ func (r *AccountService) Get(ctx context.Context, opts ...option.RequestOption) 
 // Rotates the webhook signing key for the account. Returns only the new key.
 func (r *AccountService) RotateWebhookSigningKey(ctx context.Context, opts ...option.RequestOption) (res *RotateWebhookSigningKeyResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/account/rotate_webhook_signing_key"
+	path := "v1/account:rotateWebhookSigningKey"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
