@@ -96,7 +96,7 @@ func (r *ToolSetToolService) Update(ctx context.Context, workspaceID string, too
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s", workspaceID, toolSetID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
@@ -150,6 +150,48 @@ func (r *ToolSetToolService) Delete(ctx context.Context, workspaceID string, too
 	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s", workspaceID, toolSetID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
+}
+
+// Transitions a tool to STATE_OMITTED, excluding it from agent use. Fails if the
+// tool is currently assigned to agent variations.
+func (r *ToolSetToolService) Omit(ctx context.Context, workspaceID string, toolSetID string, id string, body ToolSetToolOmitParams, opts ...option.RequestOption) (res *Tool, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if toolSetID == "" {
+		err = errors.New("missing required toolSetId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s:omit", workspaceID, toolSetID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions an omitted tool back to STATE_AVAILABLE. For managed tool sets, the
+// next sync may omit the tool again if its filters still exclude it.
+func (r *ToolSetToolService) Restore(ctx context.Context, workspaceID string, toolSetID string, id string, body ToolSetToolRestoreParams, opts ...option.RequestOption) (res *Tool, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if toolSetID == "" {
+		err = errors.New("missing required toolSetId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/tools/%s:restore", workspaceID, toolSetID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
 }
 
 type ConfigHTTP struct {
@@ -297,14 +339,18 @@ type Tool struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	Spec     ToolSpec                `json:"spec" api:"required"`
-	Info     ToolInfo                `json:"info"`
-	JSON     toolJSON                `json:"-"`
+	// The current lifecycle state of the tool. Output only. Use the :omit and :restore
+	// actions to transition; tool set syncs may also update it.
+	State ToolState `json:"state" api:"required"`
+	Info  ToolInfo  `json:"info"`
+	JSON  toolJSON  `json:"-"`
 }
 
 // toolJSON contains the JSON metadata for the struct [Tool]
 type toolJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -316,6 +362,25 @@ func (r *Tool) UnmarshalJSON(data []byte) (err error) {
 
 func (r toolJSON) RawJSON() string {
 	return r.raw
+}
+
+// The current lifecycle state of the tool. Output only. Use the :omit and :restore
+// actions to transition; tool set syncs may also update it.
+type ToolState string
+
+const (
+	ToolStateStateUnspecified ToolState = "STATE_UNSPECIFIED"
+	ToolStateStateAvailable   ToolState = "STATE_AVAILABLE"
+	ToolStateStateOmitted     ToolState = "STATE_OMITTED"
+	ToolStateStateArchived    ToolState = "STATE_ARCHIVED"
+)
+
+func (r ToolState) IsKnown() bool {
+	switch r {
+	case ToolStateStateUnspecified, ToolStateStateAvailable, ToolStateStateOmitted, ToolStateStateArchived:
+		return true
+	}
+	return false
 }
 
 type ToolInfo struct {
@@ -351,8 +416,7 @@ type ToolSpec struct {
 	Config           ToolSpecConfig         `json:"config" api:"required"`
 	Description      string                 `json:"description" api:"required"`
 	Parameters       map[string]interface{} `json:"parameters" api:"required"`
-	Status           ToolSpecStatus         `json:"status" api:"required"`
-	RequiresApproval bool                   `json:"requiresApproval"`
+	RequiresApproval bool                   `json:"requiresApproval" api:"required"`
 	JSON             toolSpecJSON           `json:"-"`
 }
 
@@ -361,7 +425,6 @@ type toolSpecJSON struct {
 	Config           apijson.Field
 	Description      apijson.Field
 	Parameters       apijson.Field
-	Status           apijson.Field
 	RequiresApproval apijson.Field
 	raw              string
 	ExtraFields      map[string]apijson.Field
@@ -375,23 +438,6 @@ func (r toolSpecJSON) RawJSON() string {
 	return r.raw
 }
 
-type ToolSpecStatus string
-
-const (
-	ToolSpecStatusToolStatusUnspecified ToolSpecStatus = "TOOL_STATUS_UNSPECIFIED"
-	ToolSpecStatusToolStatusAvailable   ToolSpecStatus = "TOOL_STATUS_AVAILABLE"
-	ToolSpecStatusToolStatusOmitted     ToolSpecStatus = "TOOL_STATUS_OMITTED"
-	ToolSpecStatusToolStatusArchived    ToolSpecStatus = "TOOL_STATUS_ARCHIVED"
-)
-
-func (r ToolSpecStatus) IsKnown() bool {
-	switch r {
-	case ToolSpecStatusToolStatusUnspecified, ToolSpecStatusToolStatusAvailable, ToolSpecStatusToolStatusOmitted, ToolSpecStatusToolStatusArchived:
-		return true
-	}
-	return false
-}
-
 type ToolSpecParam struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
@@ -399,8 +445,7 @@ type ToolSpecParam struct {
 	Config           param.Field[ToolSpecConfigParam]    `json:"config" api:"required"`
 	Description      param.Field[string]                 `json:"description" api:"required"`
 	Parameters       param.Field[map[string]interface{}] `json:"parameters" api:"required"`
-	Status           param.Field[ToolSpecStatus]         `json:"status" api:"required"`
-	RequiresApproval param.Field[bool]                   `json:"requiresApproval"`
+	RequiresApproval param.Field[bool]                   `json:"requiresApproval" api:"required"`
 }
 
 func (r ToolSpecParam) MarshalJSON() (data []byte, err error) {
@@ -492,8 +537,8 @@ type ToolSetToolListParams struct {
 	RequiresApproval param.Field[bool] `query:"requiresApproval"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
-	// Filter by tool status. Multiple values are OR'd together.
-	Statuses param.Field[[]ToolSetToolListParamsStatus] `query:"statuses"`
+	// Filter by tool state. Multiple values are OR'd together.
+	States param.Field[[]ToolSetToolListParamsState] `query:"states"`
 }
 
 // URLQuery serializes [ToolSetToolListParams]'s query parameters as `url.Values`.
@@ -504,19 +549,33 @@ func (r ToolSetToolListParams) URLQuery() (v url.Values) {
 	})
 }
 
-type ToolSetToolListParamsStatus string
+type ToolSetToolListParamsState string
 
 const (
-	ToolSetToolListParamsStatusToolStatusUnspecified ToolSetToolListParamsStatus = "TOOL_STATUS_UNSPECIFIED"
-	ToolSetToolListParamsStatusToolStatusAvailable   ToolSetToolListParamsStatus = "TOOL_STATUS_AVAILABLE"
-	ToolSetToolListParamsStatusToolStatusOmitted     ToolSetToolListParamsStatus = "TOOL_STATUS_OMITTED"
-	ToolSetToolListParamsStatusToolStatusArchived    ToolSetToolListParamsStatus = "TOOL_STATUS_ARCHIVED"
+	ToolSetToolListParamsStateStateUnspecified ToolSetToolListParamsState = "STATE_UNSPECIFIED"
+	ToolSetToolListParamsStateStateAvailable   ToolSetToolListParamsState = "STATE_AVAILABLE"
+	ToolSetToolListParamsStateStateOmitted     ToolSetToolListParamsState = "STATE_OMITTED"
+	ToolSetToolListParamsStateStateArchived    ToolSetToolListParamsState = "STATE_ARCHIVED"
 )
 
-func (r ToolSetToolListParamsStatus) IsKnown() bool {
+func (r ToolSetToolListParamsState) IsKnown() bool {
 	switch r {
-	case ToolSetToolListParamsStatusToolStatusUnspecified, ToolSetToolListParamsStatusToolStatusAvailable, ToolSetToolListParamsStatusToolStatusOmitted, ToolSetToolListParamsStatusToolStatusArchived:
+	case ToolSetToolListParamsStateStateUnspecified, ToolSetToolListParamsStateStateAvailable, ToolSetToolListParamsStateStateOmitted, ToolSetToolListParamsStateStateArchived:
 		return true
 	}
 	return false
+}
+
+type ToolSetToolOmitParams struct {
+}
+
+func (r ToolSetToolOmitParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ToolSetToolRestoreParams struct {
+}
+
+func (r ToolSetToolRestoreParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }

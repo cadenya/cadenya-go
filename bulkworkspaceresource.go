@@ -111,6 +111,10 @@ type AgentEntry struct {
 	Labels map[string]string `json:"labels"`
 	// Schedules under this agent, keyed by external_id.
 	Schedules map[string]AgentScheduleEntry `json:"schedules"`
+	// Desired lifecycle state for the agent. Defaults to STATE_DRAFT when unspecified.
+	// STATE_PUBLISHED publishes the agent once its variations exist; see also
+	// BulkWorkspaceApplyData.automatically_publish_agents.
+	State AgentEntryState `json:"state"`
 	// Variations under this agent, keyed by external_id.
 	Variations map[string]AgentVariationEntry `json:"variations"`
 	JSON       agentEntryJSON                 `json:"-"`
@@ -122,6 +126,7 @@ type agentEntryJSON struct {
 	Spec        apijson.Field
 	Labels      apijson.Field
 	Schedules   apijson.Field
+	State       apijson.Field
 	Variations  apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -135,6 +140,26 @@ func (r agentEntryJSON) RawJSON() string {
 	return r.raw
 }
 
+// Desired lifecycle state for the agent. Defaults to STATE_DRAFT when unspecified.
+// STATE_PUBLISHED publishes the agent once its variations exist; see also
+// BulkWorkspaceApplyData.automatically_publish_agents.
+type AgentEntryState string
+
+const (
+	AgentEntryStateStateUnspecified AgentEntryState = "STATE_UNSPECIFIED"
+	AgentEntryStateStateDraft       AgentEntryState = "STATE_DRAFT"
+	AgentEntryStateStatePublished   AgentEntryState = "STATE_PUBLISHED"
+	AgentEntryStateStateArchived    AgentEntryState = "STATE_ARCHIVED"
+)
+
+func (r AgentEntryState) IsKnown() bool {
+	switch r {
+	case AgentEntryStateStateUnspecified, AgentEntryStateStateDraft, AgentEntryStateStatePublished, AgentEntryStateStateArchived:
+		return true
+	}
+	return false
+}
+
 type AgentEntryParam struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// Agent specification (user-provided configuration)
@@ -142,6 +167,10 @@ type AgentEntryParam struct {
 	Labels param.Field[map[string]string] `json:"labels"`
 	// Schedules under this agent, keyed by external_id.
 	Schedules param.Field[map[string]AgentScheduleEntryParam] `json:"schedules"`
+	// Desired lifecycle state for the agent. Defaults to STATE_DRAFT when unspecified.
+	// STATE_PUBLISHED publishes the agent once its variations exist; see also
+	// BulkWorkspaceApplyData.automatically_publish_agents.
+	State param.Field[AgentEntryState] `json:"state"`
 	// Variations under this agent, keyed by external_id.
 	Variations param.Field[map[string]AgentVariationEntryParam] `json:"variations"`
 }
@@ -153,9 +182,13 @@ func (r AgentEntryParam) MarshalJSON() (data []byte, err error) {
 type AgentScheduleEntry struct {
 	Name string `json:"name" api:"required"`
 	// AgentScheduleSpec is the user-provided configuration for a schedule.
-	Spec   AgentScheduleSpec      `json:"spec" api:"required"`
-	Labels map[string]string      `json:"labels"`
-	JSON   agentScheduleEntryJSON `json:"-"`
+	Spec   AgentScheduleSpec `json:"spec" api:"required"`
+	Labels map[string]string `json:"labels"`
+	// Desired lifecycle state for the schedule. Defaults to STATE_ACTIVE when
+	// unspecified. Declare STATE_PAUSED to provision a schedule without it firing.
+	// STATE_ARCHIVED is rejected here.
+	State AgentScheduleEntryState `json:"state"`
+	JSON  agentScheduleEntryJSON  `json:"-"`
 }
 
 // agentScheduleEntryJSON contains the JSON metadata for the struct
@@ -164,6 +197,7 @@ type agentScheduleEntryJSON struct {
 	Name        apijson.Field
 	Spec        apijson.Field
 	Labels      apijson.Field
+	State       apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -176,11 +210,35 @@ func (r agentScheduleEntryJSON) RawJSON() string {
 	return r.raw
 }
 
+// Desired lifecycle state for the schedule. Defaults to STATE_ACTIVE when
+// unspecified. Declare STATE_PAUSED to provision a schedule without it firing.
+// STATE_ARCHIVED is rejected here.
+type AgentScheduleEntryState string
+
+const (
+	AgentScheduleEntryStateStateUnspecified AgentScheduleEntryState = "STATE_UNSPECIFIED"
+	AgentScheduleEntryStateStateActive      AgentScheduleEntryState = "STATE_ACTIVE"
+	AgentScheduleEntryStateStatePaused      AgentScheduleEntryState = "STATE_PAUSED"
+	AgentScheduleEntryStateStateArchived    AgentScheduleEntryState = "STATE_ARCHIVED"
+)
+
+func (r AgentScheduleEntryState) IsKnown() bool {
+	switch r {
+	case AgentScheduleEntryStateStateUnspecified, AgentScheduleEntryStateStateActive, AgentScheduleEntryStateStatePaused, AgentScheduleEntryStateStateArchived:
+		return true
+	}
+	return false
+}
+
 type AgentScheduleEntryParam struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// AgentScheduleSpec is the user-provided configuration for a schedule.
 	Spec   param.Field[AgentScheduleSpecParam] `json:"spec" api:"required"`
 	Labels param.Field[map[string]string]      `json:"labels"`
+	// Desired lifecycle state for the schedule. Defaults to STATE_ACTIVE when
+	// unspecified. Declare STATE_PAUSED to provision a schedule without it firing.
+	// STATE_ARCHIVED is rejected here.
+	State param.Field[AgentScheduleEntryState] `json:"state"`
 }
 
 func (r AgentScheduleEntryParam) MarshalJSON() (data []byte, err error) {
@@ -276,14 +334,13 @@ type BulkWorkspaceApplyData struct {
 	BundleKey string `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents map[string]AgentEntry `json:"agents"`
-	// When true, every agent created or updated by this Apply has its status forced to
-	// AGENT_STATUS_PUBLISHED, regardless of the status declared in the agent's
-	// AgentSpec. Useful when the bundle represents a production configuration and you
-	// want all of its agents live without setting status: AGENT_STATUS_PUBLISHED on
-	// each entry.
+	// When true, every agent created or updated by this Apply has its state forced to
+	// STATE_PUBLISHED, regardless of the state declared on the agent's entry. Useful
+	// when the bundle represents a production configuration and you want all of its
+	// agents live without setting state: STATE_PUBLISHED on each entry.
 	//
-	// Default false: each agent's AgentSpec.status controls (which is
-	// AGENT_STATUS_DRAFT on create when unspecified).
+	// Default false: each agent entry's `state` controls (which is STATE_DRAFT on
+	// create when unspecified).
 	AutomaticallyPublishAgents bool `json:"automaticallyPublishAgents"`
 	// Memory layers to upsert, keyed by external_id.
 	MemoryLayers map[string]MemoryLayerEntry `json:"memoryLayers"`
@@ -326,14 +383,13 @@ type BulkWorkspaceApplyDataParam struct {
 	BundleKey param.Field[string] `json:"bundleKey" api:"required"`
 	// Agents to upsert, keyed by external_id.
 	Agents param.Field[map[string]AgentEntryParam] `json:"agents"`
-	// When true, every agent created or updated by this Apply has its status forced to
-	// AGENT_STATUS_PUBLISHED, regardless of the status declared in the agent's
-	// AgentSpec. Useful when the bundle represents a production configuration and you
-	// want all of its agents live without setting status: AGENT_STATUS_PUBLISHED on
-	// each entry.
+	// When true, every agent created or updated by this Apply has its state forced to
+	// STATE_PUBLISHED, regardless of the state declared on the agent's entry. Useful
+	// when the bundle represents a production configuration and you want all of its
+	// agents live without setting state: STATE_PUBLISHED on each entry.
 	//
-	// Default false: each agent's AgentSpec.status controls (which is
-	// AGENT_STATUS_DRAFT on create when unspecified).
+	// Default false: each agent entry's `state` controls (which is STATE_DRAFT on
+	// create when unspecified).
 	AutomaticallyPublishAgents param.Field[bool] `json:"automaticallyPublishAgents"`
 	// Memory layers to upsert, keyed by external_id.
 	MemoryLayers param.Field[map[string]MemoryLayerEntryParam] `json:"memoryLayers"`
@@ -587,7 +643,10 @@ type ToolEntry struct {
 	Name   string            `json:"name" api:"required"`
 	Spec   ToolSpec          `json:"spec" api:"required"`
 	Labels map[string]string `json:"labels"`
-	JSON   toolEntryJSON     `json:"-"`
+	// Desired lifecycle state for the tool. Defaults to STATE_AVAILABLE when
+	// unspecified. STATE_ARCHIVED is server-managed and is rejected here.
+	State ToolEntryState `json:"state"`
+	JSON  toolEntryJSON  `json:"-"`
 }
 
 // toolEntryJSON contains the JSON metadata for the struct [ToolEntry]
@@ -595,6 +654,7 @@ type toolEntryJSON struct {
 	Name        apijson.Field
 	Spec        apijson.Field
 	Labels      apijson.Field
+	State       apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -607,10 +667,32 @@ func (r toolEntryJSON) RawJSON() string {
 	return r.raw
 }
 
+// Desired lifecycle state for the tool. Defaults to STATE_AVAILABLE when
+// unspecified. STATE_ARCHIVED is server-managed and is rejected here.
+type ToolEntryState string
+
+const (
+	ToolEntryStateStateUnspecified ToolEntryState = "STATE_UNSPECIFIED"
+	ToolEntryStateStateAvailable   ToolEntryState = "STATE_AVAILABLE"
+	ToolEntryStateStateOmitted     ToolEntryState = "STATE_OMITTED"
+	ToolEntryStateStateArchived    ToolEntryState = "STATE_ARCHIVED"
+)
+
+func (r ToolEntryState) IsKnown() bool {
+	switch r {
+	case ToolEntryStateStateUnspecified, ToolEntryStateStateAvailable, ToolEntryStateStateOmitted, ToolEntryStateStateArchived:
+		return true
+	}
+	return false
+}
+
 type ToolEntryParam struct {
 	Name   param.Field[string]            `json:"name" api:"required"`
 	Spec   param.Field[ToolSpecParam]     `json:"spec" api:"required"`
 	Labels param.Field[map[string]string] `json:"labels"`
+	// Desired lifecycle state for the tool. Defaults to STATE_AVAILABLE when
+	// unspecified. STATE_ARCHIVED is server-managed and is rejected here.
+	State param.Field[ToolEntryState] `json:"state"`
 }
 
 func (r ToolEntryParam) MarshalJSON() (data []byte, err error) {

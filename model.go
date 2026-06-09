@@ -85,8 +85,9 @@ func (r *ModelService) ListAutoPaging(ctx context.Context, workspaceID string, q
 	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
-// Enables or disables a model in the workspace
-func (r *ModelService) SetStatus(ctx context.Context, workspaceID string, id string, body ModelSetStatusParams, opts ...option.RequestOption) (res *Model, err error) {
+// Transitions a model to STATE_DISABLED. Fails while agent variations are still
+// provisioned on the model; use :swapModelOnVariations to move them first.
+func (r *ModelService) Disable(ctx context.Context, workspaceID string, id string, body ModelDisableParams, opts ...option.RequestOption) (res *Model, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspaceId parameter")
@@ -96,8 +97,25 @@ func (r *ModelService) SetStatus(ctx context.Context, workspaceID string, id str
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models/%s/status", workspaceID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s:disable", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Transitions a model to STATE_ENABLED, making it available for agent variations
+// in the workspace
+func (r *ModelService) Enable(ctx context.Context, workspaceID string, id string, body ModelEnableParams, opts ...option.RequestOption) (res *Model, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s:enable", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -119,6 +137,9 @@ type Model struct {
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	// Model specification
 	Spec ModelSpec `json:"spec" api:"required"`
+	// Whether the model is usable in this workspace. Output only. Use the :enable and
+	// :disable actions to transition.
+	State ModelState `json:"state" api:"required"`
 	// ModelInfo carries server-derived, read-only details about a model.
 	Info ModelInfo `json:"info"`
 	JSON modelJSON `json:"-"`
@@ -128,6 +149,7 @@ type Model struct {
 type modelJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -139,6 +161,24 @@ func (r *Model) UnmarshalJSON(data []byte) (err error) {
 
 func (r modelJSON) RawJSON() string {
 	return r.raw
+}
+
+// Whether the model is usable in this workspace. Output only. Use the :enable and
+// :disable actions to transition.
+type ModelState string
+
+const (
+	ModelStateStateUnspecified ModelState = "STATE_UNSPECIFIED"
+	ModelStateStateEnabled     ModelState = "STATE_ENABLED"
+	ModelStateStateDisabled    ModelState = "STATE_DISABLED"
+)
+
+func (r ModelState) IsKnown() bool {
+	switch r {
+	case ModelStateStateUnspecified, ModelStateStateEnabled, ModelStateStateDisabled:
+		return true
+	}
+	return false
 }
 
 // ModelInfo carries server-derived, read-only details about a model.
@@ -198,10 +238,8 @@ type ModelSpec struct {
 	// Cost per million output tokens in cents (e.g., 1500 = $15.00)
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
 	// The model provider (e.g., "anthropic", "openai", "google")
-	Provider string `json:"provider"`
-	// The status of the model in the workspace
-	Status ModelSpecStatus `json:"status"`
-	JSON   modelSpecJSON   `json:"-"`
+	Provider string        `json:"provider"`
+	JSON     modelSpecJSON `json:"-"`
 }
 
 // modelSpecJSON contains the JSON metadata for the struct [ModelSpec]
@@ -212,7 +250,6 @@ type modelSpecJSON struct {
 	MaxOutputTokens             apijson.Field
 	OutputPricePerMillionTokens apijson.Field
 	Provider                    apijson.Field
-	Status                      apijson.Field
 	raw                         string
 	ExtraFields                 map[string]apijson.Field
 }
@@ -223,23 +260,6 @@ func (r *ModelSpec) UnmarshalJSON(data []byte) (err error) {
 
 func (r modelSpecJSON) RawJSON() string {
 	return r.raw
-}
-
-// The status of the model in the workspace
-type ModelSpecStatus string
-
-const (
-	ModelSpecStatusModelStatusUnspecified ModelSpecStatus = "MODEL_STATUS_UNSPECIFIED"
-	ModelSpecStatusModelStatusEnabled     ModelSpecStatus = "MODEL_STATUS_ENABLED"
-	ModelSpecStatusModelStatusDisabled    ModelSpecStatus = "MODEL_STATUS_DISABLED"
-)
-
-func (r ModelSpecStatus) IsKnown() bool {
-	switch r {
-	case ModelSpecStatusModelStatusUnspecified, ModelSpecStatusModelStatusEnabled, ModelSpecStatusModelStatusDisabled:
-		return true
-	}
-	return false
 }
 
 type ModelSwapResponse = interface{}
@@ -263,8 +283,8 @@ type ModelListParams struct {
 	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
-	// Filter by model status
-	Status param.Field[ModelListParamsStatus] `query:"status"`
+	// Filter by model state
+	State param.Field[ModelListParamsState] `query:"state"`
 }
 
 // URLQuery serializes [ModelListParams]'s query parameters as `url.Values`.
@@ -275,47 +295,35 @@ func (r ModelListParams) URLQuery() (v url.Values) {
 	})
 }
 
-// Filter by model status
-type ModelListParamsStatus string
+// Filter by model state
+type ModelListParamsState string
 
 const (
-	ModelListParamsStatusModelStatusUnspecified ModelListParamsStatus = "MODEL_STATUS_UNSPECIFIED"
-	ModelListParamsStatusModelStatusEnabled     ModelListParamsStatus = "MODEL_STATUS_ENABLED"
-	ModelListParamsStatusModelStatusDisabled    ModelListParamsStatus = "MODEL_STATUS_DISABLED"
+	ModelListParamsStateStateUnspecified ModelListParamsState = "STATE_UNSPECIFIED"
+	ModelListParamsStateStateEnabled     ModelListParamsState = "STATE_ENABLED"
+	ModelListParamsStateStateDisabled    ModelListParamsState = "STATE_DISABLED"
 )
 
-func (r ModelListParamsStatus) IsKnown() bool {
+func (r ModelListParamsState) IsKnown() bool {
 	switch r {
-	case ModelListParamsStatusModelStatusUnspecified, ModelListParamsStatusModelStatusEnabled, ModelListParamsStatusModelStatusDisabled:
+	case ModelListParamsStateStateUnspecified, ModelListParamsStateStateEnabled, ModelListParamsStateStateDisabled:
 		return true
 	}
 	return false
 }
 
-type ModelSetStatusParams struct {
-	// The new status for the model
-	Status param.Field[ModelSetStatusParamsStatus] `json:"status"`
+type ModelDisableParams struct {
 }
 
-func (r ModelSetStatusParams) MarshalJSON() (data []byte, err error) {
+func (r ModelDisableParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// The new status for the model
-type ModelSetStatusParamsStatus string
+type ModelEnableParams struct {
+}
 
-const (
-	ModelSetStatusParamsStatusModelStatusUnspecified ModelSetStatusParamsStatus = "MODEL_STATUS_UNSPECIFIED"
-	ModelSetStatusParamsStatusModelStatusEnabled     ModelSetStatusParamsStatus = "MODEL_STATUS_ENABLED"
-	ModelSetStatusParamsStatusModelStatusDisabled    ModelSetStatusParamsStatus = "MODEL_STATUS_DISABLED"
-)
-
-func (r ModelSetStatusParamsStatus) IsKnown() bool {
-	switch r {
-	case ModelSetStatusParamsStatusModelStatusUnspecified, ModelSetStatusParamsStatusModelStatusEnabled, ModelSetStatusParamsStatusModelStatusDisabled:
-		return true
-	}
-	return false
+func (r ModelEnableParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 type ModelSwapParams struct {

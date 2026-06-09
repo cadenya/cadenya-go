@@ -84,7 +84,6 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 				}),
 				Data:          cadenya.F[any](map[string]interface{}{}),
 				OverlapPolicy: cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				Status:        cadenya.F(cadenya.AgentScheduleSpecStatusAgentScheduleStatusUnspecified),
 				VariationID:   cadenya.F("variationId"),
 			}),
 		},
@@ -197,7 +196,6 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 				}),
 				Data:          cadenya.F[any](map[string]interface{}{}),
 				OverlapPolicy: cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				Status:        cadenya.F(cadenya.AgentScheduleSpecStatusAgentScheduleStatusUnspecified),
 				VariationID:   cadenya.F("variationId"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
@@ -266,6 +264,93 @@ func TestAgentScheduleDelete(t *testing.T) {
 		"workspaceId",
 		"agentId",
 		"id",
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentScheduleArchive(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Schedules.Archive(
+		context.TODO(),
+		"workspaceId",
+		"agentId",
+		"id",
+		cadenya.AgentScheduleArchiveParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentSchedulePause(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Schedules.Pause(
+		context.TODO(),
+		"workspaceId",
+		"agentId",
+		"id",
+		cadenya.AgentSchedulePauseParams{},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAgentScheduleResume(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Agents.Schedules.Resume(
+		context.TODO(),
+		"workspaceId",
+		"agentId",
+		"id",
+		cadenya.AgentScheduleResumeParams{},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

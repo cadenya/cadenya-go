@@ -116,14 +116,14 @@ func (r *APIKeyService) Delete(ctx context.Context, id string, opts ...option.Re
 
 // Rotates an API key and returns a new token. All previous tokens for this key are
 // invalidated.
-func (r *APIKeyService) Rotate(ctx context.Context, id string, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Rotate(ctx context.Context, id string, body APIKeyRotateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/account/api_keys/%s/rotate", id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, nil, &res, opts...)
+	path := fmt.Sprintf("v1/account/api_keys/%s:rotate", id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -328,4 +328,11 @@ func (r APIKeyListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type APIKeyRotateParams struct {
+}
+
+func (r APIKeyRotateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }

@@ -92,7 +92,7 @@ func (r *ToolSetService) Update(ctx context.Context, workspaceID string, id stri
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
@@ -138,6 +138,26 @@ func (r *ToolSetService) Delete(ctx context.Context, workspaceID string, id stri
 	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
+}
+
+// Transitions a tool set to STATE_ARCHIVED. Syncing stops, the tool set is hidden
+// from list results, its tools are no longer offered to objectives, and new
+// variation assignments are rejected. Existing assignments are retained, and
+// history is preserved — unlike delete, archiving works while the tool set is
+// still assigned to agent variations.
+func (r *ToolSetService) Archive(ctx context.Context, workspaceID string, id string, body ToolSetArchiveParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s:archive", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
 }
 
 // Retrieves the current OpenAPI specification JSON that has been consumed by the
@@ -186,6 +206,24 @@ func (r *ToolSetService) ListEvents(ctx context.Context, workspaceID string, too
 // Lists all events (including sync status) for a tool set
 func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, workspaceID string, toolSetID string, query ToolSetListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetEvent] {
 	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, toolSetID, query, opts...))
+}
+
+// Transitions an archived tool set back to STATE_ACTIVE. Managed tool sets resume
+// syncing on their next cycle and their tools become available to objectives
+// again.
+func (r *ToolSetService) Unarchive(ctx context.Context, workspaceID string, id string, body ToolSetUnarchiveParams, opts ...option.RequestOption) (res *ToolSet, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s:unarchive", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
 }
 
 // Approval filters that will automatically set the approval requirement on tools
@@ -451,6 +489,10 @@ type ToolSet struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
 	Spec     ToolSetSpec             `json:"spec" api:"required"`
+	// The current lifecycle state of the tool set. Output only. Tool sets are created
+	// STATE_ACTIVE; use the :archive and :unarchive actions to transition between
+	// states.
+	State ToolSetState `json:"state" api:"required"`
 	// Tool set information
 	Info ToolSetInfo `json:"info"`
 	JSON toolSetJSON `json:"-"`
@@ -460,6 +502,7 @@ type ToolSet struct {
 type toolSetJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -471,6 +514,25 @@ func (r *ToolSet) UnmarshalJSON(data []byte) (err error) {
 
 func (r toolSetJSON) RawJSON() string {
 	return r.raw
+}
+
+// The current lifecycle state of the tool set. Output only. Tool sets are created
+// STATE_ACTIVE; use the :archive and :unarchive actions to transition between
+// states.
+type ToolSetState string
+
+const (
+	ToolSetStateStateUnspecified ToolSetState = "STATE_UNSPECIFIED"
+	ToolSetStateStateActive      ToolSetState = "STATE_ACTIVE"
+	ToolSetStateStateArchived    ToolSetState = "STATE_ARCHIVED"
+)
+
+func (r ToolSetState) IsKnown() bool {
+	switch r {
+	case ToolSetStateStateUnspecified, ToolSetStateStateActive, ToolSetStateStateArchived:
+		return true
+	}
+	return false
 }
 
 type ToolSetAdapter struct {
@@ -874,6 +936,9 @@ type ToolSetListParams struct {
 	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Field[string] `query:"sortOrder"`
+	// Filter by tool set lifecycle state. Defaults to STATE_ACTIVE when unspecified;
+	// pass STATE_ARCHIVED to list archived tool sets.
+	State param.Field[ToolSetListParamsState] `query:"state"`
 }
 
 // URLQuery serializes [ToolSetListParams]'s query parameters as `url.Values`.
@@ -882,6 +947,31 @@ func (r ToolSetListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+// Filter by tool set lifecycle state. Defaults to STATE_ACTIVE when unspecified;
+// pass STATE_ARCHIVED to list archived tool sets.
+type ToolSetListParamsState string
+
+const (
+	ToolSetListParamsStateStateUnspecified ToolSetListParamsState = "STATE_UNSPECIFIED"
+	ToolSetListParamsStateStateActive      ToolSetListParamsState = "STATE_ACTIVE"
+	ToolSetListParamsStateStateArchived    ToolSetListParamsState = "STATE_ARCHIVED"
+)
+
+func (r ToolSetListParamsState) IsKnown() bool {
+	switch r {
+	case ToolSetListParamsStateStateUnspecified, ToolSetListParamsStateStateActive, ToolSetListParamsStateStateArchived:
+		return true
+	}
+	return false
+}
+
+type ToolSetArchiveParams struct {
+}
+
+func (r ToolSetArchiveParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 type ToolSetListEventsParams struct {
@@ -902,4 +992,11 @@ func (r ToolSetListEventsParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type ToolSetUnarchiveParams struct {
+}
+
+func (r ToolSetUnarchiveParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
