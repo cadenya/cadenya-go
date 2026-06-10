@@ -377,8 +377,15 @@ type AgentVariationSpec struct {
 	// tool search. These are used in conjunction with the context-aware tool search
 	// and can help select the best tools for the task.
 	ProgressiveDiscovery AgentVariationSpecProgressiveDiscovery `json:"progressiveDiscovery"`
-	// The system prompt for this variation
-	Prompt string `json:"prompt"`
+	// Liquid template for the system prompt of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.data into Objective.system_prompt.
+	SystemPromptTemplate string `json:"systemPromptTemplate"`
+	// Liquid template for the initial user message of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.user_data and becomes the first user
+	// message in the LLM chat history. CreateObjectiveRequest.initial_message, when
+	// set, overrides the rendered result. If neither this template nor initial_message
+	// is present, objective creation is rejected with InvalidArgument.
+	UserMessageTemplate string `json:"userMessageTemplate"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
@@ -397,7 +404,8 @@ type agentVariationSpecJSON struct {
 	EpisodicMemoryTtl    apijson.Field
 	ModelConfig          apijson.Field
 	ProgressiveDiscovery apijson.Field
-	Prompt               apijson.Field
+	SystemPromptTemplate apijson.Field
+	UserMessageTemplate  apijson.Field
 	Weight               apijson.Field
 	raw                  string
 	ExtraFields          map[string]apijson.Field
@@ -437,8 +445,15 @@ type AgentVariationSpecParam struct {
 	// tool search. These are used in conjunction with the context-aware tool search
 	// and can help select the best tools for the task.
 	ProgressiveDiscovery param.Field[AgentVariationSpecProgressiveDiscoveryParam] `json:"progressiveDiscovery"`
-	// The system prompt for this variation
-	Prompt param.Field[string] `json:"prompt"`
+	// Liquid template for the system prompt of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.data into Objective.system_prompt.
+	SystemPromptTemplate param.Field[string] `json:"systemPromptTemplate"`
+	// Liquid template for the initial user message of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.user_data and becomes the first user
+	// message in the LLM chat history. CreateObjectiveRequest.initial_message, when
+	// set, overrides the rendered result. If neither this template nor initial_message
+	// is present, objective creation is rejected with InvalidArgument.
+	UserMessageTemplate param.Field[string] `json:"userMessageTemplate"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
