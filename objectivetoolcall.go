@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"time"
 
 	"github.com/cadenya/cadenya-go/internal/apijson"
 	"github.com/cadenya/cadenya-go/internal/apiquery"
@@ -36,6 +37,27 @@ func NewObjectiveToolCallService(opts ...option.RequestOption) (r *ObjectiveTool
 	r = &ObjectiveToolCallService{}
 	r.Options = opts
 	return
+}
+
+// Retrieves a single tool call, including the content the tool returned. Media
+// content (images, audio) is served as short-lived signed URLs.
+func (r *ObjectiveToolCallService) Get(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, opts ...option.RequestOption) (res *ObjectiveToolCallWithResult, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if objectiveID == "" {
+		err = errors.New("missing required objectiveId parameter")
+		return nil, err
+	}
+	if toolCallID == "" {
+		err = errors.New("missing required toolCallId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s", workspaceID, objectiveID, toolCallID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
 }
 
 // Lists all tool calls for an objective
@@ -194,8 +216,6 @@ type ObjectiveToolCallData struct {
 	Arguments map[string]interface{} `json:"arguments"`
 	// A memo supplied by the reviewer when denying the tool call
 	Memo string `json:"memo"`
-	// The result content returned by the tool after execution
-	Result string `json:"result"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
@@ -209,7 +229,6 @@ type objectiveToolCallDataJSON struct {
 	Callable        apijson.Field
 	Arguments       apijson.Field
 	Memo            apijson.Field
-	Result          apijson.Field
 	StatusChangedBy apijson.Field
 	raw             string
 	ExtraFields     map[string]apijson.Field
@@ -249,6 +268,218 @@ func (r *ObjectiveToolCallInfo) UnmarshalJSON(data []byte) (err error) {
 
 func (r objectiveToolCallInfoJSON) RawJSON() string {
 	return r.raw
+}
+
+// ObjectiveToolCallResult is the content a tool returned after execution. Tools
+// can return multiple content blocks, and blocks can be multi-modal (text, image,
+// audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
+// rather than inline bytes.
+type ObjectiveToolCallResult struct {
+	Content []ObjectiveToolCallResultContentBlock `json:"content" api:"required"`
+	JSON    objectiveToolCallResultJSON           `json:"-"`
+}
+
+// objectiveToolCallResultJSON contains the JSON metadata for the struct
+// [ObjectiveToolCallResult]
+type objectiveToolCallResultJSON struct {
+	Content     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallResult) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallResultJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveToolCallResultAudioBlock struct {
+	// When the signed URL expires.
+	ExpiresAt time.Time `json:"expiresAt" api:"required" format:"date-time"`
+	// IANA media type of the stored audio, e.g. audio/wav.
+	MimeType string `json:"mimeType" api:"required"`
+	// Size of the stored audio in bytes.
+	SizeBytes string `json:"sizeBytes" api:"required"`
+	// Short-lived signed URL to download the stored audio.
+	URL  string                                `json:"url" api:"required"`
+	JSON objectiveToolCallResultAudioBlockJSON `json:"-"`
+}
+
+// objectiveToolCallResultAudioBlockJSON contains the JSON metadata for the struct
+// [ObjectiveToolCallResultAudioBlock]
+type objectiveToolCallResultAudioBlockJSON struct {
+	ExpiresAt   apijson.Field
+	MimeType    apijson.Field
+	SizeBytes   apijson.Field
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallResultAudioBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallResultAudioBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+// ContentBlock is a single block of tool result content. Exactly one of the
+// variants is set.
+type ObjectiveToolCallResultContentBlock struct {
+	Audio ObjectiveToolCallResultAudioBlock       `json:"audio"`
+	Image ObjectiveToolCallResultImageBlock       `json:"image"`
+	Text  ObjectiveToolCallResultTextBlock        `json:"text"`
+	JSON  objectiveToolCallResultContentBlockJSON `json:"-"`
+}
+
+// objectiveToolCallResultContentBlockJSON contains the JSON metadata for the
+// struct [ObjectiveToolCallResultContentBlock]
+type objectiveToolCallResultContentBlockJSON struct {
+	Audio       apijson.Field
+	Image       apijson.Field
+	Text        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallResultContentBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallResultContentBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveToolCallResultImageBlock struct {
+	// When the signed URL expires.
+	ExpiresAt time.Time `json:"expiresAt" api:"required" format:"date-time"`
+	// IANA media type of the stored image, e.g. image/png.
+	MimeType string `json:"mimeType" api:"required"`
+	// Size of the stored image in bytes.
+	SizeBytes string `json:"sizeBytes" api:"required"`
+	// Short-lived signed URL to download the stored image.
+	URL  string                                `json:"url" api:"required"`
+	JSON objectiveToolCallResultImageBlockJSON `json:"-"`
+}
+
+// objectiveToolCallResultImageBlockJSON contains the JSON metadata for the struct
+// [ObjectiveToolCallResultImageBlock]
+type objectiveToolCallResultImageBlockJSON struct {
+	ExpiresAt   apijson.Field
+	MimeType    apijson.Field
+	SizeBytes   apijson.Field
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallResultImageBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallResultImageBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveToolCallResultTextBlock struct {
+	Text string                               `json:"text" api:"required"`
+	JSON objectiveToolCallResultTextBlockJSON `json:"-"`
+}
+
+// objectiveToolCallResultTextBlockJSON contains the JSON metadata for the struct
+// [ObjectiveToolCallResultTextBlock]
+type objectiveToolCallResultTextBlockJSON struct {
+	Text        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallResultTextBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallResultTextBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+// ObjectiveToolCallWithResult is an ObjectiveToolCall plus the content the tool
+// returned. Returned by GetObjectiveToolCall.
+type ObjectiveToolCallWithResult struct {
+	Data            ObjectiveToolCallData                      `json:"data" api:"required"`
+	ExecutionStatus ObjectiveToolCallWithResultExecutionStatus `json:"executionStatus" api:"required"`
+	Info            ObjectiveToolCallInfo                      `json:"info" api:"required"`
+	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
+	// runs)
+	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
+	// Current status of the tool call
+	Status ObjectiveToolCallWithResultStatus `json:"status" api:"required"`
+	// ObjectiveToolCallResult is the content a tool returned after execution. Tools
+	// can return multiple content blocks, and blocks can be multi-modal (text, image,
+	// audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
+	// rather than inline bytes.
+	Result ObjectiveToolCallResult         `json:"result"`
+	JSON   objectiveToolCallWithResultJSON `json:"-"`
+}
+
+// objectiveToolCallWithResultJSON contains the JSON metadata for the struct
+// [ObjectiveToolCallWithResult]
+type objectiveToolCallWithResultJSON struct {
+	Data            apijson.Field
+	ExecutionStatus apijson.Field
+	Info            apijson.Field
+	Metadata        apijson.Field
+	Status          apijson.Field
+	Result          apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *ObjectiveToolCallWithResult) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveToolCallWithResultJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveToolCallWithResultExecutionStatus string
+
+const (
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted   ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+)
+
+func (r ObjectiveToolCallWithResultExecutionStatus) IsKnown() bool {
+	switch r {
+	case ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored:
+		return true
+	}
+	return false
+}
+
+// Current status of the tool call
+type ObjectiveToolCallWithResultStatus string
+
+const (
+	ObjectiveToolCallWithResultStatusToolCallStatusUnspecified        ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_UNSPECIFIED"
+	ObjectiveToolCallWithResultStatusToolCallStatusAutoApproved       ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_AUTO_APPROVED"
+	ObjectiveToolCallWithResultStatusToolCallStatusWaitingForApproval ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_WAITING_FOR_APPROVAL"
+	ObjectiveToolCallWithResultStatusToolCallStatusApproved           ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_APPROVED"
+	ObjectiveToolCallWithResultStatusToolCallStatusDenied             ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_DENIED"
+)
+
+func (r ObjectiveToolCallWithResultStatus) IsKnown() bool {
+	switch r {
+	case ObjectiveToolCallWithResultStatusToolCallStatusUnspecified, ObjectiveToolCallWithResultStatusToolCallStatusAutoApproved, ObjectiveToolCallWithResultStatusToolCallStatusWaitingForApproval, ObjectiveToolCallWithResultStatusToolCallStatusApproved, ObjectiveToolCallWithResultStatusToolCallStatusDenied:
+		return true
+	}
+	return false
 }
 
 type ObjectiveToolCallListParams struct {

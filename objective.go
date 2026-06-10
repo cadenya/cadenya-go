@@ -1088,14 +1088,18 @@ func (r toolErrorJSON) RawJSON() string {
 }
 
 type ToolResult struct {
-	Content    string         `json:"content"`
-	ToolCallID string         `json:"toolCallId"`
-	JSON       toolResultJSON `json:"-"`
+	// ObjectiveToolCallResult is the content a tool returned after execution. Tools
+	// can return multiple content blocks, and blocks can be multi-modal (text, image,
+	// audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
+	// rather than inline bytes.
+	Result     ObjectiveToolCallResult `json:"result" api:"required"`
+	ToolCallID string                  `json:"toolCallId" api:"required"`
+	JSON       toolResultJSON          `json:"-"`
 }
 
 // toolResultJSON contains the JSON metadata for the struct [ToolResult]
 type toolResultJSON struct {
-	Content     apijson.Field
+	Result      apijson.Field
 	ToolCallID  apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
