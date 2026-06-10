@@ -461,8 +461,10 @@ type Objective struct {
 	// interpolation format.
 	Secrets []ObjectiveSecret `json:"secrets"`
 	// Optional human-readable detail about the current state (e.g. a failure reason).
-	StateMessage string        `json:"stateMessage"`
-	JSON         objectiveJSON `json:"-"`
+	StateMessage string `json:"stateMessage"`
+	// Arbitrary data used to render the variation's user_message_template
+	UserData map[string]interface{} `json:"userData"`
+	JSON     objectiveJSON          `json:"-"`
 }
 
 // objectiveJSON contains the JSON metadata for the struct [Objective]
@@ -479,6 +481,7 @@ type objectiveJSON struct {
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
 	StateMessage      apijson.Field
+	UserData          apijson.Field
 	raw               string
 	ExtraFields       map[string]apijson.Field
 }
@@ -1212,9 +1215,11 @@ type ObjectiveNewParams struct {
 	// Arbitrary data for the objective. May be used in liquid templates for prompts
 	// configured on the agent variation
 	Data param.Field[map[string]interface{}] `json:"data" api:"required"`
-	// Optional override for initial message sent to the agent. This becomes the first
-	// user message in the LLM chat history. The agent variation is used to set this if
-	// not present.
+	// Optional override for the initial message sent to the agent. This becomes the
+	// first user message in the LLM chat history. When not set, the selected
+	// variation's user_message_template is rendered with user_data instead. If neither
+	// this field nor a user_message_template is present, the request is rejected with
+	// InvalidArgument.
 	InitialMessage param.Field[string] `json:"initialMessage"`
 	// Memory layers/entries to push onto this objective's memory stack on top of the
 	// baseline stack inherited from the selected variation.
@@ -1239,6 +1244,10 @@ type ObjectiveNewParams struct {
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets param.Field[[]ObjectiveNewParamsSecret] `json:"secrets"`
+	// Arbitrary data rendered into the selected variation's user_message_template
+	// (liquid) to produce the initial user message. Separate from `data`, which
+	// renders the system prompt template.
+	UserData param.Field[map[string]interface{}] `json:"userData"`
 	// Optional explicit variation selection. Overrides the agent's
 	// variation_selection_mode.
 	VariationID param.Field[string] `json:"variationId"`
