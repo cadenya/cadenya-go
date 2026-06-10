@@ -50,6 +50,9 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 				Name:  cadenya.F("name"),
 				Value: cadenya.F("value"),
 			}}),
+			UserData: cadenya.F(map[string]interface{}{
+				"foo": "bar",
+			}),
 			VariationID: cadenya.F("variationId"),
 		},
 	)

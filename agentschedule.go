@@ -314,9 +314,6 @@ func (r agentScheduleInfoJSON) RawJSON() string {
 
 // AgentScheduleSpec is the user-provided configuration for a schedule.
 type AgentScheduleSpec struct {
-	// The initial message passed to CreateObjective on each fire. Becomes the first
-	// user message in the objective's chat history.
-	InitialMessage string `json:"initialMessage" api:"required"`
 	// Schedule defines WHEN the schedule fires. Temporal-style structured form: a list
 	// of calendar rules (wall-clock) and/or interval rules (duration), OR'd together.
 	// At least one rule is required.
@@ -324,8 +321,16 @@ type AgentScheduleSpec struct {
 	// Optional input data passed to the objective. If the agent has an
 	// input_data_schema, this must satisfy it.
 	Data interface{} `json:"data"`
+	// Optional initial message passed to CreateObjective on each fire. Becomes the
+	// first user message in the objective's chat history. When unset, the fired
+	// objective defers to the selected variation's user_message_template.
+	InitialMessage string `json:"initialMessage"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy AgentScheduleSpecOverlapPolicy `json:"overlapPolicy"`
+	// Optional data rendered into the variation's user_message_template when each
+	// fired objective is created. Separate from `data`, which renders the system
+	// prompt template.
+	UserData interface{} `json:"userData"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID string                `json:"variationId"`
@@ -335,10 +340,11 @@ type AgentScheduleSpec struct {
 // agentScheduleSpecJSON contains the JSON metadata for the struct
 // [AgentScheduleSpec]
 type agentScheduleSpecJSON struct {
-	InitialMessage apijson.Field
 	Schedule       apijson.Field
 	Data           apijson.Field
+	InitialMessage apijson.Field
 	OverlapPolicy  apijson.Field
+	UserData       apijson.Field
 	VariationID    apijson.Field
 	raw            string
 	ExtraFields    map[string]apijson.Field
@@ -371,9 +377,6 @@ func (r AgentScheduleSpecOverlapPolicy) IsKnown() bool {
 
 // AgentScheduleSpec is the user-provided configuration for a schedule.
 type AgentScheduleSpecParam struct {
-	// The initial message passed to CreateObjective on each fire. Becomes the first
-	// user message in the objective's chat history.
-	InitialMessage param.Field[string] `json:"initialMessage" api:"required"`
 	// Schedule defines WHEN the schedule fires. Temporal-style structured form: a list
 	// of calendar rules (wall-clock) and/or interval rules (duration), OR'd together.
 	// At least one rule is required.
@@ -381,8 +384,16 @@ type AgentScheduleSpecParam struct {
 	// Optional input data passed to the objective. If the agent has an
 	// input_data_schema, this must satisfy it.
 	Data param.Field[interface{}] `json:"data"`
+	// Optional initial message passed to CreateObjective on each fire. Becomes the
+	// first user message in the objective's chat history. When unset, the fired
+	// objective defers to the selected variation's user_message_template.
+	InitialMessage param.Field[string] `json:"initialMessage"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy param.Field[AgentScheduleSpecOverlapPolicy] `json:"overlapPolicy"`
+	// Optional data rendered into the variation's user_message_template when each
+	// fired objective is created. Separate from `data`, which renders the system
+	// prompt template.
+	UserData param.Field[interface{}] `json:"userData"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID param.Field[string] `json:"variationId"`

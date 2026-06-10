@@ -41,7 +41,6 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentScheduleSpecParam{
-				InitialMessage: cadenya.F("initialMessage"),
 				Schedule: cadenya.F(cadenya.AgentScheduleSpecScheduleParam{
 					Calendars: cadenya.F([]cadenya.ScheduleCalendarParam{{
 						Comment: cadenya.F("comment"),
@@ -82,9 +81,11 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 					}}),
 					Timezone: cadenya.F("timezone"),
 				}),
-				Data:          cadenya.F[any](map[string]interface{}{}),
-				OverlapPolicy: cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				VariationID:   cadenya.F("variationId"),
+				Data:           cadenya.F[any](map[string]interface{}{}),
+				InitialMessage: cadenya.F("initialMessage"),
+				OverlapPolicy:  cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
+				UserData:       cadenya.F[any](map[string]interface{}{}),
+				VariationID:    cadenya.F("variationId"),
 			}),
 		},
 	)
@@ -153,7 +154,6 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AgentScheduleSpecParam{
-				InitialMessage: cadenya.F("initialMessage"),
 				Schedule: cadenya.F(cadenya.AgentScheduleSpecScheduleParam{
 					Calendars: cadenya.F([]cadenya.ScheduleCalendarParam{{
 						Comment: cadenya.F("comment"),
@@ -194,9 +194,11 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 					}}),
 					Timezone: cadenya.F("timezone"),
 				}),
-				Data:          cadenya.F[any](map[string]interface{}{}),
-				OverlapPolicy: cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				VariationID:   cadenya.F("variationId"),
+				Data:           cadenya.F[any](map[string]interface{}{}),
+				InitialMessage: cadenya.F("initialMessage"),
+				OverlapPolicy:  cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
+				UserData:       cadenya.F[any](map[string]interface{}{}),
+				VariationID:    cadenya.F("variationId"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
