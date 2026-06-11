@@ -517,8 +517,8 @@ type BulkWorkspaceApplyResultDataMemoryEntryOutcome struct {
 	// MemoryEntry is a single keyed value within a MemoryLayer. Entries are addressed
 	// by their key, which follows the S3 object key safe-character convention (see
 	// MemoryEntrySpec.key for the full rule). Keys are unique within a single layer;
-	// the same key may appear in multiple layers, in which case the LIFO stack-walk
-	// determines which one wins for a given objective.
+	// the same key may appear in multiple layers, in which case the cascade walk
+	// determines which one wins for a given objective (most specific layer first).
 	//
 	// MemoryEntry is the summary shape, returned by ListMemoryEntries. It does not
 	// carry the entry body — callers that need the body must fetch the entry
@@ -641,11 +641,11 @@ type BulkWorkspaceApplyResultDataMemoryLayerOutcome struct {
 	Error      BulkWorkspaceApplyResultDataMemoryLayerOutcomeError `json:"error"`
 	ExternalID string                                              `json:"externalId"`
 	// MemoryLayer is a named container of memory entries that can be composed into an
-	// objective's memory stack. Layers are workspace-scoped resources. The layer type
-	// controls how its entries participate in the agent loop — see MemoryLayerType for
-	// details.
+	// objective's memory cascade. Layers are workspace-scoped resources. The layer
+	// type controls how its entries participate in the agent loop — see
+	// MemoryLayerType for details.
 	//
-	// See "Memory stack composition" above for how layers compose at lookup time.
+	// See "Memory cascade composition" above for how layers compose at lookup time.
 	Resource MemoryLayer                                        `json:"resource"`
 	JSON     bulkWorkspaceApplyResultDataMemoryLayerOutcomeJSON `json:"-"`
 }
@@ -1119,8 +1119,8 @@ type BulkWorkspaceApplyResultDataVariationMemoryLayerOutcome struct {
 	// [API Design Guide](https://cloud.google.com/apis/design/errors).
 	Error BulkWorkspaceApplyResultDataVariationMemoryLayerOutcomeError `json:"error"`
 	// VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
-	// given position in the variation's baseline memory stack. A variation has at most
-	// one assignment per memory_layer_id.
+	// given position in the variation's baseline memory cascade. A variation has at
+	// most one assignment per memory_layer_id.
 	//
 	// Variations only support whole-layer attachments — entry pinning is an
 	// objective-level capability.

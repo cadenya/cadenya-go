@@ -39,7 +39,7 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 				Key: cadenya.F("key"),
 			}),
 			InitialMessage: cadenya.F("initialMessage"),
-			MemoryStack: cadenya.F([]cadenya.MemoryReferenceParam{{
+			MemoryCascade: cadenya.F([]cadenya.MemoryReferenceParam{{
 				MemoryEntryID: cadenya.F("memoryEntryId"),
 				MemoryLayerID: cadenya.F("memoryLayerId"),
 			}}),
