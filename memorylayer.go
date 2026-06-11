@@ -201,9 +201,15 @@ func (r memoryLayerInfoJSON) RawJSON() string {
 
 type MemoryLayerSpec struct {
 	Type MemoryLayerSpecType `json:"type" api:"required"`
+	// Server-set on episodic layers: the agent this layer belongs to. Unset for
+	// non-episodic layers.
+	AgentID string `json:"agentId"`
 	// Human-readable description of the layer's purpose. Encouraged for user-created
 	// layers; system-managed layers may have a generated description.
 	Description string `json:"description"`
+	// Server-set on episodic layers: the caller-supplied episodic key the layer was
+	// created for. Unset for non-episodic layers.
+	EpisodicKey string `json:"episodicKey"`
 	// For layers with a finite lifetime (e.g., episodic), the time at which the layer
 	// becomes eligible for cleanup. Set by the system; unset for persistent layers.
 	ExpiresAt time.Time `json:"expiresAt" format:"date-time"`
@@ -218,7 +224,9 @@ type MemoryLayerSpec struct {
 // memoryLayerSpecJSON contains the JSON metadata for the struct [MemoryLayerSpec]
 type memoryLayerSpecJSON struct {
 	Type          apijson.Field
+	AgentID       apijson.Field
 	Description   apijson.Field
+	EpisodicKey   apijson.Field
 	ExpiresAt     apijson.Field
 	SystemManaged apijson.Field
 	raw           string
@@ -286,10 +294,16 @@ func (r MemoryLayerUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type MemoryLayerListParams struct {
+	// Filter to episodic layers belonging to this agent.
+	AgentID param.Field[string] `query:"agentId"`
 	// Filter by bundle_key — return only resources owned by this bundle.
 	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
+	// Filter to episodic layers whose episodic key starts with this prefix (e.g.
+	// "customer/" matches "customer/42" and "customer/43"). Useful for namespaced
+	// keys, similar to a redis key scan.
+	EpisodicKeyPrefix param.Field[string] `query:"episodicKeyPrefix"`
 	// When set to true you may use more of your alloted API rate-limit
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
