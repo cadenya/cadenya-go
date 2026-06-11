@@ -98,6 +98,8 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 						Spec: cadenya.F(cadenya.AgentSpecParam{
 							VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
 							Description:            cadenya.F("description"),
+							EnableEpisodicMemory:   cadenya.F(true),
+							EpisodicMemoryTtl:      cadenya.F(int64(0)),
 							InputDataSchema: cadenya.F(map[string]interface{}{
 								"foo": "bar",
 							}),
@@ -183,9 +185,7 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 										MaxSubObjectives: cadenya.F(int64(0)),
 										MaxToolCalls:     cadenya.F(int64(0)),
 									}),
-									Description:          cadenya.F("description"),
-									EnableEpisodicMemory: cadenya.F(true),
-									EpisodicMemoryTtl:    cadenya.F(int64(0)),
+									Description: cadenya.F("description"),
 									ModelConfig: cadenya.F(cadenya.AgentVariationSpecModelConfigParam{
 										ModelID:     cadenya.F("modelId"),
 										Temperature: cadenya.F(0.000000),
