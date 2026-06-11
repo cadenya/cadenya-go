@@ -330,8 +330,8 @@ func (r contextWindowCompactedJSON) RawJSON() string {
 }
 
 // MemoryRead is emitted each time the agent resolves a key against the memory
-// stack and loads an entry. Lookups that miss (key not found in any layer) do not
-// emit this event.
+// cascade and loads an entry. Lookups that miss (key not found in any layer) do
+// not emit this event.
 type MemoryRead struct {
 	// The specific entry that was read.
 	MemoryEntryID string `json:"memoryEntryId"`
@@ -364,15 +364,16 @@ func (r memoryReadJSON) RawJSON() string {
 }
 
 // MemoryReference identifies a memory layer or a specific entry within one, for
-// composition into a memory stack. Used on objectives (where entry pinning is
+// composition into a memory cascade. Used on objectives (where entry pinning is
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
 // form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReference struct {
-	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
-	// as a single-entry layer (only this key resolves at this position). The entry
-	// must belong to memory_layer_id; mismatches are rejected with InvalidArgument.
+	// When set, inserts only this entry from memory_layer_id into the cascade —
+	// behaves as a single-entry layer (only this key resolves at this position). The
+	// entry must belong to memory_layer_id; mismatches are rejected with
+	// InvalidArgument.
 	MemoryEntryID string              `json:"memoryEntryId"`
 	MemoryLayerID string              `json:"memoryLayerId"`
 	JSON          memoryReferenceJSON `json:"-"`
@@ -395,15 +396,16 @@ func (r memoryReferenceJSON) RawJSON() string {
 }
 
 // MemoryReference identifies a memory layer or a specific entry within one, for
-// composition into a memory stack. Used on objectives (where entry pinning is
+// composition into a memory cascade. Used on objectives (where entry pinning is
 // permitted).
 //
 // memory*layer_id accepts both the canonical form (memlyr*…) and the external-id
 // form (external_id:my-custom-id). The same applies to memory_entry_id when set.
 type MemoryReferenceParam struct {
-	// When set, pushes only this entry from memory_layer_id onto the stack — behaves
-	// as a single-entry layer (only this key resolves at this position). The entry
-	// must belong to memory_layer_id; mismatches are rejected with InvalidArgument.
+	// When set, inserts only this entry from memory_layer_id into the cascade —
+	// behaves as a single-entry layer (only this key resolves at this position). The
+	// entry must belong to memory_layer_id; mismatches are rejected with
+	// InvalidArgument.
 	MemoryEntryID param.Field[string] `json:"memoryEntryId"`
 	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
 }
@@ -436,22 +438,20 @@ type Objective struct {
 	// ObjectiveInfo provides read-only aggregated statistics about an objective's
 	// execution
 	Info ObjectiveInfo `json:"info"`
-	// Memory layers/entries to push onto this objective's memory stack on top of the
-	// baseline stack inherited from the selected variation.
+	// Memory layers/entries layered over the baseline cascade inherited from the
+	// selected variation — element-level rules over inherited styles, in CSS terms.
 	//
-	// Array order is push order: the first element sits lower in the objective's
-	// contribution to the stack; the LAST element ends up on top of the effective
-	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
-	// position.
+	// Array order is resolution order: EARLIER elements are more specific and are
+	// consulted first. Entries pinned via memory_entry_id behave as single-entry
+	// layers at their position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically based on episodic_key.
+	// themselves automatically based on the episodic key.
 	//
-	// Stack size cap: the TOTAL effective stack (variation's memory layers
-	//
-	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument.
-	MemoryStack []MemoryReference `json:"memoryStack"`
+	// Size cap: the TOTAL effective cascade (this field + the variation's memory layer
+	// assignments) must not exceed 10 entries. A request that would produce a larger
+	// cascade is rejected with InvalidArgument.
+	MemoryCascade []MemoryReference `json:"memoryCascade"`
 	// The output of the objective, populated when the objective completes. Will match
 	// the schema of output_json_schema or output_json_inferred. This will only be set
 	// if the state of the objective is set to STATE_FINALIZED
@@ -479,7 +479,7 @@ type objectiveJSON struct {
 	Data              apijson.Field
 	EpisodicMemory    apijson.Field
 	Info              apijson.Field
-	MemoryStack       apijson.Field
+	MemoryCascade     apijson.Field
 	Output            apijson.Field
 	ParentObjectiveID apijson.Field
 	Secrets           apijson.Field
@@ -709,8 +709,8 @@ type ObjectiveEventData struct {
 	// compaction, or continuation are permitted.
 	Finalized ObjectiveEventDataFinalized `json:"finalized"`
 	// MemoryRead is emitted each time the agent resolves a key against the memory
-	// stack and loads an entry. Lookups that miss (key not found in any layer) do not
-	// emit this event.
+	// cascade and loads an entry. Lookups that miss (key not found in any layer) do
+	// not emit this event.
 	MemoryRead            MemoryRead             `json:"memoryRead"`
 	SubAgentSpawned       SubAgentSpawned        `json:"subAgentSpawned"`
 	SubAgentUpdated       SubAgentUpdated        `json:"subAgentUpdated"`
@@ -852,11 +852,13 @@ type ObjectiveInfo struct {
 	// ID of the objective's current (most recent) context window. Hydrated on demand;
 	// empty when the objective has not yet produced a context window.
 	CurrentContextWindowID string `json:"currentContextWindowId" api:"required"`
-	// The effective memory stack at objective creation time, flattened from the
-	// variation's baseline plus Objective.memory_stack. Order is push order (last =
-	// top). Returned on reads so clients can see exactly what stack the objective is
-	// using without having to re-join variation state.
-	EffectiveMemoryStack []MemoryReference `json:"effectiveMemoryStack" api:"required"`
+	// The effective memory cascade at objective creation time: the episodic layer
+	// (when present), then Objective.memory_cascade, then the variation's baseline
+	// layers by ascending position. Order is resolution order — index 0 is the most
+	// specific and is consulted first; the first layer containing a key wins. Returned
+	// on reads so clients can see exactly what the objective resolves against without
+	// re-joining variation state.
+	EffectiveMemoryCascade []MemoryReference `json:"effectiveMemoryCascade" api:"required"`
 	// Total number of context windows that this objective has generated
 	TotalContextWindows int64 `json:"totalContextWindows" api:"required"`
 	// Total number of events generated during this objective's execution
@@ -879,7 +881,7 @@ type objectiveInfoJSON struct {
 	AgentVariation         apijson.Field
 	CreatedBy              apijson.Field
 	CurrentContextWindowID apijson.Field
-	EffectiveMemoryStack   apijson.Field
+	EffectiveMemoryCascade apijson.Field
 	TotalContextWindows    apijson.Field
 	TotalEvents            apijson.Field
 	TotalInputTokens       apijson.Field
@@ -1258,22 +1260,20 @@ type ObjectiveNewParams struct {
 	// this field nor a user_message_template is present, the request is rejected with
 	// InvalidArgument.
 	InitialMessage param.Field[string] `json:"initialMessage"`
-	// Memory layers/entries to push onto this objective's memory stack on top of the
-	// baseline stack inherited from the selected variation.
+	// Memory layers/entries layered over the baseline cascade inherited from the
+	// selected variation — element-level rules over inherited styles, in CSS terms.
 	//
-	// Array order is push order: the first element sits lower in the objective's
-	// contribution to the stack; the LAST element ends up on top of the effective
-	// stack. Entries pinned via memory_entry_id behave as single-entry layers at their
-	// position.
+	// Array order is resolution order: EARLIER elements are more specific and are
+	// consulted first. Entries pinned via memory_entry_id behave as single-entry
+	// layers at their position.
 	//
 	// System-managed layers (e.g., episodic) cannot be referenced here; they attach
-	// themselves automatically based on episodic_key.
+	// themselves automatically based on the episodic key.
 	//
-	// Stack size cap: the TOTAL effective stack (variation's memory layers
-	//
-	//   - this field) must not exceed 10 entries. A request that would produce an
-	//     effective stack larger than 10 is rejected with InvalidArgument.
-	MemoryStack param.Field[[]MemoryReferenceParam] `json:"memoryStack"`
+	// Size cap: the TOTAL effective cascade (this field + the variation's memory layer
+	// assignments) must not exceed 10 entries. A request that would produce a larger
+	// cascade is rejected with InvalidArgument.
+	MemoryCascade param.Field[[]MemoryReferenceParam] `json:"memoryCascade"`
 	// CreateOperationMetadata contains the user-provided fields for creating an
 	// operation. Read-only fields (id, account_id, workspace_id, created_at,
 	// profile_id) are excluded since they are set by the server.

@@ -171,7 +171,7 @@ func (r *AgentVariationService) AddAssignment(ctx context.Context, workspaceID s
 }
 
 // Attaches a memory layer to a variation at a given position in the variation's
-// baseline memory stack.
+// baseline memory cascade.
 func (r *AgentVariationService) AddMemoryLayer(ctx context.Context, workspaceID string, agentID string, variationID string, body AgentVariationAddMemoryLayerParams, opts ...option.RequestOption) (res *VariationMemoryLayerAssignment, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -308,7 +308,8 @@ type AgentVariationInfo struct {
 	// Total number of objective feedbacks received for this variation
 	FeedbackCount int64 `json:"feedbackCount"`
 	// Read-only list of memory layer assignments for this variation, returned in
-	// ascending `position` (bottom → top). Capped at 10 entries.
+	// ascending `position` (most specific first — resolution order). Capped at 10
+	// entries.
 	MemoryLayerAssignments []VariationMemoryLayerAssignment `json:"memoryLayerAssignments"`
 	// Count of memory layer assignments.
 	MemoryLayerCount int64 `json:"memoryLayerCount"`
@@ -759,8 +760,8 @@ func (r variationAssignmentJSON) RawJSON() string {
 }
 
 // VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
-// given position in the variation's baseline memory stack. A variation has at most
-// one assignment per memory_layer_id.
+// given position in the variation's baseline memory cascade. A variation has at
+// most one assignment per memory_layer_id.
 //
 // Variations only support whole-layer attachments — entry pinning is an
 // objective-level capability.
@@ -775,9 +776,10 @@ type VariationMemoryLayerAssignment struct {
 	// to an objective. Both fields are server-populated; clients provide IDs through
 	// sibling fields rather than by constructing a BareMetadata themselves.
 	MemoryLayer shared.BareMetadata `json:"memoryLayer"`
-	// Position in the variation's baseline stack. Lower values sit lower; the
-	// highest-position assignment is on top of the variation's baseline. Gaps are fine
-	// — only relative position matters. Positions must be unique within a variation; a
+	// Position in the variation's baseline cascade. Position is specificity,
+	// CSS-style: a LOWER position is more specific and is consulted first; the
+	// highest-position assignment is the most general fallback. Gaps are fine — only
+	// relative position matters. Positions must be unique within a variation; a
 	// request that would collide with an existing assignment's position is rejected
 	// with InvalidArgument.
 	Position int64                              `json:"position"`
@@ -867,7 +869,8 @@ type AgentVariationAddMemoryLayerParams struct {
 	// Layer to attach. Accepts the canonical `memlyr_…` form or the
 	// `external_id:<value>` form.
 	MemoryLayerID param.Field[string] `json:"memoryLayerId"`
-	// Position in the stack. If omitted, server appends (max existing position + 1).
+	// Position in the baseline cascade (lower = more specific). If omitted, the server
+	// appends at the most general end (max existing position + 1).
 	Position param.Field[int64] `json:"position"`
 }
 

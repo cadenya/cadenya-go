@@ -26,8 +26,8 @@ type Client struct {
 	Agents     *AgentService
 	Objectives *ObjectiveService
 	// Manage memory layers and their entries. Layers are named containers that can be
-	// composed into an objective's memory stack; entries are the keyed values within a
-	// layer. System-managed layers (e.g., episodic layers created by the runtime)
+	// composed into an objective's memory cascade; entries are the keyed values within
+	// a layer. System-managed layers (e.g., episodic layers created by the runtime)
 	// cannot be mutated through this API.
 	MemoryLayers *MemoryLayerService
 	// Issue short-lived presigned URLs for direct client-to-object-storage uploads.
