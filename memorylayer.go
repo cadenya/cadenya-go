@@ -170,6 +170,8 @@ func (r memoryLayerJSON) RawJSON() string {
 }
 
 type MemoryLayerInfo struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
@@ -184,6 +186,7 @@ type MemoryLayerInfo struct {
 
 // memoryLayerInfoJSON contains the JSON metadata for the struct [MemoryLayerInfo]
 type memoryLayerInfoJSON struct {
+	Agent       apijson.Field
 	CreatedBy   apijson.Field
 	EntryCount  apijson.Field
 	LastUsedAt  apijson.Field
