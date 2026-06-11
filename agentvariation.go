@@ -360,15 +360,6 @@ type AgentVariationSpec struct {
 	Constraints AgentVariationSpecConstraints `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
 	Description string `json:"description"`
-	// Enable episodic memory for objectives using this variation. When true, the
-	// system automatically creates a document namespace for each objective using the
-	// objective's episodic_key as the external_id, allowing the agent to store and
-	// retrieve documents specific to that episode.
-	EnableEpisodicMemory bool `json:"enableEpisodicMemory"`
-	// How long episodic memories should be retained. After this duration, episodic
-	// document namespaces can be automatically cleaned up. If not set, episodic
-	// memories are retained indefinitely.
-	EpisodicMemoryTtl int64 `json:"episodicMemoryTtl"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig AgentVariationSpecModelConfig `json:"modelConfig"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically
@@ -400,8 +391,6 @@ type agentVariationSpecJSON struct {
 	CompactionConfig     apijson.Field
 	Constraints          apijson.Field
 	Description          apijson.Field
-	EnableEpisodicMemory apijson.Field
-	EpisodicMemoryTtl    apijson.Field
 	ModelConfig          apijson.Field
 	ProgressiveDiscovery apijson.Field
 	SystemPromptTemplate apijson.Field
@@ -428,15 +417,6 @@ type AgentVariationSpecParam struct {
 	Constraints param.Field[AgentVariationSpecConstraintsParam] `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
 	Description param.Field[string] `json:"description"`
-	// Enable episodic memory for objectives using this variation. When true, the
-	// system automatically creates a document namespace for each objective using the
-	// objective's episodic_key as the external_id, allowing the agent to store and
-	// retrieve documents specific to that episode.
-	EnableEpisodicMemory param.Field[bool] `json:"enableEpisodicMemory"`
-	// How long episodic memories should be retained. After this duration, episodic
-	// document namespaces can be automatically cleaned up. If not set, episodic
-	// memories are retained indefinitely.
-	EpisodicMemoryTtl param.Field[int64] `json:"episodicMemoryTtl"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig param.Field[AgentVariationSpecModelConfigParam] `json:"modelConfig"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically

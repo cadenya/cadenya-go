@@ -431,6 +431,8 @@ type Objective struct {
 	SystemPrompt string `json:"systemPrompt" api:"required"`
 	// Arbitrary data for the objective
 	Data map[string]interface{} `json:"data"`
+	// Episodic is used to configure the episodic memory for the objective
+	EpisodicMemory ObjectiveEpisodicMemory `json:"episodicMemory"`
 	// ObjectiveInfo provides read-only aggregated statistics about an objective's
 	// execution
 	Info ObjectiveInfo `json:"info"`
@@ -475,6 +477,7 @@ type objectiveJSON struct {
 	State             apijson.Field
 	SystemPrompt      apijson.Field
 	Data              apijson.Field
+	EpisodicMemory    apijson.Field
 	Info              apijson.Field
 	MemoryStack       apijson.Field
 	Output            apijson.Field
@@ -513,6 +516,34 @@ func (r ObjectiveState) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+// Episodic is used to configure the episodic memory for the objective
+type ObjectiveEpisodicMemory struct {
+	// The caller-supplied episodic key. Objectives created with the same key (for the
+	// same agent) share one episodic memory layer.
+	Key string `json:"key"`
+	// The episodic memory layer resolved (created or reused) for this objective's key.
+	// Populated by the system at objective creation.
+	MemoryLayerID string                      `json:"memoryLayerId"`
+	JSON          objectiveEpisodicMemoryJSON `json:"-"`
+}
+
+// objectiveEpisodicMemoryJSON contains the JSON metadata for the struct
+// [ObjectiveEpisodicMemory]
+type objectiveEpisodicMemoryJSON struct {
+	Key           apijson.Field
+	MemoryLayerID apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *ObjectiveEpisodicMemory) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEpisodicMemoryJSON) RawJSON() string {
+	return r.raw
 }
 
 // ObjectiveConfigSnapshot is the point-in-time snapshot of the agent, variation,
@@ -1219,6 +1250,8 @@ type ObjectiveNewParams struct {
 	// Arbitrary data for the objective. May be used in liquid templates for prompts
 	// configured on the agent variation
 	Data param.Field[map[string]interface{}] `json:"data" api:"required"`
+	// Episodic is used to configure the episodic memory for the objective
+	EpisodicMemory param.Field[ObjectiveNewParamsEpisodicMemory] `json:"episodicMemory"`
 	// Optional override for the initial message sent to the agent. This becomes the
 	// first user message in the LLM chat history. When not set, the selected
 	// variation's user_message_template is rendered with user_data instead. If neither
@@ -1258,6 +1291,17 @@ type ObjectiveNewParams struct {
 }
 
 func (r ObjectiveNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Episodic is used to configure the episodic memory for the objective
+type ObjectiveNewParamsEpisodicMemory struct {
+	// The caller-supplied episodic key. Objectives created with the same key (for the
+	// same agent) share one episodic memory layer.
+	Key param.Field[string] `json:"key"`
+}
+
+func (r ObjectiveNewParamsEpisodicMemory) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

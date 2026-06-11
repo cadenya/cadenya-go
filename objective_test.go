@@ -35,6 +35,9 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 			Data: cadenya.F(map[string]interface{}{
 				"foo": "bar",
 			}),
+			EpisodicMemory: cadenya.F(cadenya.ObjectiveNewParamsEpisodicMemory{
+				Key: cadenya.F("key"),
+			}),
 			InitialMessage: cadenya.F("initialMessage"),
 			MemoryStack: cadenya.F([]cadenya.MemoryReferenceParam{{
 				MemoryEntryID: cadenya.F("memoryEntryId"),
