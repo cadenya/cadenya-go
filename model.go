@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"time"
 
 	"github.com/cadenya/cadenya-go/internal/apijson"
 	"github.com/cadenya/cadenya-go/internal/apiquery"
@@ -186,18 +187,21 @@ type ModelInfo struct {
 	// Number of agent variations currently provisioned on this model. Useful for
 	// previewing how many variations a swap would affect.
 	AgentVariationCount int64 `json:"agentVariationCount"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	AIProviderKey shared.ResourceMetadata `json:"aiProviderKey"`
-	// The AI provider this model routes through (via its provider key).
-	Provider ModelInfoProvider `json:"provider"`
-	JSON     modelInfoJSON     `json:"-"`
+	// AIProviderKey is a credential for an AI provider, scoped to a workspace. Most
+	// keys are customer-provided (BYOK); Cadenya also provisions promotional keys (see
+	// AIProviderKeyInfo.is_promotional), which cannot be modified or deleted by
+	// account administrators. The secret value is never returned in responses.
+	AIProviderKey AIProviderKey `json:"aiProviderKey"`
+	// Represents the last time this model was used in an agent objective
+	LastUsedAt time.Time     `json:"lastUsedAt" format:"date-time"`
+	JSON       modelInfoJSON `json:"-"`
 }
 
 // modelInfoJSON contains the JSON metadata for the struct [ModelInfo]
 type modelInfoJSON struct {
 	AgentVariationCount apijson.Field
 	AIProviderKey       apijson.Field
-	Provider            apijson.Field
+	LastUsedAt          apijson.Field
 	raw                 string
 	ExtraFields         map[string]apijson.Field
 }
@@ -208,22 +212,6 @@ func (r *ModelInfo) UnmarshalJSON(data []byte) (err error) {
 
 func (r modelInfoJSON) RawJSON() string {
 	return r.raw
-}
-
-// The AI provider this model routes through (via its provider key).
-type ModelInfoProvider string
-
-const (
-	ModelInfoProviderAIProviderUnspecified ModelInfoProvider = "AI_PROVIDER_UNSPECIFIED"
-	ModelInfoProviderAIProviderOpenrouter  ModelInfoProvider = "AI_PROVIDER_OPENROUTER"
-)
-
-func (r ModelInfoProvider) IsKnown() bool {
-	switch r {
-	case ModelInfoProviderAIProviderUnspecified, ModelInfoProviderAIProviderOpenrouter:
-		return true
-	}
-	return false
 }
 
 type ModelSpec struct {
@@ -275,6 +263,10 @@ type ModelListParams struct {
 	// When true, populate each item's info (e.g. the AI provider), at the cost of
 	// extra lookups.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	// Filter models to only ones assigned to an active agent variation/agent. Draft
+	// agents count as assigned; archived agents do not. Assignment does not imply
+	// recent traffic — see ModelInfo.last_used_at for that.
+	IsAssigned param.Field[bool] `query:"isAssigned"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Filter by name prefix
@@ -338,6 +330,8 @@ func (r ModelSwapParams) MarshalJSON() (data []byte, err error) {
 type ModelSwapParamsModelSwap struct {
 	// The model variations are currently on. Accepts an id or "external_id:" slug.
 	CurrentModelID param.Field[string] `json:"currentModelId"`
+	// Whether to disable the current model after the swap.
+	DisableCurrentAfterSwap param.Field[bool] `json:"disableCurrentAfterSwap"`
 	// The model to move variations to. Accepts an id or "external_id:" slug.
 	NextModelID param.Field[string] `json:"nextModelId"`
 }
