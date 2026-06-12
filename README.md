@@ -24,7 +24,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/cadenya/cadenya-go@v0.37.0'
+go get -u 'github.com/cadenya/cadenya-go@v0.38.0'
 ```
 
 <!-- x-release-please-end -->
