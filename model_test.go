@@ -61,6 +61,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 			BundleKey:       cadenya.F("bundleKey"),
 			Cursor:          cadenya.F("cursor"),
 			IncludeInfo:     cadenya.F(true),
+			IsAssigned:      cadenya.F(true),
 			Limit:           cadenya.F(int64(0)),
 			Prefix:          cadenya.F("prefix"),
 			Query:           cadenya.F("query"),
@@ -151,8 +152,9 @@ func TestModelSwapWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		cadenya.ModelSwapParams{
 			ModelSwaps: cadenya.F([]cadenya.ModelSwapParamsModelSwap{{
-				CurrentModelID: cadenya.F("currentModelId"),
-				NextModelID:    cadenya.F("nextModelId"),
+				CurrentModelID:          cadenya.F("currentModelId"),
+				DisableCurrentAfterSwap: cadenya.F(true),
+				NextModelID:             cadenya.F("nextModelId"),
 			}}),
 		},
 	)

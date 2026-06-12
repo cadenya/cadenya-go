@@ -126,8 +126,10 @@ func (r *AIProviderKeyService) Delete(ctx context.Context, workspaceID string, i
 	return err
 }
 
-// AIProviderKey is a customer-provided (BYOK) credential for an AI provider,
-// scoped to a workspace. The secret value is never returned in responses.
+// AIProviderKey is a credential for an AI provider, scoped to a workspace. Most
+// keys are customer-provided (BYOK); Cadenya also provisions promotional keys (see
+// AIProviderKeyInfo.is_promotional), which cannot be modified or deleted by
+// account administrators. The secret value is never returned in responses.
 type AIProviderKey struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
@@ -161,8 +163,11 @@ type AIProviderKeyInfo struct {
 	// Number of disabled models provisioned on this key.
 	DisabledModelCount int64 `json:"disabledModelCount"`
 	// Number of enabled models provisioned on this key.
-	EnabledModelCount int64                 `json:"enabledModelCount"`
-	JSON              aiProviderKeyInfoJSON `json:"-"`
+	EnabledModelCount int64 `json:"enabledModelCount"`
+	// Cadenya includes promotional keys (one for onboarding, and potentially more in
+	// the future). These are not added or maintained by account administrators.
+	IsPromotional bool                  `json:"isPromotional"`
+	JSON          aiProviderKeyInfoJSON `json:"-"`
 }
 
 // aiProviderKeyInfoJSON contains the JSON metadata for the struct
@@ -170,6 +175,7 @@ type AIProviderKeyInfo struct {
 type aiProviderKeyInfoJSON struct {
 	DisabledModelCount apijson.Field
 	EnabledModelCount  apijson.Field
+	IsPromotional      apijson.Field
 	raw                string
 	ExtraFields        map[string]apijson.Field
 }
@@ -281,6 +287,10 @@ type AIProviderKeyListParams struct {
 	Limit param.Field[int64] `query:"limit"`
 	// Filter expression (query param: prefix)
 	Prefix param.Field[string] `query:"prefix"`
+	// When true, return only promotional keys (provided by Cadenya, e.g. for
+	// onboarding). Defaults to returning all keys, customer-provided and promotional
+	// alike.
+	Promotional param.Field[bool] `query:"promotional"`
 	// Free-form search query
 	Query param.Field[string] `query:"query"`
 	// Sort order for results (asc or desc by creation time)

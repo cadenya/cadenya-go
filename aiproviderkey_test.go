@@ -146,6 +146,7 @@ func TestAIProviderKeyListWithOptionalParams(t *testing.T) {
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),
 			Prefix:      cadenya.F("prefix"),
+			Promotional: cadenya.F(true),
 			Query:       cadenya.F("query"),
 			SortOrder:   cadenya.F("sortOrder"),
 		},
