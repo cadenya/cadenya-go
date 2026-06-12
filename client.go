@@ -22,6 +22,9 @@ type Client struct {
 	// Manage the authenticated account. Accounts are the top-level organizational unit
 	// and contain one or more workspaces.
 	Account *AccountService
+	// Operations on profiles, the account-level principals (users, API keys, system)
+	// that authenticate against the API.
+	Profiles *ProfileService
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
 	Agents     *AgentService
 	Objectives *ObjectiveService
@@ -106,6 +109,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.AIProviderKeys = NewAIProviderKeyService(opts...)
 	r.Account = NewAccountService(opts...)
+	r.Profiles = NewProfileService(opts...)
 	r.Agents = NewAgentService(opts...)
 	r.Objectives = NewObjectiveService(opts...)
 	r.MemoryLayers = NewMemoryLayerService(opts...)
