@@ -40,6 +40,12 @@ type ToolSetService struct {
 	// When a tool set is managed, only API key actors can modify its tools; human
 	// (profile) actors cannot.
 	Tools *ToolSetToolService
+	// Manage tool sets and the tools they contain. Tool sets group related tools, and
+	// tools define specific capabilities available to agents.
+	//
+	// When a tool set is managed, only API key actors can modify its tools; human
+	// (profile) actors cannot.
+	Secrets *ToolSetSecretService
 }
 
 // NewToolSetService generates a new service that applies the given options to each
@@ -49,6 +55,7 @@ func NewToolSetService(opts ...option.RequestOption) (r *ToolSetService) {
 	r = &ToolSetService{}
 	r.Options = opts
 	r.Tools = NewToolSetToolService(opts...)
+	r.Secrets = NewToolSetSecretService(opts...)
 	return
 }
 
