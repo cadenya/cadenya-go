@@ -216,6 +216,8 @@ type ObjectiveToolCallData struct {
 	Arguments map[string]interface{} `json:"arguments"`
 	// A memo supplied by the reviewer when denying the tool call
 	Memo string `json:"memo"`
+	// List of resolved secrets used by the tool call
+	ResolvedSecrets []ResolvedSecret `json:"resolvedSecrets"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
@@ -229,6 +231,7 @@ type objectiveToolCallDataJSON struct {
 	Callable        apijson.Field
 	Arguments       apijson.Field
 	Memo            apijson.Field
+	ResolvedSecrets apijson.Field
 	StatusChangedBy apijson.Field
 	raw             string
 	ExtraFields     map[string]apijson.Field
@@ -249,8 +252,22 @@ type ObjectiveToolCallInfo struct {
 	CreatedBy Profile `json:"createdBy"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Objective shared.OperationMetadata  `json:"objective"`
-	JSON      objectiveToolCallInfoJSON `json:"-"`
+	Objective shared.OperationMetadata `json:"objective"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Tool shared.BareMetadata `json:"tool"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	ToolSet shared.BareMetadata       `json:"toolSet"`
+	JSON    objectiveToolCallInfoJSON `json:"-"`
 }
 
 // objectiveToolCallInfoJSON contains the JSON metadata for the struct
@@ -258,6 +275,8 @@ type ObjectiveToolCallInfo struct {
 type objectiveToolCallInfoJSON struct {
 	CreatedBy   apijson.Field
 	Objective   apijson.Field
+	Tool        apijson.Field
+	ToolSet     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -416,6 +435,8 @@ type ObjectiveToolCallWithResult struct {
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	// Current status of the tool call
 	Status ObjectiveToolCallWithResultStatus `json:"status" api:"required"`
+	// List of resolved secrets used by the tool call
+	ResolvedSecrets []ResolvedSecret `json:"resolvedSecrets"`
 	// ObjectiveToolCallResult is the content a tool returned after execution. Tools
 	// can return multiple content blocks, and blocks can be multi-modal (text, image,
 	// audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
@@ -432,6 +453,7 @@ type objectiveToolCallWithResultJSON struct {
 	Info            apijson.Field
 	Metadata        apijson.Field
 	Status          apijson.Field
+	ResolvedSecrets apijson.Field
 	Result          apijson.Field
 	raw             string
 	ExtraFields     map[string]apijson.Field
@@ -477,6 +499,51 @@ const (
 func (r ObjectiveToolCallWithResultStatus) IsKnown() bool {
 	switch r {
 	case ObjectiveToolCallWithResultStatusToolCallStatusUnspecified, ObjectiveToolCallWithResultStatusToolCallStatusAutoApproved, ObjectiveToolCallWithResultStatusToolCallStatusWaitingForApproval, ObjectiveToolCallWithResultStatusToolCallStatusApproved, ObjectiveToolCallWithResultStatusToolCallStatusDenied:
+		return true
+	}
+	return false
+}
+
+// ResolvedSecret is a resolved secret value from the workspace, toolset, or
+// objective. When a tool is called, it will rely on secrets in the order of:
+//
+// - Objective
+// - Toolset
+// - Workspace
+type ResolvedSecret struct {
+	Key    string               `json:"key"`
+	Source ResolvedSecretSource `json:"source"`
+	JSON   resolvedSecretJSON   `json:"-"`
+}
+
+// resolvedSecretJSON contains the JSON metadata for the struct [ResolvedSecret]
+type resolvedSecretJSON struct {
+	Key         apijson.Field
+	Source      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResolvedSecret) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resolvedSecretJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResolvedSecretSource string
+
+const (
+	ResolvedSecretSourceResolvedSecretSourceUnspecified ResolvedSecretSource = "RESOLVED_SECRET_SOURCE_UNSPECIFIED"
+	ResolvedSecretSourceResolvedSecretSourceWorkspace   ResolvedSecretSource = "RESOLVED_SECRET_SOURCE_WORKSPACE"
+	ResolvedSecretSourceResolvedSecretSourceToolset     ResolvedSecretSource = "RESOLVED_SECRET_SOURCE_TOOLSET"
+	ResolvedSecretSourceResolvedSecretSourceObjective   ResolvedSecretSource = "RESOLVED_SECRET_SOURCE_OBJECTIVE"
+)
+
+func (r ResolvedSecretSource) IsKnown() bool {
+	switch r {
+	case ResolvedSecretSourceResolvedSecretSourceUnspecified, ResolvedSecretSourceResolvedSecretSourceWorkspace, ResolvedSecretSourceResolvedSecretSourceToolset, ResolvedSecretSourceResolvedSecretSourceObjective:
 		return true
 	}
 	return false
