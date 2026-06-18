@@ -822,24 +822,28 @@ func (r toolSetEventDataJSON) RawJSON() string {
 }
 
 type ToolSetInfo struct {
-	AgentCount int64 `json:"agentCount"`
+	AgentCount     int64 `json:"agentCount"`
+	AvailableTools int64 `json:"availableTools"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	CreatedBy Profile         `json:"createdBy"`
-	LastSync  time.Time       `json:"lastSync" format:"date-time"`
-	ToolCount int64           `json:"toolCount"`
-	JSON      toolSetInfoJSON `json:"-"`
+	CreatedBy    Profile         `json:"createdBy"`
+	LastSync     time.Time       `json:"lastSync" format:"date-time"`
+	OmittedTools int64           `json:"omittedTools"`
+	ToolCount    int64           `json:"toolCount"`
+	JSON         toolSetInfoJSON `json:"-"`
 }
 
 // toolSetInfoJSON contains the JSON metadata for the struct [ToolSetInfo]
 type toolSetInfoJSON struct {
-	AgentCount  apijson.Field
-	CreatedBy   apijson.Field
-	LastSync    apijson.Field
-	ToolCount   apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
+	AgentCount     apijson.Field
+	AvailableTools apijson.Field
+	CreatedBy      apijson.Field
+	LastSync       apijson.Field
+	OmittedTools   apijson.Field
+	ToolCount      apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
 }
 
 func (r *ToolSetInfo) UnmarshalJSON(data []byte) (err error) {
