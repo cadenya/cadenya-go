@@ -373,17 +373,11 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 											Query:                  cadenya.F("query"),
 											RequestBodyContentType: cadenya.F("requestBodyContentType"),
 											RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
-											ToolName:               cadenya.F("toolName"),
 										}),
-										Mcp: cadenya.F(cadenya.ConfigMcpParam{
-											ToolDescription: cadenya.F("toolDescription"),
-											ToolName:        cadenya.F("toolName"),
-											ToolTitle:       cadenya.F("toolTitle"),
-										}),
+										Mcp: cadenya.F[any](map[string]interface{}{}),
 										OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
-											Method:      cadenya.F("method"),
-											OperationID: cadenya.F("operationId"),
-											Path:        cadenya.F("path"),
+											Method: cadenya.F("method"),
+											Path:   cadenya.F("path"),
 										}),
 									}),
 									Description: cadenya.F("description"),
@@ -391,6 +385,7 @@ func TestBulkWorkspaceResourceApplyWithOptionalParams(t *testing.T) {
 										"foo": "bar",
 									}),
 									RequiresApproval: cadenya.F(true),
+									LlmToolName:      cadenya.F("llmToolName"),
 								}),
 								Labels: cadenya.F(map[string]string{
 									"foo": "string",

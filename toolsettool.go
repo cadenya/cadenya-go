@@ -201,12 +201,8 @@ type ConfigHTTP struct {
 	Query                  string                  `json:"query"`
 	RequestBodyContentType string                  `json:"requestBodyContentType"`
 	// These are only used when the request method is a POST, PUT, or PATCH
-	RequestBodyTemplate string `json:"requestBodyTemplate"`
-	// The tool name (commonly an "operation id" in OpenAPI specs) to call on the HTTP
-	// adapter. This is used to match the tool spec to the correct endpoint on the HTTP
-	// adapter. it will be derived from the name of the tool if not provided.
-	ToolName string         `json:"toolName"`
-	JSON     configHTTPJSON `json:"-"`
+	RequestBodyTemplate string         `json:"requestBodyTemplate"`
+	JSON                configHTTPJSON `json:"-"`
 }
 
 // configHTTPJSON contains the JSON metadata for the struct [ConfigHTTP]
@@ -217,7 +213,6 @@ type configHTTPJSON struct {
 	Query                  apijson.Field
 	RequestBodyContentType apijson.Field
 	RequestBodyTemplate    apijson.Field
-	ToolName               apijson.Field
 	raw                    string
 	ExtraFields            map[string]apijson.Field
 }
@@ -257,61 +252,23 @@ type ConfigHTTPParam struct {
 	RequestBodyContentType param.Field[string]                  `json:"requestBodyContentType"`
 	// These are only used when the request method is a POST, PUT, or PATCH
 	RequestBodyTemplate param.Field[string] `json:"requestBodyTemplate"`
-	// The tool name (commonly an "operation id" in OpenAPI specs) to call on the HTTP
-	// adapter. This is used to match the tool spec to the correct endpoint on the HTTP
-	// adapter. it will be derived from the name of the tool if not provided.
-	ToolName param.Field[string] `json:"toolName"`
 }
 
 func (r ConfigHTTPParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type ConfigMcp struct {
-	ToolDescription string        `json:"toolDescription"`
-	ToolName        string        `json:"toolName"`
-	ToolTitle       string        `json:"toolTitle"`
-	JSON            configMcpJSON `json:"-"`
-}
-
-// configMcpJSON contains the JSON metadata for the struct [ConfigMcp]
-type configMcpJSON struct {
-	ToolDescription apijson.Field
-	ToolName        apijson.Field
-	ToolTitle       apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ConfigMcp) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r configMcpJSON) RawJSON() string {
-	return r.raw
-}
-
-type ConfigMcpParam struct {
-	ToolDescription param.Field[string] `json:"toolDescription"`
-	ToolName        param.Field[string] `json:"toolName"`
-	ToolTitle       param.Field[string] `json:"toolTitle"`
-}
-
-func (r ConfigMcpParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
+type ConfigMcp = interface{}
 
 type ConfigOpenAPI struct {
-	Method      string            `json:"method"`
-	OperationID string            `json:"operationId"`
-	Path        string            `json:"path"`
-	JSON        configOpenAPIJSON `json:"-"`
+	Method string            `json:"method"`
+	Path   string            `json:"path"`
+	JSON   configOpenAPIJSON `json:"-"`
 }
 
 // configOpenAPIJSON contains the JSON metadata for the struct [ConfigOpenAPI]
 type configOpenAPIJSON struct {
 	Method      apijson.Field
-	OperationID apijson.Field
 	Path        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -326,9 +283,8 @@ func (r configOpenAPIJSON) RawJSON() string {
 }
 
 type ConfigOpenAPIParam struct {
-	Method      param.Field[string] `json:"method"`
-	OperationID param.Field[string] `json:"operationId"`
-	Path        param.Field[string] `json:"path"`
+	Method param.Field[string] `json:"method"`
+	Path   param.Field[string] `json:"path"`
 }
 
 func (r ConfigOpenAPIParam) MarshalJSON() (data []byte, err error) {
@@ -417,7 +373,12 @@ type ToolSpec struct {
 	Description      string                 `json:"description" api:"required"`
 	Parameters       map[string]interface{} `json:"parameters" api:"required"`
 	RequiresApproval bool                   `json:"requiresApproval" api:"required"`
-	JSON             toolSpecJSON           `json:"-"`
+	// The name provided to the LLM, which may differ from the metadata.name on the
+	// tool. LLMs have specific length and format requirements, and tool set sources
+	// may not comply with them, so Cadenya does its best to format names into a usable
+	// format.
+	LlmToolName string       `json:"llmToolName"`
+	JSON        toolSpecJSON `json:"-"`
 }
 
 // toolSpecJSON contains the JSON metadata for the struct [ToolSpec]
@@ -426,6 +387,7 @@ type toolSpecJSON struct {
 	Description      apijson.Field
 	Parameters       apijson.Field
 	RequiresApproval apijson.Field
+	LlmToolName      apijson.Field
 	raw              string
 	ExtraFields      map[string]apijson.Field
 }
@@ -446,6 +408,11 @@ type ToolSpecParam struct {
 	Description      param.Field[string]                 `json:"description" api:"required"`
 	Parameters       param.Field[map[string]interface{}] `json:"parameters" api:"required"`
 	RequiresApproval param.Field[bool]                   `json:"requiresApproval" api:"required"`
+	// The name provided to the LLM, which may differ from the metadata.name on the
+	// tool. LLMs have specific length and format requirements, and tool set sources
+	// may not comply with them, so Cadenya does its best to format names into a usable
+	// format.
+	LlmToolName param.Field[string] `json:"llmToolName"`
 }
 
 func (r ToolSpecParam) MarshalJSON() (data []byte, err error) {
