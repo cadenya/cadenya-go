@@ -80,6 +80,8 @@ type Workspace struct {
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
 	Spec     WorkspaceSpec                  `json:"spec" api:"required"`
+	// WorkspaceInfo returns counts
+	Info WorkspaceInfo `json:"info"`
 	// Lifecycle status of the workspace. Archived workspaces reject all requests
 	// scoped to them. Server-populated.
 	Status WorkspaceStatus `json:"status"`
@@ -90,6 +92,7 @@ type Workspace struct {
 type workspaceJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	Info        apijson.Field
 	Status      apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -100,6 +103,33 @@ func (r *Workspace) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r workspaceJSON) RawJSON() string {
+	return r.raw
+}
+
+// WorkspaceInfo returns counts
+type WorkspaceInfo struct {
+	TotalAgents          int64             `json:"totalAgents"`
+	TotalAgentVariations int64             `json:"totalAgentVariations"`
+	TotalAvailableTools  int64             `json:"totalAvailableTools"`
+	TotalMemoryEntries   int64             `json:"totalMemoryEntries"`
+	JSON                 workspaceInfoJSON `json:"-"`
+}
+
+// workspaceInfoJSON contains the JSON metadata for the struct [WorkspaceInfo]
+type workspaceInfoJSON struct {
+	TotalAgents          apijson.Field
+	TotalAgentVariations apijson.Field
+	TotalAvailableTools  apijson.Field
+	TotalMemoryEntries   apijson.Field
+	raw                  string
+	ExtraFields          map[string]apijson.Field
+}
+
+func (r *WorkspaceInfo) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r workspaceInfoJSON) RawJSON() string {
 	return r.raw
 }
 

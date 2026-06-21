@@ -18,8 +18,9 @@ type AccountResourceMetadata struct {
 	AccountID string `json:"accountId" api:"required"`
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool") Required for resources that users interact with directly
-	Name      string `json:"name" api:"required"`
-	ProfileID string `json:"profileId" api:"required"`
+	Name      string    `json:"name" api:"required"`
+	ProfileID string    `json:"profileId" api:"required"`
+	CreatedAt time.Time `json:"createdAt" format:"date-time"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:
@@ -35,6 +36,7 @@ type accountResourceMetadataJSON struct {
 	AccountID   apijson.Field
 	Name        apijson.Field
 	ProfileID   apijson.Field
+	CreatedAt   apijson.Field
 	ExternalID  apijson.Field
 	Labels      apijson.Field
 	raw         string
