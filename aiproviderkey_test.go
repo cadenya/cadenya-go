@@ -33,7 +33,6 @@ func TestAIProviderKeyNewWithOptionalParams(t *testing.T) {
 		cadenya.AIProviderKeyNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -102,7 +101,6 @@ func TestAIProviderKeyUpdateWithOptionalParams(t *testing.T) {
 		cadenya.AIProviderKeyUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",

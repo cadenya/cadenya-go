@@ -616,8 +616,6 @@ func (r AgentScheduleUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type AgentScheduleListParams struct {
-	// Filter by bundle_key — return only resources owned by this bundle.
-	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response.
 	Cursor param.Field[string] `query:"cursor"`
 	// When true, the `info` field on each returned schedule is populated. Requests

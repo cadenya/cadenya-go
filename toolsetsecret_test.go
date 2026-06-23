@@ -34,7 +34,6 @@ func TestToolSetSecretNewWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetSecretNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -103,7 +102,6 @@ func TestToolSetSecretUpdateWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetSecretUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -142,7 +140,6 @@ func TestToolSetSecretListWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		"toolSetId",
 		cadenya.ToolSetSecretListParams{
-			BundleKey:   cadenya.F("bundleKey"),
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),

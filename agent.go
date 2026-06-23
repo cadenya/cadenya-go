@@ -466,8 +466,6 @@ func (r AgentUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type AgentListParams struct {
-	// Filter by bundle_key — return only resources owned by this bundle.
-	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// When true, the `info` field on each returned agent is populated. Requests with
