@@ -126,7 +126,6 @@ func TestAPIKeyListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.APIKeys.List(context.TODO(), cadenya.APIKeyListParams{
-		BundleKey:   cadenya.F("bundleKey"),
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
 		Limit:       cadenya.F(int64(0)),

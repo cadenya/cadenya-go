@@ -833,8 +833,6 @@ func (r AgentVariationUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type AgentVariationListParams struct {
-	// Filter by bundle_key — return only resources owned by this bundle.
-	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// When true, the `info` field on each returned variation is populated. Requests

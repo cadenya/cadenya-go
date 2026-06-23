@@ -256,8 +256,6 @@ type ModelListParams struct {
 	// Filter to models provisioned on a specific AI provider key. Accepts the key's id
 	// or an "external_id:"-prefixed slug.
 	AIProviderKeyID param.Field[string] `query:"aiProviderKeyId"`
-	// Filter by bundle_key — return only resources owned by this bundle.
-	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// When true, populate each item's info (e.g. the AI provider), at the cost of

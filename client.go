@@ -67,10 +67,6 @@ type Client struct {
 	// themselves a member of.
 	WorkspaceAdmin *WorkspaceAdminService
 	Webhooks       *WebhookService
-	// Apply a declarative bundle of workspace resources — tool sets, memory layers,
-	// agents, variations, assignments, and schedules — in a single asynchronous
-	// operation.
-	BulkWorkspaceResources *BulkWorkspaceResourceService
 }
 
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
@@ -122,7 +118,6 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r.Workspaces = NewWorkspaceService(opts...)
 	r.WorkspaceAdmin = NewWorkspaceAdminService(opts...)
 	r.Webhooks = NewWebhookService(opts...)
-	r.BulkWorkspaceResources = NewBulkWorkspaceResourceService(opts...)
 
 	return
 }

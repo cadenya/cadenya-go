@@ -58,7 +58,6 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		cadenya.ModelListParams{
 			AIProviderKeyID: cadenya.F("aiProviderKeyId"),
-			BundleKey:       cadenya.F("bundleKey"),
 			Cursor:          cadenya.F("cursor"),
 			IncludeInfo:     cadenya.F(true),
 			IsAssigned:      cadenya.F(true),
