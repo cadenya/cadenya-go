@@ -189,16 +189,13 @@ func (r aiProviderKeyInfoJSON) RawJSON() string {
 }
 
 type AIProviderKeySpec struct {
-	// AIProviderConfig holds non-secret, provider-specific settings. The set case must
-	// correspond to AIProviderKeySpec.provider. Providers with no settings (Anthropic,
-	// Gemini) simply leave this unset. The endpoint of a named provider is fixed and
-	// intentionally not overridable here; use the OpenAI-compatible provider to target
-	// a custom endpoint.
-	Config AIProviderKeySpecConfig `json:"config"`
-	// AIProviderCredential is the secret material used to authenticate with a
-	// provider. The set case must correspond to AIProviderKeySpec.provider. The server
-	// encrypts the serialized message at rest and never returns it on reads.
-	Credentials AIProviderKeySpecCredentials `json:"credentials"`
+	// The provider credential. Accepted on create/update; never populated in responses
+	// (the server returns an empty value to avoid leaking it).
+	APIKey string `json:"apiKey"`
+	// OpenRouterConfig holds OpenRouter-specific settings. Empty for now; it exists as
+	// the oneof seam so provider-specific options (region, base URL, etc.) can be
+	// added later without restructuring the spec.
+	Openrouter interface{} `json:"openrouter"`
 	// The AI provider this key authenticates against.
 	Provider AIProviderKeySpecProvider `json:"provider"`
 	JSON     aiProviderKeySpecJSON     `json:"-"`
@@ -207,8 +204,8 @@ type AIProviderKeySpec struct {
 // aiProviderKeySpecJSON contains the JSON metadata for the struct
 // [AIProviderKeySpec]
 type aiProviderKeySpecJSON struct {
-	Config      apijson.Field
-	Credentials apijson.Field
+	APIKey      apijson.Field
+	Openrouter  apijson.Field
 	Provider    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -222,311 +219,35 @@ func (r aiProviderKeySpecJSON) RawJSON() string {
 	return r.raw
 }
 
-// AIProviderConfig holds non-secret, provider-specific settings. The set case must
-// correspond to AIProviderKeySpec.provider. Providers with no settings (Anthropic,
-// Gemini) simply leave this unset. The endpoint of a named provider is fixed and
-// intentionally not overridable here; use the OpenAI-compatible provider to target
-// a custom endpoint.
-type AIProviderKeySpecConfig struct {
-	// OpenAIConfig holds OpenAI-specific settings.
-	OpenAI AIProviderKeySpecConfigOpenAI `json:"openai"`
-	// OpenAICompatibleConfig configures a generic endpoint that speaks the OpenAI Chat
-	// Completions API. The base URL is required and its model catalog is discovered
-	// live via GET {base_url}/models.
-	OpenAICompatible AIProviderKeySpecConfigOpenAICompatible `json:"openaiCompatible"`
-	// OpenRouterConfig holds OpenRouter-specific settings.
-	Openrouter AIProviderKeySpecConfigOpenrouter `json:"openrouter"`
-	JSON       aiProviderKeySpecConfigJSON       `json:"-"`
-}
-
-// aiProviderKeySpecConfigJSON contains the JSON metadata for the struct
-// [AIProviderKeySpecConfig]
-type aiProviderKeySpecConfigJSON struct {
-	OpenAI           apijson.Field
-	OpenAICompatible apijson.Field
-	Openrouter       apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecConfig) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecConfigJSON) RawJSON() string {
-	return r.raw
-}
-
-// OpenAIConfig holds OpenAI-specific settings.
-type AIProviderKeySpecConfigOpenAI struct {
-	// Sent as the OpenAI-Organization header when set.
-	OrganizationID string `json:"organizationId"`
-	// Sent as the OpenAI-Project header when set.
-	ProjectID string                            `json:"projectId"`
-	JSON      aiProviderKeySpecConfigOpenAIJSON `json:"-"`
-}
-
-// aiProviderKeySpecConfigOpenAIJSON contains the JSON metadata for the struct
-// [AIProviderKeySpecConfigOpenAI]
-type aiProviderKeySpecConfigOpenAIJSON struct {
-	OrganizationID apijson.Field
-	ProjectID      apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecConfigOpenAI) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecConfigOpenAIJSON) RawJSON() string {
-	return r.raw
-}
-
-// OpenAICompatibleConfig configures a generic endpoint that speaks the OpenAI Chat
-// Completions API. The base URL is required and its model catalog is discovered
-// live via GET {base_url}/models.
-type AIProviderKeySpecConfigOpenAICompatible struct {
-	BaseURL string                                      `json:"baseUrl"`
-	JSON    aiProviderKeySpecConfigOpenAICompatibleJSON `json:"-"`
-}
-
-// aiProviderKeySpecConfigOpenAICompatibleJSON contains the JSON metadata for the
-// struct [AIProviderKeySpecConfigOpenAICompatible]
-type aiProviderKeySpecConfigOpenAICompatibleJSON struct {
-	BaseURL     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecConfigOpenAICompatible) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecConfigOpenAICompatibleJSON) RawJSON() string {
-	return r.raw
-}
-
-// OpenRouterConfig holds OpenRouter-specific settings.
-type AIProviderKeySpecConfigOpenrouter struct {
-	// Data-residency region (e.g. "us", "eu"). Empty uses the provider default.
-	Region string                                `json:"region"`
-	JSON   aiProviderKeySpecConfigOpenrouterJSON `json:"-"`
-}
-
-// aiProviderKeySpecConfigOpenrouterJSON contains the JSON metadata for the struct
-// [AIProviderKeySpecConfigOpenrouter]
-type aiProviderKeySpecConfigOpenrouterJSON struct {
-	Region      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecConfigOpenrouter) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecConfigOpenrouterJSON) RawJSON() string {
-	return r.raw
-}
-
-// AIProviderCredential is the secret material used to authenticate with a
-// provider. The set case must correspond to AIProviderKeySpec.provider. The server
-// encrypts the serialized message at rest and never returns it on reads.
-type AIProviderKeySpecCredentials struct {
-	// CredentialAPIKey carries a single bearer/header API key.
-	APIKey AIProviderKeySpecCredentialsAPIKey `json:"apiKey"`
-	// CredentialHeaders carries arbitrary HTTP headers sent with every request to the
-	// provider (e.g. {"Authorization": "Bearer ...", "X-Api-Key": "..."}).
-	Headers AIProviderKeySpecCredentialsHeaders `json:"headers"`
-	JSON    aiProviderKeySpecCredentialsJSON    `json:"-"`
-}
-
-// aiProviderKeySpecCredentialsJSON contains the JSON metadata for the struct
-// [AIProviderKeySpecCredentials]
-type aiProviderKeySpecCredentialsJSON struct {
-	APIKey      apijson.Field
-	Headers     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecCredentials) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecCredentialsJSON) RawJSON() string {
-	return r.raw
-}
-
-// CredentialAPIKey carries a single bearer/header API key.
-type AIProviderKeySpecCredentialsAPIKey struct {
-	APIKey string                                 `json:"apiKey"`
-	JSON   aiProviderKeySpecCredentialsAPIKeyJSON `json:"-"`
-}
-
-// aiProviderKeySpecCredentialsAPIKeyJSON contains the JSON metadata for the struct
-// [AIProviderKeySpecCredentialsAPIKey]
-type aiProviderKeySpecCredentialsAPIKeyJSON struct {
-	APIKey      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecCredentialsAPIKey) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecCredentialsAPIKeyJSON) RawJSON() string {
-	return r.raw
-}
-
-// CredentialHeaders carries arbitrary HTTP headers sent with every request to the
-// provider (e.g. {"Authorization": "Bearer ...", "X-Api-Key": "..."}).
-type AIProviderKeySpecCredentialsHeaders struct {
-	Headers map[string]string                       `json:"headers"`
-	JSON    aiProviderKeySpecCredentialsHeadersJSON `json:"-"`
-}
-
-// aiProviderKeySpecCredentialsHeadersJSON contains the JSON metadata for the
-// struct [AIProviderKeySpecCredentialsHeaders]
-type aiProviderKeySpecCredentialsHeadersJSON struct {
-	Headers     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AIProviderKeySpecCredentialsHeaders) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r aiProviderKeySpecCredentialsHeadersJSON) RawJSON() string {
-	return r.raw
-}
-
 // The AI provider this key authenticates against.
 type AIProviderKeySpecProvider string
 
 const (
-	AIProviderKeySpecProviderAIProviderUnspecified      AIProviderKeySpecProvider = "AI_PROVIDER_UNSPECIFIED"
-	AIProviderKeySpecProviderAIProviderOpenrouter       AIProviderKeySpecProvider = "AI_PROVIDER_OPENROUTER"
-	AIProviderKeySpecProviderAIProviderOpenAI           AIProviderKeySpecProvider = "AI_PROVIDER_OPENAI"
-	AIProviderKeySpecProviderAIProviderAnthropic        AIProviderKeySpecProvider = "AI_PROVIDER_ANTHROPIC"
-	AIProviderKeySpecProviderAIProviderGemini           AIProviderKeySpecProvider = "AI_PROVIDER_GEMINI"
-	AIProviderKeySpecProviderAIProviderOpenAICompatible AIProviderKeySpecProvider = "AI_PROVIDER_OPENAI_COMPATIBLE"
+	AIProviderKeySpecProviderAIProviderUnspecified AIProviderKeySpecProvider = "AI_PROVIDER_UNSPECIFIED"
+	AIProviderKeySpecProviderAIProviderOpenrouter  AIProviderKeySpecProvider = "AI_PROVIDER_OPENROUTER"
 )
 
 func (r AIProviderKeySpecProvider) IsKnown() bool {
 	switch r {
-	case AIProviderKeySpecProviderAIProviderUnspecified, AIProviderKeySpecProviderAIProviderOpenrouter, AIProviderKeySpecProviderAIProviderOpenAI, AIProviderKeySpecProviderAIProviderAnthropic, AIProviderKeySpecProviderAIProviderGemini, AIProviderKeySpecProviderAIProviderOpenAICompatible:
+	case AIProviderKeySpecProviderAIProviderUnspecified, AIProviderKeySpecProviderAIProviderOpenrouter:
 		return true
 	}
 	return false
 }
 
 type AIProviderKeySpecParam struct {
-	// AIProviderConfig holds non-secret, provider-specific settings. The set case must
-	// correspond to AIProviderKeySpec.provider. Providers with no settings (Anthropic,
-	// Gemini) simply leave this unset. The endpoint of a named provider is fixed and
-	// intentionally not overridable here; use the OpenAI-compatible provider to target
-	// a custom endpoint.
-	Config param.Field[AIProviderKeySpecConfigParam] `json:"config"`
-	// AIProviderCredential is the secret material used to authenticate with a
-	// provider. The set case must correspond to AIProviderKeySpec.provider. The server
-	// encrypts the serialized message at rest and never returns it on reads.
-	Credentials param.Field[AIProviderKeySpecCredentialsParam] `json:"credentials"`
+	// The provider credential. Accepted on create/update; never populated in responses
+	// (the server returns an empty value to avoid leaking it).
+	APIKey param.Field[string] `json:"apiKey"`
+	// OpenRouterConfig holds OpenRouter-specific settings. Empty for now; it exists as
+	// the oneof seam so provider-specific options (region, base URL, etc.) can be
+	// added later without restructuring the spec.
+	Openrouter param.Field[interface{}] `json:"openrouter"`
 	// The AI provider this key authenticates against.
 	Provider param.Field[AIProviderKeySpecProvider] `json:"provider"`
 }
 
 func (r AIProviderKeySpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// AIProviderConfig holds non-secret, provider-specific settings. The set case must
-// correspond to AIProviderKeySpec.provider. Providers with no settings (Anthropic,
-// Gemini) simply leave this unset. The endpoint of a named provider is fixed and
-// intentionally not overridable here; use the OpenAI-compatible provider to target
-// a custom endpoint.
-type AIProviderKeySpecConfigParam struct {
-	// OpenAIConfig holds OpenAI-specific settings.
-	OpenAI param.Field[AIProviderKeySpecConfigOpenAIParam] `json:"openai"`
-	// OpenAICompatibleConfig configures a generic endpoint that speaks the OpenAI Chat
-	// Completions API. The base URL is required and its model catalog is discovered
-	// live via GET {base_url}/models.
-	OpenAICompatible param.Field[AIProviderKeySpecConfigOpenAICompatibleParam] `json:"openaiCompatible"`
-	// OpenRouterConfig holds OpenRouter-specific settings.
-	Openrouter param.Field[AIProviderKeySpecConfigOpenrouterParam] `json:"openrouter"`
-}
-
-func (r AIProviderKeySpecConfigParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// OpenAIConfig holds OpenAI-specific settings.
-type AIProviderKeySpecConfigOpenAIParam struct {
-	// Sent as the OpenAI-Organization header when set.
-	OrganizationID param.Field[string] `json:"organizationId"`
-	// Sent as the OpenAI-Project header when set.
-	ProjectID param.Field[string] `json:"projectId"`
-}
-
-func (r AIProviderKeySpecConfigOpenAIParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// OpenAICompatibleConfig configures a generic endpoint that speaks the OpenAI Chat
-// Completions API. The base URL is required and its model catalog is discovered
-// live via GET {base_url}/models.
-type AIProviderKeySpecConfigOpenAICompatibleParam struct {
-	BaseURL param.Field[string] `json:"baseUrl"`
-}
-
-func (r AIProviderKeySpecConfigOpenAICompatibleParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// OpenRouterConfig holds OpenRouter-specific settings.
-type AIProviderKeySpecConfigOpenrouterParam struct {
-	// Data-residency region (e.g. "us", "eu"). Empty uses the provider default.
-	Region param.Field[string] `json:"region"`
-}
-
-func (r AIProviderKeySpecConfigOpenrouterParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// AIProviderCredential is the secret material used to authenticate with a
-// provider. The set case must correspond to AIProviderKeySpec.provider. The server
-// encrypts the serialized message at rest and never returns it on reads.
-type AIProviderKeySpecCredentialsParam struct {
-	// CredentialAPIKey carries a single bearer/header API key.
-	APIKey param.Field[AIProviderKeySpecCredentialsAPIKeyParam] `json:"apiKey"`
-	// CredentialHeaders carries arbitrary HTTP headers sent with every request to the
-	// provider (e.g. {"Authorization": "Bearer ...", "X-Api-Key": "..."}).
-	Headers param.Field[AIProviderKeySpecCredentialsHeadersParam] `json:"headers"`
-}
-
-func (r AIProviderKeySpecCredentialsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// CredentialAPIKey carries a single bearer/header API key.
-type AIProviderKeySpecCredentialsAPIKeyParam struct {
-	APIKey param.Field[string] `json:"apiKey"`
-}
-
-func (r AIProviderKeySpecCredentialsAPIKeyParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// CredentialHeaders carries arbitrary HTTP headers sent with every request to the
-// provider (e.g. {"Authorization": "Bearer ...", "X-Api-Key": "..."}).
-type AIProviderKeySpecCredentialsHeadersParam struct {
-	Headers param.Field[map[string]string] `json:"headers"`
-}
-
-func (r AIProviderKeySpecCredentialsHeadersParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

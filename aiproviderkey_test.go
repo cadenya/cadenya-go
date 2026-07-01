@@ -39,29 +39,9 @@ func TestAIProviderKeyNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				Config: cadenya.F(cadenya.AIProviderKeySpecConfigParam{
-					OpenAI: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAIParam{
-						OrganizationID: cadenya.F("organizationId"),
-						ProjectID:      cadenya.F("projectId"),
-					}),
-					OpenAICompatible: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAICompatibleParam{
-						BaseURL: cadenya.F("baseUrl"),
-					}),
-					Openrouter: cadenya.F(cadenya.AIProviderKeySpecConfigOpenrouterParam{
-						Region: cadenya.F("region"),
-					}),
-				}),
-				Credentials: cadenya.F(cadenya.AIProviderKeySpecCredentialsParam{
-					APIKey: cadenya.F(cadenya.AIProviderKeySpecCredentialsAPIKeyParam{
-						APIKey: cadenya.F("apiKey"),
-					}),
-					Headers: cadenya.F(cadenya.AIProviderKeySpecCredentialsHeadersParam{
-						Headers: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}),
-				Provider: cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
+				APIKey:     cadenya.F("apiKey"),
+				Openrouter: cadenya.F[any](map[string]interface{}{}),
+				Provider:   cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
 			}),
 		},
 	)
@@ -127,29 +107,9 @@ func TestAIProviderKeyUpdateWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				Config: cadenya.F(cadenya.AIProviderKeySpecConfigParam{
-					OpenAI: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAIParam{
-						OrganizationID: cadenya.F("organizationId"),
-						ProjectID:      cadenya.F("projectId"),
-					}),
-					OpenAICompatible: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAICompatibleParam{
-						BaseURL: cadenya.F("baseUrl"),
-					}),
-					Openrouter: cadenya.F(cadenya.AIProviderKeySpecConfigOpenrouterParam{
-						Region: cadenya.F("region"),
-					}),
-				}),
-				Credentials: cadenya.F(cadenya.AIProviderKeySpecCredentialsParam{
-					APIKey: cadenya.F(cadenya.AIProviderKeySpecCredentialsAPIKeyParam{
-						APIKey: cadenya.F("apiKey"),
-					}),
-					Headers: cadenya.F(cadenya.AIProviderKeySpecCredentialsHeadersParam{
-						Headers: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}),
-				Provider: cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
+				APIKey:     cadenya.F("apiKey"),
+				Openrouter: cadenya.F[any](map[string]interface{}{}),
+				Provider:   cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
