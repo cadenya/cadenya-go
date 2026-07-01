@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.41.0 (2026-07-01)
+
+Full Changelog: [v0.40.0...v0.41.0](https://github.com/cadenya/cadenya-go/compare/v0.40.0...v0.41.0)
+
+### Features
+
+* Add SSE streaming endpoint for objective events (ENG-344) ([d9628be](https://github.com/cadenya/cadenya-go/commit/d9628be9a33539580a2d180069d6f09164a2699b))
+* **api:** api update ([a24439e](https://github.com/cadenya/cadenya-go/commit/a24439e2d4650a5353cf2f1b9626bbbfec97e310))
+* **api:** api update ([4cf4c67](https://github.com/cadenya/cadenya-go/commit/4cf4c6731e5bfc84663e64441ee8dbdfad6fdd8a))
+* **api:** api update ([3ff34ab](https://github.com/cadenya/cadenya-go/commit/3ff34ab0d3696ba3982e734c42a5552fb17f00a7))
+* **api:** api update ([2f94069](https://github.com/cadenya/cadenya-go/commit/2f940692771216bfa18ffb84a478501ea40f3847))
+* **api:** api update ([9c72716](https://github.com/cadenya/cadenya-go/commit/9c72716afc2be04e2b6a02843830fb4f8157feaf))
+* **api:** api update ([738a413](https://github.com/cadenya/cadenya-go/commit/738a413ed3f76324f28aa85219790dc58a24fbe3))
+
 ## 0.40.0 (2026-06-14)
 
 Full Changelog: [v0.39.0...v0.40.0](https://github.com/cadenya/cadenya-go/compare/v0.39.0...v0.40.0)
