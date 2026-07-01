@@ -16,6 +16,7 @@ import (
 	"github.com/cadenya/cadenya-go/internal/requestconfig"
 	"github.com/cadenya/cadenya-go/option"
 	"github.com/cadenya/cadenya-go/packages/pagination"
+	"github.com/cadenya/cadenya-go/packages/ssestream"
 	"github.com/cadenya/cadenya-go/shared"
 )
 
@@ -136,7 +137,7 @@ func (r *ObjectiveService) Compact(ctx context.Context, workspaceID string, obje
 }
 
 // Continues an objective that has completed
-func (r *ObjectiveService) Continue(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveContinueResponse, err error) {
+func (r *ObjectiveService) Continue(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveContinueParams, opts ...option.RequestOption) (res *ObjectiveEvent, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspaceId parameter")
@@ -185,7 +186,7 @@ func (r *ObjectiveService) ListContextWindowsAutoPaging(ctx context.Context, wor
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEvents(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveListEventsResponse], err error) {
+func (r *ObjectiveService) ListEvents(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveEvent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -211,8 +212,29 @@ func (r *ObjectiveService) ListEvents(ctx context.Context, workspaceID string, o
 }
 
 // Lists all events for an objective
-func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveListEventsResponse] {
+func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveListEventsParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveEvent] {
 	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, objectiveID, query, opts...))
+}
+
+// Streams events for an objective in real-time using server-sent events (SSE)
+func (r *ObjectiveService) StreamEventsStreaming(ctx context.Context, workspaceID string, objectiveID string, opts ...option.RequestOption) (stream *ssestream.Stream[ObjectiveEvent]) {
+	var (
+		raw *http.Response
+		err error
+	)
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return ssestream.NewStream[ObjectiveEvent](nil, err)
+	}
+	if objectiveID == "" {
+		err = errors.New("missing required objectiveId parameter")
+		return ssestream.NewStream[ObjectiveEvent](nil, err)
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/events:stream", workspaceID, objectiveID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	return ssestream.NewStream[ObjectiveEvent](ssestream.NewDecoder(raw), err)
 }
 
 type AssistantMessage struct {
@@ -693,6 +715,34 @@ func (r *ObjectiveError) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveEvent struct {
+	Data ObjectiveEventData `json:"data" api:"required"`
+	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
+	// runs)
+	Metadata        shared.OperationMetadata `json:"metadata" api:"required"`
+	ContextWindowID string                   `json:"contextWindowId"`
+	Info            ObjectiveEventInfo       `json:"info"`
+	JSON            objectiveEventJSON       `json:"-"`
+}
+
+// objectiveEventJSON contains the JSON metadata for the struct [ObjectiveEvent]
+type objectiveEventJSON struct {
+	Data            apijson.Field
+	Metadata        apijson.Field
+	ContextWindowID apijson.Field
+	Info            apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *ObjectiveEvent) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEventJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -1186,64 +1236,6 @@ func (r *ObjectiveCompactResponse) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveCompactResponseJSON) RawJSON() string {
-	return r.raw
-}
-
-type ObjectiveContinueResponse struct {
-	Data ObjectiveEventData `json:"data" api:"required"`
-	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
-	// runs)
-	Metadata        shared.OperationMetadata      `json:"metadata" api:"required"`
-	ContextWindowID string                        `json:"contextWindowId"`
-	Info            ObjectiveEventInfo            `json:"info"`
-	JSON            objectiveContinueResponseJSON `json:"-"`
-}
-
-// objectiveContinueResponseJSON contains the JSON metadata for the struct
-// [ObjectiveContinueResponse]
-type objectiveContinueResponseJSON struct {
-	Data            apijson.Field
-	Metadata        apijson.Field
-	ContextWindowID apijson.Field
-	Info            apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ObjectiveContinueResponse) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveContinueResponseJSON) RawJSON() string {
-	return r.raw
-}
-
-type ObjectiveListEventsResponse struct {
-	Data ObjectiveEventData `json:"data" api:"required"`
-	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
-	// runs)
-	Metadata        shared.OperationMetadata        `json:"metadata" api:"required"`
-	ContextWindowID string                          `json:"contextWindowId"`
-	Info            ObjectiveEventInfo              `json:"info"`
-	JSON            objectiveListEventsResponseJSON `json:"-"`
-}
-
-// objectiveListEventsResponseJSON contains the JSON metadata for the struct
-// [ObjectiveListEventsResponse]
-type objectiveListEventsResponseJSON struct {
-	Data            apijson.Field
-	Metadata        apijson.Field
-	ContextWindowID apijson.Field
-	Info            apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ObjectiveListEventsResponse) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveListEventsResponseJSON) RawJSON() string {
 	return r.raw
 }
 
