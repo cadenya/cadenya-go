@@ -258,7 +258,43 @@ func (r ConfigHTTPParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type ConfigMcp = interface{}
+type ConfigMcp struct {
+	// Behavior hints synced from the MCP server's tool definition (ToolAnnotations in
+	// the MCP specification). All hints are advisory: servers are not required to send
+	// them, and clients should not rely on them for security decisions. Absent hints
+	// keep the MCP spec defaults (destructiveHint and openWorldHint default to true;
+	// readOnlyHint and idempotentHint default to false).
+	Annotations McpAnnotations `json:"annotations"`
+	JSON        configMcpJSON  `json:"-"`
+}
+
+// configMcpJSON contains the JSON metadata for the struct [ConfigMcp]
+type configMcpJSON struct {
+	Annotations apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ConfigMcp) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r configMcpJSON) RawJSON() string {
+	return r.raw
+}
+
+type ConfigMcpParam struct {
+	// Behavior hints synced from the MCP server's tool definition (ToolAnnotations in
+	// the MCP specification). All hints are advisory: servers are not required to send
+	// them, and clients should not rely on them for security decisions. Absent hints
+	// keep the MCP spec defaults (destructiveHint and openWorldHint default to true;
+	// readOnlyHint and idempotentHint default to false).
+	Annotations param.Field[McpAnnotationsParam] `json:"annotations"`
+}
+
+func (r ConfigMcpParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
 
 type ConfigOpenAPI struct {
 	Method string            `json:"method"`
@@ -288,6 +324,72 @@ type ConfigOpenAPIParam struct {
 }
 
 func (r ConfigOpenAPIParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Behavior hints synced from the MCP server's tool definition (ToolAnnotations in
+// the MCP specification). All hints are advisory: servers are not required to send
+// them, and clients should not rely on them for security decisions. Absent hints
+// keep the MCP spec defaults (destructiveHint and openWorldHint default to true;
+// readOnlyHint and idempotentHint default to false).
+type McpAnnotations struct {
+	// If true, the tool may perform destructive updates to its environment. Only
+	// meaningful when read_only_hint is false.
+	DestructiveHint bool `json:"destructiveHint"`
+	// If true, calling the tool repeatedly with the same arguments has no additional
+	// effect. Only meaningful when read_only_hint is false.
+	IdempotentHint bool `json:"idempotentHint"`
+	// If true, the tool may interact with an "open world" of external entities (e.g.
+	// web search); if false, its domain is closed.
+	OpenWorldHint bool `json:"openWorldHint"`
+	// If true, the tool does not modify its environment.
+	ReadOnlyHint bool `json:"readOnlyHint"`
+	// A human-readable title for the tool.
+	Title string             `json:"title"`
+	JSON  mcpAnnotationsJSON `json:"-"`
+}
+
+// mcpAnnotationsJSON contains the JSON metadata for the struct [McpAnnotations]
+type mcpAnnotationsJSON struct {
+	DestructiveHint apijson.Field
+	IdempotentHint  apijson.Field
+	OpenWorldHint   apijson.Field
+	ReadOnlyHint    apijson.Field
+	Title           apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *McpAnnotations) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r mcpAnnotationsJSON) RawJSON() string {
+	return r.raw
+}
+
+// Behavior hints synced from the MCP server's tool definition (ToolAnnotations in
+// the MCP specification). All hints are advisory: servers are not required to send
+// them, and clients should not rely on them for security decisions. Absent hints
+// keep the MCP spec defaults (destructiveHint and openWorldHint default to true;
+// readOnlyHint and idempotentHint default to false).
+type McpAnnotationsParam struct {
+	// If true, the tool may perform destructive updates to its environment. Only
+	// meaningful when read_only_hint is false.
+	DestructiveHint param.Field[bool] `json:"destructiveHint"`
+	// If true, calling the tool repeatedly with the same arguments has no additional
+	// effect. Only meaningful when read_only_hint is false.
+	IdempotentHint param.Field[bool] `json:"idempotentHint"`
+	// If true, the tool may interact with an "open world" of external entities (e.g.
+	// web search); if false, its domain is closed.
+	OpenWorldHint param.Field[bool] `json:"openWorldHint"`
+	// If true, the tool does not modify its environment.
+	ReadOnlyHint param.Field[bool] `json:"readOnlyHint"`
+	// A human-readable title for the tool.
+	Title param.Field[string] `json:"title"`
+}
+
+func (r McpAnnotationsParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
