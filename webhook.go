@@ -109,9 +109,9 @@ type UnsafeUnwrapWebhookEventData struct {
 	AgentVariation shared.ResourceMetadata `json:"agentVariation" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Objective      shared.OperationMetadata                   `json:"objective" api:"required"`
-	ObjectiveEvent UnsafeUnwrapWebhookEventDataObjectiveEvent `json:"objectiveEvent" api:"required"`
-	JSON           unsafeUnwrapWebhookEventDataJSON           `json:"-"`
+	Objective      shared.OperationMetadata         `json:"objective" api:"required"`
+	ObjectiveEvent ObjectiveEvent                   `json:"objectiveEvent" api:"required"`
+	JSON           unsafeUnwrapWebhookEventDataJSON `json:"-"`
 }
 
 // unsafeUnwrapWebhookEventDataJSON contains the JSON metadata for the struct
@@ -130,35 +130,6 @@ func (r *UnsafeUnwrapWebhookEventData) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r unsafeUnwrapWebhookEventDataJSON) RawJSON() string {
-	return r.raw
-}
-
-type UnsafeUnwrapWebhookEventDataObjectiveEvent struct {
-	Data ObjectiveEventData `json:"data" api:"required"`
-	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
-	// runs)
-	Metadata        shared.OperationMetadata                       `json:"metadata" api:"required"`
-	ContextWindowID string                                         `json:"contextWindowId"`
-	Info            ObjectiveEventInfo                             `json:"info"`
-	JSON            unsafeUnwrapWebhookEventDataObjectiveEventJSON `json:"-"`
-}
-
-// unsafeUnwrapWebhookEventDataObjectiveEventJSON contains the JSON metadata for
-// the struct [UnsafeUnwrapWebhookEventDataObjectiveEvent]
-type unsafeUnwrapWebhookEventDataObjectiveEventJSON struct {
-	Data            apijson.Field
-	Metadata        apijson.Field
-	ContextWindowID apijson.Field
-	Info            apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *UnsafeUnwrapWebhookEventDataObjectiveEvent) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unsafeUnwrapWebhookEventDataObjectiveEventJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -202,9 +173,9 @@ type UnwrapWebhookEventData struct {
 	AgentVariation shared.ResourceMetadata `json:"agentVariation" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Objective      shared.OperationMetadata             `json:"objective" api:"required"`
-	ObjectiveEvent UnwrapWebhookEventDataObjectiveEvent `json:"objectiveEvent" api:"required"`
-	JSON           unwrapWebhookEventDataJSON           `json:"-"`
+	Objective      shared.OperationMetadata   `json:"objective" api:"required"`
+	ObjectiveEvent ObjectiveEvent             `json:"objectiveEvent" api:"required"`
+	JSON           unwrapWebhookEventDataJSON `json:"-"`
 }
 
 // unwrapWebhookEventDataJSON contains the JSON metadata for the struct
@@ -223,34 +194,5 @@ func (r *UnwrapWebhookEventData) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r unwrapWebhookEventDataJSON) RawJSON() string {
-	return r.raw
-}
-
-type UnwrapWebhookEventDataObjectiveEvent struct {
-	Data ObjectiveEventData `json:"data" api:"required"`
-	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
-	// runs)
-	Metadata        shared.OperationMetadata                 `json:"metadata" api:"required"`
-	ContextWindowID string                                   `json:"contextWindowId"`
-	Info            ObjectiveEventInfo                       `json:"info"`
-	JSON            unwrapWebhookEventDataObjectiveEventJSON `json:"-"`
-}
-
-// unwrapWebhookEventDataObjectiveEventJSON contains the JSON metadata for the
-// struct [UnwrapWebhookEventDataObjectiveEvent]
-type unwrapWebhookEventDataObjectiveEventJSON struct {
-	Data            apijson.Field
-	Metadata        apijson.Field
-	ContextWindowID apijson.Field
-	Info            apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *UnwrapWebhookEventDataObjectiveEvent) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unwrapWebhookEventDataObjectiveEventJSON) RawJSON() string {
 	return r.raw
 }

@@ -299,8 +299,6 @@ func (r MemoryLayerUpdateParams) MarshalJSON() (data []byte, err error) {
 type MemoryLayerListParams struct {
 	// Filter to episodic layers belonging to this agent.
 	AgentID param.Field[string] `query:"agentId"`
-	// Filter by bundle_key — return only resources owned by this bundle.
-	BundleKey param.Field[string] `query:"bundleKey"`
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
 	// Filter to episodic layers whose episodic key starts with this prefix (e.g.

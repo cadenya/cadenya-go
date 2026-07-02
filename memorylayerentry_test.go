@@ -34,7 +34,6 @@ func TestMemoryLayerEntryNewWithOptionalParams(t *testing.T) {
 		cadenya.MemoryLayerEntryNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -106,7 +105,6 @@ func TestMemoryLayerEntryUpdateWithOptionalParams(t *testing.T) {
 		cadenya.MemoryLayerEntryUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -148,7 +146,6 @@ func TestMemoryLayerEntryListWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		"memoryLayerId",
 		cadenya.MemoryLayerEntryListParams{
-			BundleKey:   cadenya.F("bundleKey"),
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
 			Limit:       cadenya.F(int64(0)),

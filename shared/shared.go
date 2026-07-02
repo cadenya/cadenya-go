@@ -18,8 +18,9 @@ type AccountResourceMetadata struct {
 	AccountID string `json:"accountId" api:"required"`
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool") Required for resources that users interact with directly
-	Name      string `json:"name" api:"required"`
-	ProfileID string `json:"profileId" api:"required"`
+	Name      string    `json:"name" api:"required"`
+	ProfileID string    `json:"profileId" api:"required"`
+	CreatedAt time.Time `json:"createdAt" format:"date-time"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:
@@ -35,6 +36,7 @@ type accountResourceMetadataJSON struct {
 	AccountID   apijson.Field
 	Name        apijson.Field
 	ProfileID   apijson.Field
+	CreatedAt   apijson.Field
 	ExternalID  apijson.Field
 	Labels      apijson.Field
 	raw         string
@@ -102,8 +104,6 @@ type CreateResourceMetadataParam struct {
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool")
 	Name param.Field[string] `json:"name" api:"required"`
-	// Optional bundle ownership key. See ResourceMetadata.bundle_key.
-	BundleKey param.Field[string] `json:"bundleKey"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:
@@ -174,11 +174,6 @@ type ResourceMetadata struct {
 	ProfileID string `json:"profileId" api:"required"`
 	// Workspace this resource belongs to for organizational grouping (prefixed ULID)
 	WorkspaceID string `json:"workspaceId" api:"required"`
-	// Optional bundle ownership key. When set, indicates the resource is managed by a
-	// configuration bundle identified by this key. Used by
-	// BulkWorkspaceResources.Apply to track which resources belong to which bundle for
-	// reconciliation / soft-delete on re-apply.
-	BundleKey string `json:"bundleKey"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:
@@ -198,7 +193,6 @@ type resourceMetadataJSON struct {
 	Name        apijson.Field
 	ProfileID   apijson.Field
 	WorkspaceID apijson.Field
-	BundleKey   apijson.Field
 	ExternalID  apijson.Field
 	Labels      apijson.Field
 	UpdatedAt   apijson.Field
@@ -221,8 +215,6 @@ type UpdateResourceMetadataParam struct {
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool")
 	Name param.Field[string] `json:"name" api:"required"`
-	// Optional bundle ownership key. See ResourceMetadata.bundle_key.
-	BundleKey param.Field[string] `json:"bundleKey"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
 	// Arbitrary key-value pairs for categorization and filtering Examples:

@@ -34,7 +34,6 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetToolNewParams{
 			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -51,17 +50,11 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 						Query:                  cadenya.F("query"),
 						RequestBodyContentType: cadenya.F("requestBodyContentType"),
 						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
-						ToolName:               cadenya.F("toolName"),
 					}),
-					Mcp: cadenya.F(cadenya.ConfigMcpParam{
-						ToolDescription: cadenya.F("toolDescription"),
-						ToolName:        cadenya.F("toolName"),
-						ToolTitle:       cadenya.F("toolTitle"),
-					}),
+					Mcp: cadenya.F[any](map[string]interface{}{}),
 					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
-						Method:      cadenya.F("method"),
-						OperationID: cadenya.F("operationId"),
-						Path:        cadenya.F("path"),
+						Method: cadenya.F("method"),
+						Path:   cadenya.F("path"),
 					}),
 				}),
 				Description: cadenya.F("description"),
@@ -69,6 +62,7 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 					"foo": "bar",
 				}),
 				RequiresApproval: cadenya.F(true),
+				LlmToolName:      cadenya.F("llmToolName"),
 			}),
 		},
 	)
@@ -130,7 +124,6 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetToolUpdateParams{
 			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
 				Name:       cadenya.F("name"),
-				BundleKey:  cadenya.F("bundleKey"),
 				ExternalID: cadenya.F("externalId"),
 				Labels: cadenya.F(map[string]string{
 					"foo": "string",
@@ -147,17 +140,11 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 						Query:                  cadenya.F("query"),
 						RequestBodyContentType: cadenya.F("requestBodyContentType"),
 						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
-						ToolName:               cadenya.F("toolName"),
 					}),
-					Mcp: cadenya.F(cadenya.ConfigMcpParam{
-						ToolDescription: cadenya.F("toolDescription"),
-						ToolName:        cadenya.F("toolName"),
-						ToolTitle:       cadenya.F("toolTitle"),
-					}),
+					Mcp: cadenya.F[any](map[string]interface{}{}),
 					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
-						Method:      cadenya.F("method"),
-						OperationID: cadenya.F("operationId"),
-						Path:        cadenya.F("path"),
+						Method: cadenya.F("method"),
+						Path:   cadenya.F("path"),
 					}),
 				}),
 				Description: cadenya.F("description"),
@@ -165,6 +152,7 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 					"foo": "bar",
 				}),
 				RequiresApproval: cadenya.F(true),
+				LlmToolName:      cadenya.F("llmToolName"),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
@@ -196,7 +184,6 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		"toolSetId",
 		cadenya.ToolSetToolListParams{
-			BundleKey:        cadenya.F("bundleKey"),
 			Cursor:           cadenya.F("cursor"),
 			IncludeInfo:      cadenya.F(true),
 			Limit:            cadenya.F(int64(0)),
