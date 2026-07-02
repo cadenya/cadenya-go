@@ -51,7 +51,15 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 						RequestBodyContentType: cadenya.F("requestBodyContentType"),
 						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
 					}),
-					Mcp: cadenya.F[any](map[string]interface{}{}),
+					Mcp: cadenya.F(cadenya.ConfigMcpParam{
+						Annotations: cadenya.F(cadenya.McpAnnotationsParam{
+							DestructiveHint: cadenya.F(true),
+							IdempotentHint:  cadenya.F(true),
+							OpenWorldHint:   cadenya.F(true),
+							ReadOnlyHint:    cadenya.F(true),
+							Title:           cadenya.F("title"),
+						}),
+					}),
 					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
 						Method: cadenya.F("method"),
 						Path:   cadenya.F("path"),
@@ -141,7 +149,15 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 						RequestBodyContentType: cadenya.F("requestBodyContentType"),
 						RequestBodyTemplate:    cadenya.F("requestBodyTemplate"),
 					}),
-					Mcp: cadenya.F[any](map[string]interface{}{}),
+					Mcp: cadenya.F(cadenya.ConfigMcpParam{
+						Annotations: cadenya.F(cadenya.McpAnnotationsParam{
+							DestructiveHint: cadenya.F(true),
+							IdempotentHint:  cadenya.F(true),
+							OpenWorldHint:   cadenya.F(true),
+							ReadOnlyHint:    cadenya.F(true),
+							Title:           cadenya.F("title"),
+						}),
+					}),
 					OpenAPI: cadenya.F(cadenya.ConfigOpenAPIParam{
 						Method: cadenya.F("method"),
 						Path:   cadenya.F("path"),
