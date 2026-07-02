@@ -149,6 +149,10 @@ func (s *Stream[T]) Next() bool {
 	}
 
 	for s.decoder.Next() {
+		if s.decoder.Event().Type == "open" || s.decoder.Event().Type == "ping" {
+			continue
+		}
+
 		var nxt T
 		s.err = json.Unmarshal(s.decoder.Event().Data, &nxt)
 		if s.err != nil {
