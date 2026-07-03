@@ -44,6 +44,15 @@ func (r *AccountService) Get(ctx context.Context, opts ...option.RequestOption) 
 	return res, err
 }
 
+// Rotates the challenge token sent in the X-Cadenya-Challenge-Token header on MCP
+// tools/list requests. Returns only the new token.
+func (r *AccountService) RotateChallengeToken(ctx context.Context, opts ...option.RequestOption) (res *RotateChallengeTokenResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/account:rotateChallengeToken"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
 // Rotates the webhook signing key for the account. Returns only the new key.
 func (r *AccountService) RotateWebhookSigningKey(ctx context.Context, opts ...option.RequestOption) (res *RotateWebhookSigningKeyResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -84,6 +93,12 @@ func (r accountJSON) RawJSON() string {
 
 // Server-populated information about the account.
 type AccountInfo struct {
+	// The challenge token Cadenya sends in the X-Cadenya-Challenge-Token header on
+	// every MCP tools/list request. Server implementations can accept a valid
+	// challenge token in place of per-user auth when listing tools, while still
+	// requiring real auth on tools/call. Rotate with RotateChallengeToken; update any
+	// servers validating the token before rotating.
+	ChallengeToken string `json:"challengeToken"`
 	// An API key for the account. Use workspace-association RPCs to grant the key
 	// access to specific workspaces; a key with zero workspaces is valid but cannot
 	// access workspace-scoped resources.
@@ -97,6 +112,7 @@ type AccountInfo struct {
 
 // accountInfoJSON contains the JSON metadata for the struct [AccountInfo]
 type accountInfoJSON struct {
+	ChallengeToken          apijson.Field
 	GlobalAPIKey            apijson.Field
 	WebhookEventsHmacSecret apijson.Field
 	raw                     string
@@ -211,6 +227,28 @@ func (r ProfileSpecType) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+// Response containing the newly generated challenge token.
+type RotateChallengeTokenResponse struct {
+	ChallengeToken string                           `json:"challengeToken"`
+	JSON           rotateChallengeTokenResponseJSON `json:"-"`
+}
+
+// rotateChallengeTokenResponseJSON contains the JSON metadata for the struct
+// [RotateChallengeTokenResponse]
+type rotateChallengeTokenResponseJSON struct {
+	ChallengeToken apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *RotateChallengeTokenResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r rotateChallengeTokenResponseJSON) RawJSON() string {
+	return r.raw
 }
 
 // Response containing the newly generated webhook signing secret.

@@ -220,10 +220,6 @@ func TestObjectiveContinueWithOptionalParams(t *testing.T) {
 		cadenya.ObjectiveContinueParams{
 			Enqueue: cadenya.F(true),
 			Message: cadenya.F("message"),
-			Secrets: cadenya.F([]cadenya.ObjectiveContinueParamsSecret{{
-				Name:  cadenya.F("name"),
-				Value: cadenya.F("value"),
-			}}),
 		},
 	)
 	if err != nil {

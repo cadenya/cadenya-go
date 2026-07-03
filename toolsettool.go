@@ -446,6 +446,11 @@ type ToolInfo struct {
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
 	CreatedBy Profile `json:"createdBy"`
+	// Content signature identifying the tool within its tool set: a hash of the
+	// sanitized llm_tool_name, description, and canonical parameters. Two tools with
+	// the same llm_tool_name but different parameters or description (as MCP servers
+	// may return per user) have distinct signatures.
+	Signature string `json:"signature"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	ToolSet shared.ResourceMetadata `json:"toolSet"`
 	JSON    toolInfoJSON            `json:"-"`
@@ -454,6 +459,7 @@ type ToolInfo struct {
 // toolInfoJSON contains the JSON metadata for the struct [ToolInfo]
 type toolInfoJSON struct {
 	CreatedBy   apijson.Field
+	Signature   apijson.Field
 	ToolSet     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
