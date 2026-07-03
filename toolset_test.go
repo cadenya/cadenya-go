@@ -78,6 +78,10 @@ func TestToolSetNewWithOptionalParams(t *testing.T) {
 								}),
 							}}),
 						}),
+						JustInTime: cadenya.F(cadenya.ToolSetAdapterMcpJustInTimeParam{
+							Enabled:                      cadenya.F(true),
+							FailObjectiveOnToolListError: cadenya.F(true),
+						}),
 						ToolApprovals: cadenya.F(cadenya.ApprovalRequirementFilterParam{
 							Always: cadenya.F(true),
 							Only: cadenya.F(cadenya.ToolFilterParam{
@@ -256,6 +260,10 @@ func TestToolSetUpdateWithOptionalParams(t *testing.T) {
 									StartsWith:    cadenya.F("startsWith"),
 								}),
 							}}),
+						}),
+						JustInTime: cadenya.F(cadenya.ToolSetAdapterMcpJustInTimeParam{
+							Enabled:                      cadenya.F(true),
+							FailObjectiveOnToolListError: cadenya.F(true),
 						}),
 						ToolApprovals: cadenya.F(cadenya.ApprovalRequirementFilterParam{
 							Always: cadenya.F(true),
