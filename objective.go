@@ -761,18 +761,24 @@ type ObjectiveEventData struct {
 	// MemoryRead is emitted each time the agent resolves a key against the memory
 	// cascade and loads an entry. Lookups that miss (key not found in any layer) do
 	// not emit this event.
-	MemoryRead            MemoryRead             `json:"memoryRead"`
-	SubAgentSpawned       SubAgentSpawned        `json:"subAgentSpawned"`
-	SubAgentUpdated       SubAgentUpdated        `json:"subAgentUpdated"`
-	ToolApprovalRequested ToolApprovalRequested  `json:"toolApprovalRequested"`
-	ToolApproved          ToolApproved           `json:"toolApproved"`
-	ToolCalled            ToolCalled             `json:"toolCalled"`
-	ToolDenied            ToolDenied             `json:"toolDenied"`
-	ToolError             ToolError              `json:"toolError"`
-	ToolResult            ToolResult             `json:"toolResult"`
-	Type                  string                 `json:"type"`
-	UserMessage           UserMessage            `json:"userMessage"`
-	JSON                  objectiveEventDataJSON `json:"-"`
+	MemoryRead MemoryRead `json:"memoryRead"`
+	// Notice is a non-terminal diagnostic emitted by the runtime when something
+	// noteworthy but non-fatal happens during an objective — for example a
+	// just-in-time tool set failing to load, or a previously loaded tool being dropped
+	// because it was archived. Notices carry no structured payload; they exist to make
+	// the objective timeline self-explanatory.
+	Notice                ObjectiveEventDataNotice `json:"notice"`
+	SubAgentSpawned       SubAgentSpawned          `json:"subAgentSpawned"`
+	SubAgentUpdated       SubAgentUpdated          `json:"subAgentUpdated"`
+	ToolApprovalRequested ToolApprovalRequested    `json:"toolApprovalRequested"`
+	ToolApproved          ToolApproved             `json:"toolApproved"`
+	ToolCalled            ToolCalled               `json:"toolCalled"`
+	ToolDenied            ToolDenied               `json:"toolDenied"`
+	ToolError             ToolError                `json:"toolError"`
+	ToolResult            ToolResult               `json:"toolResult"`
+	Type                  string                   `json:"type"`
+	UserMessage           UserMessage              `json:"userMessage"`
+	JSON                  objectiveEventDataJSON   `json:"-"`
 }
 
 // objectiveEventDataJSON contains the JSON metadata for the struct
@@ -784,6 +790,7 @@ type objectiveEventDataJSON struct {
 	Error                  apijson.Field
 	Finalized              apijson.Field
 	MemoryRead             apijson.Field
+	Notice                 apijson.Field
 	SubAgentSpawned        apijson.Field
 	SubAgentUpdated        apijson.Field
 	ToolApprovalRequested  apijson.Field
@@ -858,6 +865,56 @@ func (r *ObjectiveEventDataFinalized) UnmarshalJSON(data []byte) (err error) {
 
 func (r objectiveEventDataFinalizedJSON) RawJSON() string {
 	return r.raw
+}
+
+// Notice is a non-terminal diagnostic emitted by the runtime when something
+// noteworthy but non-fatal happens during an objective — for example a
+// just-in-time tool set failing to load, or a previously loaded tool being dropped
+// because it was archived. Notices carry no structured payload; they exist to make
+// the objective timeline self-explanatory.
+type ObjectiveEventDataNotice struct {
+	// Stable machine-readable identifier for the notice kind (for example
+	// "tool_set_load_failed", "tool_archived"). Clients can switch on it or use it as
+	// an i18n key; the message is the English fallback.
+	Key   string                        `json:"key"`
+	Level ObjectiveEventDataNoticeLevel `json:"level"`
+	// Human-readable description of what happened.
+	Message string                       `json:"message"`
+	JSON    objectiveEventDataNoticeJSON `json:"-"`
+}
+
+// objectiveEventDataNoticeJSON contains the JSON metadata for the struct
+// [ObjectiveEventDataNotice]
+type objectiveEventDataNoticeJSON struct {
+	Key         apijson.Field
+	Level       apijson.Field
+	Message     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveEventDataNotice) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEventDataNoticeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveEventDataNoticeLevel string
+
+const (
+	ObjectiveEventDataNoticeLevelLevelUnspecified ObjectiveEventDataNoticeLevel = "LEVEL_UNSPECIFIED"
+	ObjectiveEventDataNoticeLevelLevelInfo        ObjectiveEventDataNoticeLevel = "LEVEL_INFO"
+	ObjectiveEventDataNoticeLevelLevelWarn        ObjectiveEventDataNoticeLevel = "LEVEL_WARN"
+)
+
+func (r ObjectiveEventDataNoticeLevel) IsKnown() bool {
+	switch r {
+	case ObjectiveEventDataNoticeLevelLevelUnspecified, ObjectiveEventDataNoticeLevelLevelInfo, ObjectiveEventDataNoticeLevelLevelWarn:
+		return true
+	}
+	return false
 }
 
 type ObjectiveEventInfo struct {
@@ -1381,21 +1438,9 @@ type ObjectiveContinueParams struct {
 	Enqueue param.Field[bool] `json:"enqueue"`
 	// The message to continue an objective that has completed (or you are enqueing)
 	Message param.Field[string] `json:"message"`
-	// Secrets that should be included with the message. Helpful for when you need to
-	// update secrets on the objective (IE: A secret expires and needs to be refreshed)
-	Secrets param.Field[[]ObjectiveContinueParamsSecret] `json:"secrets"`
 }
 
 func (r ObjectiveContinueParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-type ObjectiveContinueParamsSecret struct {
-	Name  param.Field[string] `json:"name"`
-	Value param.Field[string] `json:"value"`
-}
-
-func (r ObjectiveContinueParamsSecret) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

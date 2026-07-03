@@ -614,6 +614,8 @@ type ToolSetAdapterMcp struct {
 	Headers      map[string]string `json:"headers"`
 	// Top-level filter with simple boolean logic (no nesting)
 	IncludeTools ToolFilter `json:"includeTools"`
+	// Defines behavior for just-in-time capable tool set adapters (IE: MCP).
+	JustInTime ToolSetAdapterMcpJustInTime `json:"justInTime"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
 	ToolApprovals ApprovalRequirementFilter `json:"toolApprovals"`
@@ -627,6 +629,7 @@ type toolSetAdapterMcpJSON struct {
 	ExcludeTools  apijson.Field
 	Headers       apijson.Field
 	IncludeTools  apijson.Field
+	JustInTime    apijson.Field
 	ToolApprovals apijson.Field
 	URL           apijson.Field
 	raw           string
@@ -641,12 +644,42 @@ func (r toolSetAdapterMcpJSON) RawJSON() string {
 	return r.raw
 }
 
+// Defines behavior for just-in-time capable tool set adapters (IE: MCP).
+type ToolSetAdapterMcpJustInTime struct {
+	Enabled bool `json:"enabled"`
+	// If set, an objective will automatically be failed if tools cannot be loaded in
+	// the initial stages of an objective being created. Tools are loaded
+	// asynchronously, so this setting is useful for ensuring that an objective
+	// continued any further if tools are not available.
+	FailObjectiveOnToolListError bool                            `json:"failObjectiveOnToolListError"`
+	JSON                         toolSetAdapterMcpJustInTimeJSON `json:"-"`
+}
+
+// toolSetAdapterMcpJustInTimeJSON contains the JSON metadata for the struct
+// [ToolSetAdapterMcpJustInTime]
+type toolSetAdapterMcpJustInTimeJSON struct {
+	Enabled                      apijson.Field
+	FailObjectiveOnToolListError apijson.Field
+	raw                          string
+	ExtraFields                  map[string]apijson.Field
+}
+
+func (r *ToolSetAdapterMcpJustInTime) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolSetAdapterMcpJustInTimeJSON) RawJSON() string {
+	return r.raw
+}
+
 type ToolSetAdapterMcpParam struct {
 	// Top-level filter with simple boolean logic (no nesting)
 	ExcludeTools param.Field[ToolFilterParam]   `json:"excludeTools"`
 	Headers      param.Field[map[string]string] `json:"headers"`
 	// Top-level filter with simple boolean logic (no nesting)
 	IncludeTools param.Field[ToolFilterParam] `json:"includeTools"`
+	// Defines behavior for just-in-time capable tool set adapters (IE: MCP).
+	JustInTime param.Field[ToolSetAdapterMcpJustInTimeParam] `json:"justInTime"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
 	ToolApprovals param.Field[ApprovalRequirementFilterParam] `json:"toolApprovals"`
@@ -654,6 +687,20 @@ type ToolSetAdapterMcpParam struct {
 }
 
 func (r ToolSetAdapterMcpParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Defines behavior for just-in-time capable tool set adapters (IE: MCP).
+type ToolSetAdapterMcpJustInTimeParam struct {
+	Enabled param.Field[bool] `json:"enabled"`
+	// If set, an objective will automatically be failed if tools cannot be loaded in
+	// the initial stages of an objective being created. Tools are loaded
+	// asynchronously, so this setting is useful for ensuring that an objective
+	// continued any further if tools are not available.
+	FailObjectiveOnToolListError param.Field[bool] `json:"failObjectiveOnToolListError"`
+}
+
+func (r ToolSetAdapterMcpJustInTimeParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

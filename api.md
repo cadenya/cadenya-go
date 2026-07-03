@@ -39,11 +39,13 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AccountSpec">AccountSpec</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#Profile">Profile</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#ProfileSpec">ProfileSpec</a>
+- <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#RotateChallengeTokenResponse">RotateChallengeTokenResponse</a>
 - <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#RotateWebhookSigningKeyResponse">RotateWebhookSigningKeyResponse</a>
 
 Methods:
 
 - <code title="get /v1/account">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AccountService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#Account">Account</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/account:rotateChallengeToken">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AccountService.RotateChallengeToken">RotateChallengeToken</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#RotateChallengeTokenResponse">RotateChallengeTokenResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/account:rotateWebhookSigningKey">client.Account.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#AccountService.RotateWebhookSigningKey">RotateWebhookSigningKey</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#RotateWebhookSigningKeyResponse">RotateWebhookSigningKeyResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # Profiles
