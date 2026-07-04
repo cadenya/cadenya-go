@@ -43,10 +43,10 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				Description:            cadenya.F("description"),
 				EnableEpisodicMemory:   cadenya.F(true),
 				EpisodicMemoryTtl:      cadenya.F(int64(0)),
-				InputDataSchema: cadenya.F(map[string]interface{}{
+				OutputDefinition: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				OutputDefinition: cadenya.F(map[string]interface{}{
+				SystemPromptDataSchema: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
 				WebhookEventsURL: cadenya.F("webhookEventsUrl"),
@@ -73,7 +73,8 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 						MaxSubObjectives: cadenya.F(int64(0)),
 						MaxToolCalls:     cadenya.F(int64(0)),
 					}),
-					Description: cadenya.F("description"),
+					Description:              cadenya.F("description"),
+					FirstUserMessageTemplate: cadenya.F("firstUserMessageTemplate"),
 					ModelConfig: cadenya.F(cadenya.AgentVariationSpecModelConfigParam{
 						ModelID:     cadenya.F("modelId"),
 						Temperature: cadenya.F(0.000000),
@@ -84,7 +85,6 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 						RerankThreshold: cadenya.F(0.000000),
 					}),
 					SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
-					UserMessageTemplate:  cadenya.F("userMessageTemplate"),
 					Weight:               cadenya.F(int64(0)),
 				}),
 			}),
@@ -156,10 +156,10 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 				Description:            cadenya.F("description"),
 				EnableEpisodicMemory:   cadenya.F(true),
 				EpisodicMemoryTtl:      cadenya.F(int64(0)),
-				InputDataSchema: cadenya.F(map[string]interface{}{
+				OutputDefinition: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
-				OutputDefinition: cadenya.F(map[string]interface{}{
+				SystemPromptDataSchema: cadenya.F(map[string]interface{}{
 					"foo": "bar",
 				}),
 				WebhookEventsURL: cadenya.F("webhookEventsUrl"),

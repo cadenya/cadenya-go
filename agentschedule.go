@@ -318,19 +318,20 @@ type AgentScheduleSpec struct {
 	// of calendar rules (wall-clock) and/or interval rules (duration), OR'd together.
 	// At least one rule is required.
 	Schedule AgentScheduleSpecSchedule `json:"schedule" api:"required"`
-	// Optional input data passed to the objective. If the agent has an
-	// input_data_schema, this must satisfy it.
-	Data interface{} `json:"data"`
-	// Optional initial message passed to CreateObjective on each fire. Becomes the
-	// first user message in the objective's chat history. When unset, the fired
-	// objective defers to the selected variation's user_message_template.
-	InitialMessage string `json:"initialMessage"`
+	// Optional explicit first user message passed to CreateObjective on each fire.
+	// Becomes the first user message in the objective's chat history. When unset, the
+	// fired objective defers to the selected variation's first_user_message_template.
+	FirstUserMessage string `json:"firstUserMessage"`
+	// Optional data rendered into the variation's first_user_message_template when
+	// each fired objective is created. Separate from `system_prompt_data`, which
+	// renders the system prompt template.
+	FirstUserMessageData interface{} `json:"firstUserMessageData"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy AgentScheduleSpecOverlapPolicy `json:"overlapPolicy"`
-	// Optional data rendered into the variation's user_message_template when each
-	// fired objective is created. Separate from `data`, which renders the system
-	// prompt template.
-	UserData interface{} `json:"userData"`
+	// Optional data rendered into the variation's system_prompt_template when each
+	// fired objective is created. If the agent has a system_prompt_data_schema, this
+	// must satisfy it.
+	SystemPromptData interface{} `json:"systemPromptData"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID string                `json:"variationId"`
@@ -340,14 +341,14 @@ type AgentScheduleSpec struct {
 // agentScheduleSpecJSON contains the JSON metadata for the struct
 // [AgentScheduleSpec]
 type agentScheduleSpecJSON struct {
-	Schedule       apijson.Field
-	Data           apijson.Field
-	InitialMessage apijson.Field
-	OverlapPolicy  apijson.Field
-	UserData       apijson.Field
-	VariationID    apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
+	Schedule             apijson.Field
+	FirstUserMessage     apijson.Field
+	FirstUserMessageData apijson.Field
+	OverlapPolicy        apijson.Field
+	SystemPromptData     apijson.Field
+	VariationID          apijson.Field
+	raw                  string
+	ExtraFields          map[string]apijson.Field
 }
 
 func (r *AgentScheduleSpec) UnmarshalJSON(data []byte) (err error) {
@@ -381,19 +382,20 @@ type AgentScheduleSpecParam struct {
 	// of calendar rules (wall-clock) and/or interval rules (duration), OR'd together.
 	// At least one rule is required.
 	Schedule param.Field[AgentScheduleSpecScheduleParam] `json:"schedule" api:"required"`
-	// Optional input data passed to the objective. If the agent has an
-	// input_data_schema, this must satisfy it.
-	Data param.Field[interface{}] `json:"data"`
-	// Optional initial message passed to CreateObjective on each fire. Becomes the
-	// first user message in the objective's chat history. When unset, the fired
-	// objective defers to the selected variation's user_message_template.
-	InitialMessage param.Field[string] `json:"initialMessage"`
+	// Optional explicit first user message passed to CreateObjective on each fire.
+	// Becomes the first user message in the objective's chat history. When unset, the
+	// fired objective defers to the selected variation's first_user_message_template.
+	FirstUserMessage param.Field[string] `json:"firstUserMessage"`
+	// Optional data rendered into the variation's first_user_message_template when
+	// each fired objective is created. Separate from `system_prompt_data`, which
+	// renders the system prompt template.
+	FirstUserMessageData param.Field[interface{}] `json:"firstUserMessageData"`
 	// What to do when the previous run is still in flight. Defaults to SKIP.
 	OverlapPolicy param.Field[AgentScheduleSpecOverlapPolicy] `json:"overlapPolicy"`
-	// Optional data rendered into the variation's user_message_template when each
-	// fired objective is created. Separate from `data`, which renders the system
-	// prompt template.
-	UserData param.Field[interface{}] `json:"userData"`
+	// Optional data rendered into the variation's system_prompt_template when each
+	// fired objective is created. If the agent has a system_prompt_data_schema, this
+	// must satisfy it.
+	SystemPromptData param.Field[interface{}] `json:"systemPromptData"`
 	// Optional explicit variation. When unset, the agent's variation_selection_mode
 	// chooses per fire.
 	VariationID param.Field[string] `json:"variationId"`

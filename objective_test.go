@@ -32,13 +32,16 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		cadenya.ObjectiveNewParams{
 			AgentID: cadenya.F("agentId"),
-			Data: cadenya.F(map[string]interface{}{
+			SystemPromptData: cadenya.F(map[string]interface{}{
 				"foo": "bar",
 			}),
 			EpisodicMemory: cadenya.F(cadenya.ObjectiveNewParamsEpisodicMemory{
 				Key: cadenya.F("key"),
 			}),
-			InitialMessage: cadenya.F("initialMessage"),
+			FirstUserMessage: cadenya.F("firstUserMessage"),
+			FirstUserMessageData: cadenya.F(map[string]interface{}{
+				"foo": "bar",
+			}),
 			MemoryCascade: cadenya.F([]cadenya.MemoryReferenceParam{{
 				MemoryEntryID: cadenya.F("memoryEntryId"),
 				MemoryLayerID: cadenya.F("memoryLayerId"),
@@ -53,9 +56,6 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 				Name:  cadenya.F("name"),
 				Value: cadenya.F("value"),
 			}}),
-			UserData: cadenya.F(map[string]interface{}{
-				"foo": "bar",
-			}),
 			VariationID: cadenya.F("variationId"),
 		},
 	)

@@ -443,9 +443,9 @@ type Objective struct {
 	// ObjectiveConfigSnapshot is the point-in-time snapshot of the agent, variation,
 	// and (when applicable) schedule that an objective was started with.
 	ConfigSnapshot ObjectiveConfigSnapshot `json:"configSnapshot" api:"required"`
-	// The initial message sent to the agent. This becomes the first user message in
-	// the LLM chat history.
-	InitialMessage string `json:"initialMessage" api:"required"`
+	// The first user message in the LLM chat history, either provided explicitly at
+	// creation or rendered from the variation's first_user_message_template.
+	FirstUserMessage string `json:"firstUserMessage" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
@@ -453,10 +453,10 @@ type Objective struct {
 	State ObjectiveState `json:"state" api:"required"`
 	// system_prompt is read-only, derived from the selected variation's prompt
 	SystemPrompt string `json:"systemPrompt" api:"required"`
-	// Arbitrary data for the objective
-	Data map[string]interface{} `json:"data"`
 	// Episodic is used to configure the episodic memory for the objective
 	EpisodicMemory ObjectiveEpisodicMemory `json:"episodicMemory"`
+	// Arbitrary data rendered into the variation's first_user_message_template
+	FirstUserMessageData map[string]interface{} `json:"firstUserMessageData"`
 	// ObjectiveInfo provides read-only aggregated statistics about an objective's
 	// execution
 	Info ObjectiveInfo `json:"info"`
@@ -486,29 +486,29 @@ type Objective struct {
 	Secrets []ObjectiveSecret `json:"secrets"`
 	// Optional human-readable detail about the current state (e.g. a failure reason).
 	StateMessage string `json:"stateMessage"`
-	// Arbitrary data used to render the variation's user_message_template
-	UserData map[string]interface{} `json:"userData"`
-	JSON     objectiveJSON          `json:"-"`
+	// Arbitrary data rendered into the variation's system_prompt_template
+	SystemPromptData map[string]interface{} `json:"systemPromptData"`
+	JSON             objectiveJSON          `json:"-"`
 }
 
 // objectiveJSON contains the JSON metadata for the struct [Objective]
 type objectiveJSON struct {
-	ConfigSnapshot    apijson.Field
-	InitialMessage    apijson.Field
-	Metadata          apijson.Field
-	State             apijson.Field
-	SystemPrompt      apijson.Field
-	Data              apijson.Field
-	EpisodicMemory    apijson.Field
-	Info              apijson.Field
-	MemoryCascade     apijson.Field
-	Output            apijson.Field
-	ParentObjectiveID apijson.Field
-	Secrets           apijson.Field
-	StateMessage      apijson.Field
-	UserData          apijson.Field
-	raw               string
-	ExtraFields       map[string]apijson.Field
+	ConfigSnapshot       apijson.Field
+	FirstUserMessage     apijson.Field
+	Metadata             apijson.Field
+	State                apijson.Field
+	SystemPrompt         apijson.Field
+	EpisodicMemory       apijson.Field
+	FirstUserMessageData apijson.Field
+	Info                 apijson.Field
+	MemoryCascade        apijson.Field
+	Output               apijson.Field
+	ParentObjectiveID    apijson.Field
+	Secrets              apijson.Field
+	StateMessage         apijson.Field
+	SystemPromptData     apijson.Field
+	raw                  string
+	ExtraFields          map[string]apijson.Field
 }
 
 func (r *Objective) UnmarshalJSON(data []byte) (err error) {
@@ -1298,17 +1298,22 @@ func (r objectiveCompactResponseJSON) RawJSON() string {
 
 type ObjectiveNewParams struct {
 	AgentID param.Field[string] `json:"agentId" api:"required"`
-	// Arbitrary data for the objective. May be used in liquid templates for prompts
-	// configured on the agent variation
-	Data param.Field[map[string]interface{}] `json:"data" api:"required"`
+	// Arbitrary data rendered into the selected variation's system_prompt_template
+	// (liquid) to produce the objective's system prompt. If the agent has a
+	// system_prompt_data_schema, this must satisfy it.
+	SystemPromptData param.Field[map[string]interface{}] `json:"systemPromptData" api:"required"`
 	// Episodic is used to configure the episodic memory for the objective
 	EpisodicMemory param.Field[ObjectiveNewParamsEpisodicMemory] `json:"episodicMemory"`
-	// Optional override for the initial message sent to the agent. This becomes the
-	// first user message in the LLM chat history. When not set, the selected
-	// variation's user_message_template is rendered with user_data instead. If neither
-	// this field nor a user_message_template is present, the request is rejected with
+	// Optional explicit first user message for the LLM chat history. When not set, the
+	// selected variation's first_user_message_template is rendered with
+	// first_user_message_data instead. If neither this field nor a
+	// first_user_message_template is present, the request is rejected with
 	// InvalidArgument.
-	InitialMessage param.Field[string] `json:"initialMessage"`
+	FirstUserMessage param.Field[string] `json:"firstUserMessage"`
+	// Arbitrary data rendered into the selected variation's
+	// first_user_message_template (liquid) to produce the first user message. Separate
+	// from `system_prompt_data`, which renders the system prompt template.
+	FirstUserMessageData param.Field[map[string]interface{}] `json:"firstUserMessageData"`
 	// Memory layers/entries layered over the baseline cascade inherited from the
 	// selected variation — element-level rules over inherited styles, in CSS terms.
 	//
@@ -1330,10 +1335,6 @@ type ObjectiveNewParams struct {
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets param.Field[[]ObjectiveNewParamsSecret] `json:"secrets"`
-	// Arbitrary data rendered into the selected variation's user_message_template
-	// (liquid) to produce the initial user message. Separate from `data`, which
-	// renders the system prompt template.
-	UserData param.Field[map[string]interface{}] `json:"userData"`
 	// Optional explicit variation selection. Overrides the agent's
 	// variation_selection_mode.
 	VariationID param.Field[string] `json:"variationId"`
