@@ -308,17 +308,18 @@ type AgentSpec struct {
 	// layer's expiry forward by this duration, and stored entries expire this long
 	// after they are written. If not set, episodic memories are retained indefinitely.
 	EpisodicMemoryTtl int64 `json:"episodicMemoryTtl"`
-	// InputDataSchema is used for enforcing a data input when objectives are created.
-	// This is valuable when using liquid formatting in agent variation prompts. Input
-	// data schema is also valuable when using an agent as a sub-agent, as the schema
-	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
-	// will be loaded with a simple "prompt" free text string as its schema.
-	InputDataSchema map[string]interface{} `json:"inputDataSchema"`
 	// Optional output definition for objectives created for this agent. When provided,
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
 	OutputDefinition map[string]interface{} `json:"outputDefinition"`
+	// SystemPromptDataSchema enforces the shape of system_prompt_data when objectives
+	// are created. This is valuable when using liquid formatting in agent variation
+	// system prompt templates. The schema is also used when the agent is attached as a
+	// sub-agent, as it becomes the tool's input parameter schema. If omitted, the
+	// sub-agent schema will be loaded with a simple "prompt" free text string as its
+	// schema.
+	SystemPromptDataSchema map[string]interface{} `json:"systemPromptDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL string        `json:"webhookEventsUrl"`
 	JSON             agentSpecJSON `json:"-"`
@@ -330,8 +331,8 @@ type agentSpecJSON struct {
 	Description            apijson.Field
 	EnableEpisodicMemory   apijson.Field
 	EpisodicMemoryTtl      apijson.Field
-	InputDataSchema        apijson.Field
 	OutputDefinition       apijson.Field
+	SystemPromptDataSchema apijson.Field
 	WebhookEventsURL       apijson.Field
 	raw                    string
 	ExtraFields            map[string]apijson.Field
@@ -380,17 +381,18 @@ type AgentSpecParam struct {
 	// layer's expiry forward by this duration, and stored entries expire this long
 	// after they are written. If not set, episodic memories are retained indefinitely.
 	EpisodicMemoryTtl param.Field[int64] `json:"episodicMemoryTtl"`
-	// InputDataSchema is used for enforcing a data input when objectives are created.
-	// This is valuable when using liquid formatting in agent variation prompts. Input
-	// data schema is also valuable when using an agent as a sub-agent, as the schema
-	// is used as the tool's input parameter schema. If omitted, the sub-agent schema
-	// will be loaded with a simple "prompt" free text string as its schema.
-	InputDataSchema param.Field[map[string]interface{}] `json:"inputDataSchema"`
 	// Optional output definition for objectives created for this agent. When provided,
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
 	OutputDefinition param.Field[map[string]interface{}] `json:"outputDefinition"`
+	// SystemPromptDataSchema enforces the shape of system_prompt_data when objectives
+	// are created. This is valuable when using liquid formatting in agent variation
+	// system prompt templates. The schema is also used when the agent is attached as a
+	// sub-agent, as it becomes the tool's input parameter schema. If omitted, the
+	// sub-agent schema will be loaded with a simple "prompt" free text string as its
+	// schema.
+	SystemPromptDataSchema param.Field[map[string]interface{}] `json:"systemPromptDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL param.Field[string] `json:"webhookEventsUrl"`
 }

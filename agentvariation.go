@@ -361,6 +361,13 @@ type AgentVariationSpec struct {
 	Constraints AgentVariationSpecConstraints `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
 	Description string `json:"description"`
+	// Liquid template for the first user message of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.first_user_message_data into
+	// Objective.first_user_message, the first user message in the LLM chat history.
+	// CreateObjectiveRequest.first_user_message, when set, overrides the rendered
+	// result. If neither this template nor first_user_message is present, objective
+	// creation is rejected with InvalidArgument.
+	FirstUserMessageTemplate string `json:"firstUserMessageTemplate"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig AgentVariationSpecModelConfig `json:"modelConfig"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically
@@ -370,14 +377,9 @@ type AgentVariationSpec struct {
 	// and can help select the best tools for the task.
 	ProgressiveDiscovery AgentVariationSpecProgressiveDiscovery `json:"progressiveDiscovery"`
 	// Liquid template for the system prompt of objectives using this variation.
-	// Rendered with CreateObjectiveRequest.data into Objective.system_prompt.
+	// Rendered with CreateObjectiveRequest.system_prompt_data into
+	// Objective.system_prompt.
 	SystemPromptTemplate string `json:"systemPromptTemplate"`
-	// Liquid template for the initial user message of objectives using this variation.
-	// Rendered with CreateObjectiveRequest.user_data and becomes the first user
-	// message in the LLM chat history. CreateObjectiveRequest.initial_message, when
-	// set, overrides the rendered result. If neither this template nor initial_message
-	// is present, objective creation is rejected with InvalidArgument.
-	UserMessageTemplate string `json:"userMessageTemplate"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
@@ -389,16 +391,16 @@ type AgentVariationSpec struct {
 // agentVariationSpecJSON contains the JSON metadata for the struct
 // [AgentVariationSpec]
 type agentVariationSpecJSON struct {
-	CompactionConfig     apijson.Field
-	Constraints          apijson.Field
-	Description          apijson.Field
-	ModelConfig          apijson.Field
-	ProgressiveDiscovery apijson.Field
-	SystemPromptTemplate apijson.Field
-	UserMessageTemplate  apijson.Field
-	Weight               apijson.Field
-	raw                  string
-	ExtraFields          map[string]apijson.Field
+	CompactionConfig         apijson.Field
+	Constraints              apijson.Field
+	Description              apijson.Field
+	FirstUserMessageTemplate apijson.Field
+	ModelConfig              apijson.Field
+	ProgressiveDiscovery     apijson.Field
+	SystemPromptTemplate     apijson.Field
+	Weight                   apijson.Field
+	raw                      string
+	ExtraFields              map[string]apijson.Field
 }
 
 func (r *AgentVariationSpec) UnmarshalJSON(data []byte) (err error) {
@@ -418,6 +420,13 @@ type AgentVariationSpecParam struct {
 	Constraints param.Field[AgentVariationSpecConstraintsParam] `json:"constraints"`
 	// Human-readable description of what this variation does or when it should be used
 	Description param.Field[string] `json:"description"`
+	// Liquid template for the first user message of objectives using this variation.
+	// Rendered with CreateObjectiveRequest.first_user_message_data into
+	// Objective.first_user_message, the first user message in the LLM chat history.
+	// CreateObjectiveRequest.first_user_message, when set, overrides the rendered
+	// result. If neither this template nor first_user_message is present, objective
+	// creation is rejected with InvalidArgument.
+	FirstUserMessageTemplate param.Field[string] `json:"firstUserMessageTemplate"`
 	// ModelConfig defines the model configuration for a variation
 	ModelConfig param.Field[AgentVariationSpecModelConfigParam] `json:"modelConfig"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically
@@ -427,14 +436,9 @@ type AgentVariationSpecParam struct {
 	// and can help select the best tools for the task.
 	ProgressiveDiscovery param.Field[AgentVariationSpecProgressiveDiscoveryParam] `json:"progressiveDiscovery"`
 	// Liquid template for the system prompt of objectives using this variation.
-	// Rendered with CreateObjectiveRequest.data into Objective.system_prompt.
+	// Rendered with CreateObjectiveRequest.system_prompt_data into
+	// Objective.system_prompt.
 	SystemPromptTemplate param.Field[string] `json:"systemPromptTemplate"`
-	// Liquid template for the initial user message of objectives using this variation.
-	// Rendered with CreateObjectiveRequest.user_data and becomes the first user
-	// message in the LLM chat history. CreateObjectiveRequest.initial_message, when
-	// set, overrides the rendered result. If neither this template nor initial_message
-	// is present, objective creation is rejected with InvalidArgument.
-	UserMessageTemplate param.Field[string] `json:"userMessageTemplate"`
 	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
 	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
 	// means never auto-selected, but can still be chosen explicitly via variation_id
