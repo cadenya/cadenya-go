@@ -216,6 +216,25 @@ func (r *ObjectiveService) ListEventsAutoPaging(ctx context.Context, workspaceID
 	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, workspaceID, objectiveID, query, opts...))
 }
 
+// Returns the context-usage breakdown measured for the objective's most recent
+// iteration: character lengths per context component (system prompt, memory
+// appendices, tool definitions, messages by role) alongside the iteration's input
+// token counts.
+func (r *ObjectiveService) GetDiagnostics(ctx context.Context, workspaceID string, objectiveID string, opts ...option.RequestOption) (res *ObjectiveGetDiagnosticsResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if objectiveID == "" {
+		err = errors.New("missing required objectiveId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/diagnostics", workspaceID, objectiveID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
 // Streams events for an objective in real-time using server-sent events (SSE)
 func (r *ObjectiveService) StreamEventsStreaming(ctx context.Context, workspaceID string, objectiveID string, opts ...option.RequestOption) (stream *ssestream.Stream[ObjectiveEvent]) {
 	var (
@@ -317,6 +336,57 @@ func (r *CallableTool) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r callableToolJSON) RawJSON() string {
+	return r.raw
+}
+
+// ContextLengths is the measured character length of each distinct component of an
+// iteration's assembled context window. Values are raw character lengths of the
+// component as assembled into the request — token estimates are derived by the
+// client against input_tokens (component share = component length / sum of all
+// lengths).
+//
+// New components are added as new fields — wire-compatible; absent components read
+// as 0.
+type ContextLengths struct {
+	// Chat history messages with the assistant role.
+	AssistantMessages int64 `json:"assistantMessages" api:"required"`
+	// The discoverable/available-tools appendix attached to the system prompt.
+	AvailableTools int64 `json:"availableTools" api:"required"`
+	// The episodic memory appendix attached to the system prompt.
+	EpisodicMemory int64 `json:"episodicMemory" api:"required"`
+	// The skills memory appendix attached to the system prompt.
+	SkillsMemory int64 `json:"skillsMemory" api:"required"`
+	// The objective's base system prompt (rendered variation template).
+	SystemPrompt int64 `json:"systemPrompt" api:"required"`
+	// Serialized tool definitions sent with the completion request (names,
+	// descriptions, and JSON-schema parameters).
+	ToolDefinitions int64 `json:"toolDefinitions" api:"required"`
+	// Tool results present in the chat history.
+	ToolResults int64 `json:"toolResults" api:"required"`
+	// Chat history messages with the user role.
+	UserMessages int64              `json:"userMessages" api:"required"`
+	JSON         contextLengthsJSON `json:"-"`
+}
+
+// contextLengthsJSON contains the JSON metadata for the struct [ContextLengths]
+type contextLengthsJSON struct {
+	AssistantMessages apijson.Field
+	AvailableTools    apijson.Field
+	EpisodicMemory    apijson.Field
+	SkillsMemory      apijson.Field
+	SystemPrompt      apijson.Field
+	ToolDefinitions   apijson.Field
+	ToolResults       apijson.Field
+	UserMessages      apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ContextLengths) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r contextLengthsJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -693,6 +763,46 @@ func (r *ObjectiveContextWindowData) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveContextWindowDataJSON) RawJSON() string {
+	return r.raw
+}
+
+// ObjectiveDiagnostics is the context-usage breakdown measured for a single
+// iteration at request-assembly time. It reports how much of the context window
+// each component occupies so tool parameters, memory cascades, and prompts can be
+// tuned against real token usage.
+type ObjectiveDiagnostics struct {
+	// The portion of input_tokens served from the provider's prompt cache. Lets
+	// clients distinguish "big but cached" from "big and paid fresh every iteration".
+	CachedInputTokens int64 `json:"cachedInputTokens" api:"required"`
+	// ContextLengths is the measured character length of each distinct component of an
+	// iteration's assembled context window. Values are raw character lengths of the
+	// component as assembled into the request — token estimates are derived by the
+	// client against input_tokens (component share = component length / sum of all
+	// lengths).
+	//
+	// New components are added as new fields — wire-compatible; absent components read
+	// as 0.
+	ContextLengths ContextLengths `json:"contextLengths" api:"required"`
+	// Input tokens reported by the LLM provider for the iteration's completion.
+	InputTokens int64                    `json:"inputTokens" api:"required"`
+	JSON        objectiveDiagnosticsJSON `json:"-"`
+}
+
+// objectiveDiagnosticsJSON contains the JSON metadata for the struct
+// [ObjectiveDiagnostics]
+type objectiveDiagnosticsJSON struct {
+	CachedInputTokens apijson.Field
+	ContextLengths    apijson.Field
+	InputTokens       apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ObjectiveDiagnostics) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveDiagnosticsJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -1293,6 +1403,31 @@ func (r *ObjectiveCompactResponse) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r objectiveCompactResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ObjectiveGetDiagnosticsResponse struct {
+	// ObjectiveDiagnostics is the context-usage breakdown measured for a single
+	// iteration at request-assembly time. It reports how much of the context window
+	// each component occupies so tool parameters, memory cascades, and prompts can be
+	// tuned against real token usage.
+	Diagnostics ObjectiveDiagnostics                `json:"diagnostics" api:"required"`
+	JSON        objectiveGetDiagnosticsResponseJSON `json:"-"`
+}
+
+// objectiveGetDiagnosticsResponseJSON contains the JSON metadata for the struct
+// [ObjectiveGetDiagnosticsResponse]
+type objectiveGetDiagnosticsResponseJSON struct {
+	Diagnostics apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveGetDiagnosticsResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveGetDiagnosticsResponseJSON) RawJSON() string {
 	return r.raw
 }
 
