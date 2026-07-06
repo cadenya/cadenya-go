@@ -194,6 +194,37 @@ func (r *ToolSetToolService) Restore(ctx context.Context, workspaceID string, to
 	return res, err
 }
 
+// Marks the tool as bare: it has no execution adapter of its own and relies on the
+// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
+// tool is bare from the tool data alone, without cross-referencing the tool set.
+type ConfigBare struct {
+	JSON configBareJSON `json:"-"`
+}
+
+// configBareJSON contains the JSON metadata for the struct [ConfigBare]
+type configBareJSON struct {
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ConfigBare) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r configBareJSON) RawJSON() string {
+	return r.raw
+}
+
+// Marks the tool as bare: it has no execution adapter of its own and relies on the
+// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
+// tool is bare from the tool data alone, without cross-referencing the tool set.
+type ConfigBareParam struct {
+}
+
+func (r ConfigBareParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type ConfigHTTP struct {
 	RequestMethod          ConfigHTTPRequestMethod `json:"requestMethod" api:"required"`
 	Headers                map[string]string       `json:"headers"`
@@ -531,6 +562,10 @@ func (r ToolSpecParam) MarshalJSON() (data []byte, err error) {
 // the tool is called. For example, if the tool is an HTTP tool, the adapter will
 // be Http. If the tool is an inline tool, the adapter will be Inline.
 type ToolSpecConfig struct {
+	// Marks the tool as bare: it has no execution adapter of its own and relies on the
+	// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
+	// tool is bare from the tool data alone, without cross-referencing the tool set.
+	Bare    ConfigBare         `json:"bare"`
 	HTTP    ConfigHTTP         `json:"http"`
 	Mcp     ConfigMcp          `json:"mcp"`
 	OpenAPI ConfigOpenAPI      `json:"openapi"`
@@ -539,6 +574,7 @@ type ToolSpecConfig struct {
 
 // toolSpecConfigJSON contains the JSON metadata for the struct [ToolSpecConfig]
 type toolSpecConfigJSON struct {
+	Bare        apijson.Field
 	HTTP        apijson.Field
 	Mcp         apijson.Field
 	OpenAPI     apijson.Field
@@ -558,6 +594,10 @@ func (r toolSpecConfigJSON) RawJSON() string {
 // the tool is called. For example, if the tool is an HTTP tool, the adapter will
 // be Http. If the tool is an inline tool, the adapter will be Inline.
 type ToolSpecConfigParam struct {
+	// Marks the tool as bare: it has no execution adapter of its own and relies on the
+	// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
+	// tool is bare from the tool data alone, without cross-referencing the tool set.
+	Bare    param.Field[ConfigBareParam]    `json:"bare"`
 	HTTP    param.Field[ConfigHTTPParam]    `json:"http"`
 	Mcp     param.Field[ConfigMcpParam]     `json:"mcp"`
 	OpenAPI param.Field[ConfigOpenAPIParam] `json:"openapi"`
