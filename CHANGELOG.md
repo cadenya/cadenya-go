@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.47.0 (2026-07-06)
+
+Full Changelog: [v0.46.0...v0.47.0](https://github.com/cadenya/cadenya-go/compare/v0.46.0...v0.47.0)
+
+### Features
+
+* Bare toolset proto contract: Bare adapter, SetToolCallContent, WAITING_FOR_CONTENT (ENG-385) ([75402ae](https://github.com/cadenya/cadenya-go/commit/75402ae155fb9e57574539ceb7e324026fe9f1da))
+
 ## 0.46.0 (2026-07-05)
 
 Full Changelog: [v0.45.0...v0.46.0](https://github.com/cadenya/cadenya-go/compare/v0.45.0...v0.46.0)
