@@ -59,10 +59,11 @@ func TestObjectiveToolCallListWithOptionalParams(t *testing.T) {
 		"workspaceId",
 		"objectiveId",
 		cadenya.ObjectiveToolCallListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			Status:      cadenya.F(cadenya.ObjectiveToolCallListParamsStatusToolCallStatusUnspecified),
+			Cursor:          cadenya.F("cursor"),
+			ExecutionStatus: cadenya.F(cadenya.ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified),
+			IncludeInfo:     cadenya.F(true),
+			Limit:           cadenya.F(int64(0)),
+			Status:          cadenya.F(cadenya.ObjectiveToolCallListParamsStatusToolCallStatusUnspecified),
 		},
 	)
 	if err != nil {
@@ -123,6 +124,49 @@ func TestObjectiveToolCallDenyWithOptionalParams(t *testing.T) {
 		"toolCallId",
 		cadenya.ObjectiveToolCallDenyParams{
 			Memo: cadenya.F("memo"),
+		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestObjectiveToolCallSetContent(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Objectives.ToolCalls.SetContent(
+		context.TODO(),
+		"workspaceId",
+		"objectiveId",
+		"toolCallId",
+		cadenya.ObjectiveToolCallSetContentParams{
+			Content: cadenya.F([]cadenya.SetToolCallContentRequestContentBlockParam{{
+				Audio: cadenya.F(cadenya.SetToolCallContentRequestAudioBlockParam{
+					Data:     cadenya.F("data"),
+					MimeType: cadenya.F("mimeType"),
+				}),
+				Image: cadenya.F(cadenya.SetToolCallContentRequestImageBlockParam{
+					Data:     cadenya.F("data"),
+					MimeType: cadenya.F("mimeType"),
+				}),
+				Text: cadenya.F(cadenya.SetToolCallContentRequestTextBlockParam{
+					Text: cadenya.F("text"),
+				}),
+			}}),
 		},
 	)
 	if err != nil {

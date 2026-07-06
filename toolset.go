@@ -543,6 +543,12 @@ func (r ToolSetState) IsKnown() bool {
 }
 
 type ToolSetAdapter struct {
+	// Bare tool sets define tools without an execution adapter. A bare tool call
+	// doesn't fire anything: the objective's workflow pauses and waits for an external
+	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+	// reverse harness that polls for pending tool calls, executes locally, and reports
+	// results back via SetToolCallContent).
+	Bare    ToolSetAdapterBare    `json:"bare"`
 	HTTP    ToolSetAdapterHTTP    `json:"http"`
 	Mcp     ToolSetAdapterMcp     `json:"mcp"`
 	OpenAPI ToolSetAdapterOpenAPI `json:"openapi"`
@@ -551,6 +557,7 @@ type ToolSetAdapter struct {
 
 // toolSetAdapterJSON contains the JSON metadata for the struct [ToolSetAdapter]
 type toolSetAdapterJSON struct {
+	Bare        apijson.Field
 	HTTP        apijson.Field
 	Mcp         apijson.Field
 	OpenAPI     apijson.Field
@@ -567,12 +574,61 @@ func (r toolSetAdapterJSON) RawJSON() string {
 }
 
 type ToolSetAdapterParam struct {
+	// Bare tool sets define tools without an execution adapter. A bare tool call
+	// doesn't fire anything: the objective's workflow pauses and waits for an external
+	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+	// reverse harness that polls for pending tool calls, executes locally, and reports
+	// results back via SetToolCallContent).
+	Bare    param.Field[ToolSetAdapterBareParam]    `json:"bare"`
 	HTTP    param.Field[ToolSetAdapterHTTPParam]    `json:"http"`
 	Mcp     param.Field[ToolSetAdapterMcpParam]     `json:"mcp"`
 	OpenAPI param.Field[ToolSetAdapterOpenAPIParam] `json:"openapi"`
 }
 
 func (r ToolSetAdapterParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Bare tool sets define tools without an execution adapter. A bare tool call
+// doesn't fire anything: the objective's workflow pauses and waits for an external
+// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+// reverse harness that polls for pending tool calls, executes locally, and reports
+// results back via SetToolCallContent).
+type ToolSetAdapterBare struct {
+	// How long to wait for content to be set before the tool call errors. If unset,
+	// the call waits indefinitely.
+	ContentTimeout int64                  `json:"contentTimeout"`
+	JSON           toolSetAdapterBareJSON `json:"-"`
+}
+
+// toolSetAdapterBareJSON contains the JSON metadata for the struct
+// [ToolSetAdapterBare]
+type toolSetAdapterBareJSON struct {
+	ContentTimeout apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *ToolSetAdapterBare) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolSetAdapterBareJSON) RawJSON() string {
+	return r.raw
+}
+
+// Bare tool sets define tools without an execution adapter. A bare tool call
+// doesn't fire anything: the objective's workflow pauses and waits for an external
+// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+// reverse harness that polls for pending tool calls, executes locally, and reports
+// results back via SetToolCallContent).
+type ToolSetAdapterBareParam struct {
+	// How long to wait for content to be set before the tool call errors. If unset,
+	// the call waits indefinitely.
+	ContentTimeout param.Field[int64] `json:"contentTimeout"`
+}
+
+func (r ToolSetAdapterBareParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

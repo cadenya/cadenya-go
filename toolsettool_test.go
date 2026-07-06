@@ -41,6 +41,7 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 			}),
 			Spec: cadenya.F(cadenya.ToolSpecParam{
 				Config: cadenya.F(cadenya.ToolSpecConfigParam{
+					Bare: cadenya.F(cadenya.ConfigBareParam{}),
 					HTTP: cadenya.F(cadenya.ConfigHTTPParam{
 						RequestMethod: cadenya.F(cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified),
 						Headers: cadenya.F(map[string]string{
@@ -139,6 +140,7 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 			}),
 			Spec: cadenya.F(cadenya.ToolSpecParam{
 				Config: cadenya.F(cadenya.ToolSpecConfigParam{
+					Bare: cadenya.F(cadenya.ConfigBareParam{}),
 					HTTP: cadenya.F(cadenya.ConfigHTTPParam{
 						RequestMethod: cadenya.F(cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified),
 						Headers: cadenya.F(map[string]string{
