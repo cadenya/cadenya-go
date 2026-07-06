@@ -134,6 +134,28 @@ func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string,
 	return res, err
 }
 
+// For bare tool calls (tool sets with no execution adapter), sets the content an
+// external API consumer supplies for the call — used for human-in-the-loop tools
+// and reverse harnesses that execute tools locally and report results back.
+func (r *ObjectiveToolCallService) SetContent(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallSetContentParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if objectiveID == "" {
+		err = errors.New("missing required objectiveId parameter")
+		return nil, err
+	}
+	if toolCallID == "" {
+		err = errors.New("missing required toolCallId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:setContent", workspaceID, objectiveID, toolCallID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
 // ObjectiveToolCall is a record of a tool call made during an objective's
 // execution. Tool calls are mutable — their status changes as they are approved,
 // denied, or executed.
@@ -172,16 +194,17 @@ func (r objectiveToolCallJSON) RawJSON() string {
 type ObjectiveToolCallExecutionStatus string
 
 const (
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted   ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
-	ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored     ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified       ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending           ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning           ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted         ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored           ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
 )
 
 func (r ObjectiveToolCallExecutionStatus) IsKnown() bool {
 	switch r {
-	case ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored:
+	case ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallExecutionStatusToolCallExecutionStatusWaitingForContent:
 		return true
 	}
 	return false
@@ -470,16 +493,17 @@ func (r objectiveToolCallWithResultJSON) RawJSON() string {
 type ObjectiveToolCallWithResultExecutionStatus string
 
 const (
-	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
-	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
-	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
-	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted   ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
-	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored     ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified       ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending           ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning           ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted         ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored           ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
 )
 
 func (r ObjectiveToolCallWithResultExecutionStatus) IsKnown() bool {
 	switch r {
-	case ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored:
+	case ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusWaitingForContent:
 		return true
 	}
 	return false
@@ -549,9 +573,55 @@ func (r ResolvedSecretSource) IsKnown() bool {
 	return false
 }
 
+type SetToolCallContentRequestAudioBlockParam struct {
+	// Base64-encoded audio bytes.
+	Data param.Field[string] `json:"data" api:"required"`
+	// IANA media type of the audio, e.g. audio/wav.
+	MimeType param.Field[string] `json:"mimeType" api:"required"`
+}
+
+func (r SetToolCallContentRequestAudioBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// ContentBlock is a single block of tool call content supplied on input. Exactly
+// one of the variants is set.
+type SetToolCallContentRequestContentBlockParam struct {
+	Audio param.Field[SetToolCallContentRequestAudioBlockParam] `json:"audio"`
+	Image param.Field[SetToolCallContentRequestImageBlockParam] `json:"image"`
+	Text  param.Field[SetToolCallContentRequestTextBlockParam]  `json:"text"`
+}
+
+func (r SetToolCallContentRequestContentBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type SetToolCallContentRequestImageBlockParam struct {
+	// Base64-encoded image bytes.
+	Data param.Field[string] `json:"data" api:"required"`
+	// IANA media type of the image, e.g. image/png.
+	MimeType param.Field[string] `json:"mimeType" api:"required"`
+}
+
+func (r SetToolCallContentRequestImageBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type SetToolCallContentRequestTextBlockParam struct {
+	Text param.Field[string] `json:"text" api:"required"`
+}
+
+func (r SetToolCallContentRequestTextBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type ObjectiveToolCallListParams struct {
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
+	// Filter by tool call execution status. Useful for reverse-harness polling of bare
+	// tool calls waiting for externally supplied content
+	// (TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT).
+	ExecutionStatus param.Field[ObjectiveToolCallListParamsExecutionStatus] `query:"executionStatus"`
 	// When set to true you may use more of your alloted API rate-limit
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
 	// Maximum number of results to return
@@ -567,6 +637,28 @@ func (r ObjectiveToolCallListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+// Filter by tool call execution status. Useful for reverse-harness polling of bare
+// tool calls waiting for externally supplied content
+// (TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT).
+type ObjectiveToolCallListParamsExecutionStatus string
+
+const (
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified       ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED"
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusPending           ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_PENDING"
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusRunning           ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_RUNNING"
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusCompleted         ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusErrored           ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
+	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
+)
+
+func (r ObjectiveToolCallListParamsExecutionStatus) IsKnown() bool {
+	switch r {
+	case ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusWaitingForContent:
+		return true
+	}
+	return false
 }
 
 // Filter by tool call status
@@ -602,5 +694,16 @@ type ObjectiveToolCallDenyParams struct {
 }
 
 func (r ObjectiveToolCallDenyParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ObjectiveToolCallSetContentParams struct {
+	// The content to set on the tool call. Mirrors
+	// ObjectiveToolCallResult.ContentBlock but writable: media blocks carry raw data
+	// on input where the result-side carries a signed url on output.
+	Content param.Field[[]SetToolCallContentRequestContentBlockParam] `json:"content" api:"required"`
+}
+
+func (r ObjectiveToolCallSetContentParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
