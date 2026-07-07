@@ -600,11 +600,12 @@ const (
 	ObjectiveStateStateFailed      ObjectiveState = "STATE_FAILED"
 	ObjectiveStateStateCancelled   ObjectiveState = "STATE_CANCELLED"
 	ObjectiveStateStateFinalized   ObjectiveState = "STATE_FINALIZED"
+	ObjectiveStateStateTimedOut    ObjectiveState = "STATE_TIMED_OUT"
 )
 
 func (r ObjectiveState) IsKnown() bool {
 	switch r {
-	case ObjectiveStateStateUnspecified, ObjectiveStateStatePending, ObjectiveStateStateRunning, ObjectiveStateStateWaiting, ObjectiveStateStateFailed, ObjectiveStateStateCancelled, ObjectiveStateStateFinalized:
+	case ObjectiveStateStateUnspecified, ObjectiveStateStatePending, ObjectiveStateStateRunning, ObjectiveStateStateWaiting, ObjectiveStateStateFailed, ObjectiveStateStateCancelled, ObjectiveStateStateFinalized, ObjectiveStateStateTimedOut:
 		return true
 	}
 	return false
@@ -877,18 +878,25 @@ type ObjectiveEventData struct {
 	// just-in-time tool set failing to load, or a previously loaded tool being dropped
 	// because it was archived. Notices carry no structured payload; they exist to make
 	// the objective timeline self-explanatory.
-	Notice                ObjectiveEventDataNotice `json:"notice"`
-	SubAgentSpawned       SubAgentSpawned          `json:"subAgentSpawned"`
-	SubAgentUpdated       SubAgentUpdated          `json:"subAgentUpdated"`
-	ToolApprovalRequested ToolApprovalRequested    `json:"toolApprovalRequested"`
-	ToolApproved          ToolApproved             `json:"toolApproved"`
-	ToolCalled            ToolCalled               `json:"toolCalled"`
-	ToolDenied            ToolDenied               `json:"toolDenied"`
-	ToolError             ToolError                `json:"toolError"`
-	ToolResult            ToolResult               `json:"toolResult"`
-	Type                  string                   `json:"type"`
-	UserMessage           UserMessage              `json:"userMessage"`
-	JSON                  objectiveEventDataJSON   `json:"-"`
+	Notice          ObjectiveEventDataNotice `json:"notice"`
+	SubAgentSpawned SubAgentSpawned          `json:"subAgentSpawned"`
+	SubAgentUpdated SubAgentUpdated          `json:"subAgentUpdated"`
+	// ObjectiveTimedOut is the terminal event written when an objective is finalized
+	// by the inactivity sweep because it saw no activity (no user messages, no LLM
+	// calls) within its variation's inactivity timeout — or the system-wide 24 hour
+	// maximum when no timeout is configured. The objective produces no output. After
+	// this event, the objective is super-terminal: no further iterations, compaction,
+	// or continuation are permitted.
+	TimedOut              ObjectiveEventDataTimedOut `json:"timedOut"`
+	ToolApprovalRequested ToolApprovalRequested      `json:"toolApprovalRequested"`
+	ToolApproved          ToolApproved               `json:"toolApproved"`
+	ToolCalled            ToolCalled                 `json:"toolCalled"`
+	ToolDenied            ToolDenied                 `json:"toolDenied"`
+	ToolError             ToolError                  `json:"toolError"`
+	ToolResult            ToolResult                 `json:"toolResult"`
+	Type                  string                     `json:"type"`
+	UserMessage           UserMessage                `json:"userMessage"`
+	JSON                  objectiveEventDataJSON     `json:"-"`
 }
 
 // objectiveEventDataJSON contains the JSON metadata for the struct
@@ -903,6 +911,7 @@ type objectiveEventDataJSON struct {
 	Notice                 apijson.Field
 	SubAgentSpawned        apijson.Field
 	SubAgentUpdated        apijson.Field
+	TimedOut               apijson.Field
 	ToolApprovalRequested  apijson.Field
 	ToolApproved           apijson.Field
 	ToolCalled             apijson.Field
@@ -1025,6 +1034,35 @@ func (r ObjectiveEventDataNoticeLevel) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+// ObjectiveTimedOut is the terminal event written when an objective is finalized
+// by the inactivity sweep because it saw no activity (no user messages, no LLM
+// calls) within its variation's inactivity timeout — or the system-wide 24 hour
+// maximum when no timeout is configured. The objective produces no output. After
+// this event, the objective is super-terminal: no further iterations, compaction,
+// or continuation are permitted.
+type ObjectiveEventDataTimedOut struct {
+	// Human-readable note recorded at timeout time (e.g. "Timed out after 2h of
+	// inactivity").
+	Message string                         `json:"message"`
+	JSON    objectiveEventDataTimedOutJSON `json:"-"`
+}
+
+// objectiveEventDataTimedOutJSON contains the JSON metadata for the struct
+// [ObjectiveEventDataTimedOut]
+type objectiveEventDataTimedOutJSON struct {
+	Message     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ObjectiveEventDataTimedOut) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r objectiveEventDataTimedOutJSON) RawJSON() string {
+	return r.raw
 }
 
 type ObjectiveEventInfo struct {
@@ -1553,11 +1591,12 @@ const (
 	ObjectiveListParamsStateStateFailed      ObjectiveListParamsState = "STATE_FAILED"
 	ObjectiveListParamsStateStateCancelled   ObjectiveListParamsState = "STATE_CANCELLED"
 	ObjectiveListParamsStateStateFinalized   ObjectiveListParamsState = "STATE_FINALIZED"
+	ObjectiveListParamsStateStateTimedOut    ObjectiveListParamsState = "STATE_TIMED_OUT"
 )
 
 func (r ObjectiveListParamsState) IsKnown() bool {
 	switch r {
-	case ObjectiveListParamsStateStateUnspecified, ObjectiveListParamsStateStatePending, ObjectiveListParamsStateStateRunning, ObjectiveListParamsStateStateWaiting, ObjectiveListParamsStateStateFailed, ObjectiveListParamsStateStateCancelled, ObjectiveListParamsStateStateFinalized:
+	case ObjectiveListParamsStateStateUnspecified, ObjectiveListParamsStateStatePending, ObjectiveListParamsStateStateRunning, ObjectiveListParamsStateStateWaiting, ObjectiveListParamsStateStateFailed, ObjectiveListParamsStateStateCancelled, ObjectiveListParamsStateStateFinalized, ObjectiveListParamsStateStateTimedOut:
 		return true
 	}
 	return false
