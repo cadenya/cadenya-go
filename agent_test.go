@@ -70,8 +70,9 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 						TriggerThreshold: cadenya.F(0.000000),
 					}),
 					Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
-						MaxSubObjectives: cadenya.F(int64(0)),
-						MaxToolCalls:     cadenya.F(int64(0)),
+						InactivityTimeout: cadenya.F(int64(0)),
+						MaxSubObjectives:  cadenya.F(int64(0)),
+						MaxToolCalls:      cadenya.F(int64(0)),
 					}),
 					Description:              cadenya.F("description"),
 					FirstUserMessageTemplate: cadenya.F("firstUserMessageTemplate"),
