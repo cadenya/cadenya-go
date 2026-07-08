@@ -536,7 +536,6 @@ Response Types:
 Methods:
 
 - <code title="get /v1/workspaces">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceListParams">WorkspaceListParams</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#Workspace">Workspace</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
-- <code title="get /v1/workspaces/current">client.Workspaces.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#WorkspaceService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/github.com/cadenya/cadenya-go#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # WorkspaceAdmin
 
