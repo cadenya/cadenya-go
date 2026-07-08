@@ -31,6 +31,7 @@ func TestAPIKeyAccessListWithOptionalParams(t *testing.T) {
 		"id",
 		cadenya.APIKeyAccessListParams{
 			Cursor: cadenya.F("cursor"),
+			Labels: cadenya.F("labels"),
 			Limit:  cadenya.F(int64(0)),
 		},
 	)

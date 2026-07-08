@@ -204,6 +204,7 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 		cadenya.ToolSetToolListParams{
 			Cursor:           cadenya.F("cursor"),
 			IncludeInfo:      cadenya.F(true),
+			Labels:           cadenya.F("labels"),
 			Limit:            cadenya.F(int64(0)),
 			Names:            cadenya.F([]string{"string"}),
 			Prefix:           cadenya.F("prefix"),

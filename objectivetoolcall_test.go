@@ -62,6 +62,7 @@ func TestObjectiveToolCallListWithOptionalParams(t *testing.T) {
 			Cursor:          cadenya.F("cursor"),
 			ExecutionStatus: cadenya.F(cadenya.ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified),
 			IncludeInfo:     cadenya.F(true),
+			Labels:          cadenya.F("labels"),
 			Limit:           cadenya.F(int64(0)),
 			Status:          cadenya.F(cadenya.ObjectiveToolCallListParamsStatusToolCallStatusUnspecified),
 		},
