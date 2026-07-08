@@ -190,8 +190,11 @@ type WorkspaceAdminNewParamsMetadata struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels param.Field[map[string]string] `json:"labels"`
 }
 
@@ -222,8 +225,11 @@ type WorkspaceAdminUpdateParamsMetadata struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels param.Field[map[string]string] `json:"labels"`
 }
 
