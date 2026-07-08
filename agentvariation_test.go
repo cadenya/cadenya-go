@@ -50,7 +50,7 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 					TriggerThreshold: cadenya.F(0.000000),
 				}),
 				Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
-					InactivityTimeout: cadenya.F(int64(0)),
+					InactivityTimeout: cadenya.F("-160513s"),
 					MaxSubObjectives:  cadenya.F(int64(0)),
 					MaxToolCalls:      cadenya.F(int64(0)),
 				}),
@@ -144,7 +144,7 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 					TriggerThreshold: cadenya.F(0.000000),
 				}),
 				Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
-					InactivityTimeout: cadenya.F(int64(0)),
+					InactivityTimeout: cadenya.F("-160513s"),
 					MaxSubObjectives:  cadenya.F(int64(0)),
 					MaxToolCalls:      cadenya.F(int64(0)),
 				}),
