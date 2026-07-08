@@ -61,6 +61,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 			Cursor:          cadenya.F("cursor"),
 			IncludeInfo:     cadenya.F(true),
 			IsAssigned:      cadenya.F(true),
+			Labels:          cadenya.F("labels"),
 			Limit:           cadenya.F(int64(0)),
 			Prefix:          cadenya.F("prefix"),
 			Query:           cadenya.F("query"),

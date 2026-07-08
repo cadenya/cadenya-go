@@ -29,6 +29,7 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 	_, err := client.Workspaces.List(context.TODO(), cadenya.WorkspaceListParams{
 		Cursor:      cadenya.F("cursor"),
 		IncludeInfo: cadenya.F(true),
+		Labels:      cadenya.F("labels"),
 		Limit:       cadenya.F(int64(0)),
 		SortOrder:   cadenya.F("sortOrder"),
 	})

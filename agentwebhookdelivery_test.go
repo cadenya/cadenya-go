@@ -33,6 +33,7 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 		cadenya.AgentWebhookDeliveryListParams{
 			Cursor:      cadenya.F("cursor"),
 			EventType:   cadenya.F(cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
+			Labels:      cadenya.F("labels"),
 			Limit:       cadenya.F(int64(0)),
 			ObjectiveID: cadenya.F("objectiveId"),
 		},

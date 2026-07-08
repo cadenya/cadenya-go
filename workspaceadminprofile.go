@@ -69,6 +69,10 @@ func (r *WorkspaceAdminProfileService) ListAutoPaging(ctx context.Context, query
 type WorkspaceAdminProfileListParams struct {
 	// Pagination cursor from previous response
 	Cursor param.Field[string] `query:"cursor"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Free-form search over profile name and email. Case-insensitive substring match;

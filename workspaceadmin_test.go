@@ -125,6 +125,7 @@ func TestWorkspaceAdminListWithOptionalParams(t *testing.T) {
 	_, err := client.WorkspaceAdmin.List(context.TODO(), cadenya.WorkspaceAdminListParams{
 		Cursor:          cadenya.F("cursor"),
 		IncludeArchived: cadenya.F(true),
+		Labels:          cadenya.F("labels"),
 		Limit:           cadenya.F(int64(0)),
 	})
 	if err != nil {
