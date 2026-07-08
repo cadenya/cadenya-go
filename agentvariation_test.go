@@ -66,7 +66,6 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 					RerankThreshold: cadenya.F(0.000000),
 				}),
 				SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
-				Weight:               cadenya.F(int64(0)),
 			}),
 		},
 	)
@@ -160,7 +159,6 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 					RerankThreshold: cadenya.F(0.000000),
 				}),
 				SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
-				Weight:               cadenya.F(int64(0)),
 			}),
 			UpdateMask: cadenya.F("updateMask"),
 		},
