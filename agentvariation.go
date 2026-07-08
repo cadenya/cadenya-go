@@ -597,25 +597,25 @@ func (r AgentVariationSpecModelConfigParam) MarshalJSON() (data []byte, err erro
 // tool search. These are used in conjunction with the context-aware tool search
 // and can help select the best tools for the task.
 type AgentVariationSpecProgressiveDiscovery struct {
-	Hints    []string `json:"hints"`
-	MaxTools int64    `json:"maxTools"`
-	// Rerank Threshold is an optional value that instructs whether or not to run a
-	// search result through a embedding/reranker process which can improve performance
-	// and reduce context bloat when tools reach the configured threshold. If a tool
-	// match must exceed 0.8, for example, the tool very closely match the query the
-	// tool search performed.
-	RerankThreshold float64                                    `json:"rerankThreshold"`
-	JSON            agentVariationSpecProgressiveDiscoveryJSON `json:"-"`
+	// Free-text guidance appended to the discoverable-tools appendix in the system
+	// prompt. Hints steer the model's choice of tool names; they do not filter or rank
+	// anything, because tool_search matches names exactly rather than searching.
+	Hints []string `json:"hints"`
+	// The most tool names tool_search will load in a single call. Requesting more than
+	// this returns an error telling the model to retry in smaller batches -- it is a
+	// per-call batch limit, not a ceiling on how many tools an objective may end up
+	// with.
+	MaxTools int64                                      `json:"maxTools"`
+	JSON     agentVariationSpecProgressiveDiscoveryJSON `json:"-"`
 }
 
 // agentVariationSpecProgressiveDiscoveryJSON contains the JSON metadata for the
 // struct [AgentVariationSpecProgressiveDiscovery]
 type agentVariationSpecProgressiveDiscoveryJSON struct {
-	Hints           apijson.Field
-	MaxTools        apijson.Field
-	RerankThreshold apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
+	Hints       apijson.Field
+	MaxTools    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
 func (r *AgentVariationSpecProgressiveDiscovery) UnmarshalJSON(data []byte) (err error) {
@@ -632,14 +632,15 @@ func (r agentVariationSpecProgressiveDiscoveryJSON) RawJSON() string {
 // tool search. These are used in conjunction with the context-aware tool search
 // and can help select the best tools for the task.
 type AgentVariationSpecProgressiveDiscoveryParam struct {
-	Hints    param.Field[[]string] `json:"hints"`
-	MaxTools param.Field[int64]    `json:"maxTools"`
-	// Rerank Threshold is an optional value that instructs whether or not to run a
-	// search result through a embedding/reranker process which can improve performance
-	// and reduce context bloat when tools reach the configured threshold. If a tool
-	// match must exceed 0.8, for example, the tool very closely match the query the
-	// tool search performed.
-	RerankThreshold param.Field[float64] `json:"rerankThreshold"`
+	// Free-text guidance appended to the discoverable-tools appendix in the system
+	// prompt. Hints steer the model's choice of tool names; they do not filter or rank
+	// anything, because tool_search matches names exactly rather than searching.
+	Hints param.Field[[]string] `json:"hints"`
+	// The most tool names tool_search will load in a single call. Requesting more than
+	// this returns an error telling the model to retry in smaller batches -- it is a
+	// per-call batch limit, not a ceiling on how many tools an objective may end up
+	// with.
+	MaxTools param.Field[int64] `json:"maxTools"`
 }
 
 func (r AgentVariationSpecProgressiveDiscoveryParam) MarshalJSON() (data []byte, err error) {
