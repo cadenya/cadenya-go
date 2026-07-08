@@ -379,13 +379,8 @@ type AgentVariationSpec struct {
 	// Liquid template for the system prompt of objectives using this variation.
 	// Rendered with CreateObjectiveRequest.system_prompt_data into
 	// Objective.system_prompt.
-	SystemPromptTemplate string `json:"systemPromptTemplate"`
-	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
-	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
-	// means never auto-selected, but can still be chosen explicitly via variation_id
-	// on CreateObjectiveRequest.
-	Weight int64                  `json:"weight"`
-	JSON   agentVariationSpecJSON `json:"-"`
+	SystemPromptTemplate string                 `json:"systemPromptTemplate"`
+	JSON                 agentVariationSpecJSON `json:"-"`
 }
 
 // agentVariationSpecJSON contains the JSON metadata for the struct
@@ -398,7 +393,6 @@ type agentVariationSpecJSON struct {
 	ModelConfig              apijson.Field
 	ProgressiveDiscovery     apijson.Field
 	SystemPromptTemplate     apijson.Field
-	Weight                   apijson.Field
 	raw                      string
 	ExtraFields              map[string]apijson.Field
 }
@@ -439,11 +433,6 @@ type AgentVariationSpecParam struct {
 	// Rendered with CreateObjectiveRequest.system_prompt_data into
 	// Objective.system_prompt.
 	SystemPromptTemplate param.Field[string] `json:"systemPromptTemplate"`
-	// Weight for weighted random selection (>= 0). P(v) = v.weight / sum(all_weights).
-	// Only used when the agent's variation_selection_mode is WEIGHTED. A weight of 0
-	// means never auto-selected, but can still be chosen explicitly via variation_id
-	// on CreateObjectiveRequest.
-	Weight param.Field[int64] `json:"weight"`
 }
 
 func (r AgentVariationSpecParam) MarshalJSON() (data []byte, err error) {
