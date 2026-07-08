@@ -66,15 +66,6 @@ func (r *WorkspaceService) ListAutoPaging(ctx context.Context, query WorkspaceLi
 	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
 }
 
-// Retrieves the workspace associated with the current API token. Useful for
-// workspace-scoped tokens to identify which workspace they belong to.
-func (r *WorkspaceService) Get(ctx context.Context, opts ...option.RequestOption) (res *Workspace, err error) {
-	opts = slices.Concat(r.Options, opts)
-	path := "v1/workspaces/current"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return res, err
-}
-
 type Workspace struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
