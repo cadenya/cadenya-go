@@ -61,9 +61,8 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 					Temperature: cadenya.F(0.000000),
 				}),
 				ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
-					Hints:           cadenya.F([]string{"string"}),
-					MaxTools:        cadenya.F(int64(0)),
-					RerankThreshold: cadenya.F(0.000000),
+					Hints:    cadenya.F([]string{"string"}),
+					MaxTools: cadenya.F(int64(0)),
 				}),
 				SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
 			}),
@@ -154,9 +153,8 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 					Temperature: cadenya.F(0.000000),
 				}),
 				ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
-					Hints:           cadenya.F([]string{"string"}),
-					MaxTools:        cadenya.F(int64(0)),
-					RerankThreshold: cadenya.F(0.000000),
+					Hints:    cadenya.F([]string{"string"}),
+					MaxTools: cadenya.F(int64(0)),
 				}),
 				SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
 			}),
