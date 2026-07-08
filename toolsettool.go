@@ -508,8 +508,12 @@ type ToolSpec struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
 	// be Http. If the tool is an inline tool, the adapter will be Inline.
-	Config           ToolSpecConfig         `json:"config" api:"required"`
-	Description      string                 `json:"description" api:"required"`
+	Config      ToolSpecConfig `json:"config" api:"required"`
+	Description string         `json:"description" api:"required"`
+	// The tool's JSON Schema, as handed to the LLM. Required, but may be the empty
+	// object `{}` for a tool that takes no arguments. Requiring it rather than
+	// defaulting it means a misspelled field name (`inputSchema`, say) is a 400
+	// instead of a silently parameterless tool.
 	Parameters       map[string]interface{} `json:"parameters" api:"required"`
 	RequiresApproval bool                   `json:"requiresApproval" api:"required"`
 	// The name provided to the LLM, which may differ from the metadata.name on the
@@ -543,8 +547,12 @@ type ToolSpecParam struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
 	// be Http. If the tool is an inline tool, the adapter will be Inline.
-	Config           param.Field[ToolSpecConfigParam]    `json:"config" api:"required"`
-	Description      param.Field[string]                 `json:"description" api:"required"`
+	Config      param.Field[ToolSpecConfigParam] `json:"config" api:"required"`
+	Description param.Field[string]              `json:"description" api:"required"`
+	// The tool's JSON Schema, as handed to the LLM. Required, but may be the empty
+	// object `{}` for a tool that takes no arguments. Requiring it rather than
+	// defaulting it means a misspelled field name (`inputSchema`, say) is a 400
+	// instead of a silently parameterless tool.
 	Parameters       param.Field[map[string]interface{}] `json:"parameters" api:"required"`
 	RequiresApproval param.Field[bool]                   `json:"requiresApproval" api:"required"`
 	// The name provided to the LLM, which may differ from the metadata.name on the
