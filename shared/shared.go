@@ -23,8 +23,11 @@ type AccountResourceMetadata struct {
 	CreatedAt time.Time `json:"createdAt" format:"date-time"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels map[string]string           `json:"labels"`
 	JSON   accountResourceMetadataJSON `json:"-"`
 }
@@ -88,8 +91,11 @@ func (r bareMetadataJSON) RawJSON() string {
 type CreateOperationMetadataParam struct {
 	// External ID for the operation (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"priority": "high", "source": "api", "workflow": "onboarding"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"priority": "high", "source": "api",
+	// "workflow": "onboarding"}
 	Labels param.Field[map[string]string] `json:"labels"`
 }
 
@@ -106,8 +112,11 @@ type CreateResourceMetadataParam struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels param.Field[map[string]string] `json:"labels"`
 }
 
@@ -131,8 +140,11 @@ type OperationMetadata struct {
 	WorkspaceID string `json:"workspaceId" api:"required"`
 	// External ID for the operation (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"priority": "high", "source": "api", "workflow": "onboarding"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"priority": "high", "source": "api",
+	// "workflow": "onboarding"}
 	Labels map[string]string     `json:"labels"`
 	JSON   operationMetadataJSON `json:"-"`
 }
@@ -176,8 +188,11 @@ type ResourceMetadata struct {
 	WorkspaceID string `json:"workspaceId" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID string `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels map[string]string `json:"labels"`
 	// Timestamp when this resource was last updated
 	UpdatedAt time.Time            `json:"updatedAt" format:"date-time"`
@@ -217,8 +232,11 @@ type UpdateResourceMetadataParam struct {
 	Name param.Field[string] `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
 	ExternalID param.Field[string] `json:"externalId"`
-	// Arbitrary key-value pairs for categorization and filtering Examples:
-	// {"environment": "production", "team": "platform", "version": "v2"}
+	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
+	// characters with "-", "\_", or "." allowed between; keys follow the same shape
+	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
+	// of at most 253 characters. Examples: {"environment": "production", "team":
+	// "platform", "version": "v2"}
 	Labels param.Field[map[string]string] `json:"labels"`
 }
 
