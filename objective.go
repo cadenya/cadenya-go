@@ -1561,6 +1561,10 @@ type ObjectiveListParams struct {
 	Cursor param.Field[string] `query:"cursor"`
 	// When set to true you may use more of your alloted API rate-limit
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Optional filters
@@ -1638,6 +1642,10 @@ type ObjectiveListContextWindowsParams struct {
 	Cursor param.Field[string] `query:"cursor"`
 	// When set to true you may use more of your alloted API rate-limit
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 }
@@ -1656,6 +1664,10 @@ type ObjectiveListEventsParams struct {
 	Cursor param.Field[string] `query:"cursor"`
 	// When set to true you may use more of your alloted API rate-limit
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Optional string to fetch events since an ID

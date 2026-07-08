@@ -116,6 +116,7 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 			AgentScheduleID:   cadenya.F("agentScheduleId"),
 			Cursor:            cadenya.F("cursor"),
 			IncludeInfo:       cadenya.F(true),
+			Labels:            cadenya.F("labels"),
 			Limit:             cadenya.F(int64(0)),
 			ParentObjectiveID: cadenya.F("parentObjectiveId"),
 			ProfileID:         cadenya.F("profileId"),
@@ -251,6 +252,7 @@ func TestObjectiveListContextWindowsWithOptionalParams(t *testing.T) {
 		cadenya.ObjectiveListContextWindowsParams{
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
+			Labels:      cadenya.F("labels"),
 			Limit:       cadenya.F(int64(0)),
 		},
 	)
@@ -283,6 +285,7 @@ func TestObjectiveListEventsWithOptionalParams(t *testing.T) {
 		cadenya.ObjectiveListEventsParams{
 			Cursor:       cadenya.F("cursor"),
 			IncludeInfo:  cadenya.F(true),
+			Labels:       cadenya.F("labels"),
 			Limit:        cadenya.F(int64(0)),
 			SinceEventID: cadenya.F("sinceEventId"),
 			SortOrder:    cadenya.F("sortOrder"),

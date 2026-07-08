@@ -28,6 +28,7 @@ func TestWorkspaceAdminProfileListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.WorkspaceAdmin.Profiles.List(context.TODO(), cadenya.WorkspaceAdminProfileListParams{
 		Cursor: cadenya.F("cursor"),
+		Labels: cadenya.F("labels"),
 		Limit:  cadenya.F(int64(0)),
 		Query:  cadenya.F("query"),
 	})

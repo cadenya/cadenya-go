@@ -148,6 +148,7 @@ func TestMemoryLayerEntryListWithOptionalParams(t *testing.T) {
 		cadenya.MemoryLayerEntryListParams{
 			Cursor:      cadenya.F("cursor"),
 			IncludeInfo: cadenya.F(true),
+			Labels:      cadenya.F("labels"),
 			Limit:       cadenya.F(int64(0)),
 			Prefix:      cadenya.F("prefix"),
 			Query:       cadenya.F("query"),

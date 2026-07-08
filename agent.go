@@ -473,6 +473,10 @@ type AgentListParams struct {
 	// When true, the `info` field on each returned agent is populated. Requests with
 	// this flag count more against your rate limit.
 	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 	// Filter expression (query param: prefix)

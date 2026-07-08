@@ -237,6 +237,10 @@ type WorkspaceAdminListParams struct {
 	// When true, archived workspaces are included in the results. Defaults to false
 	// (active workspaces only).
 	IncludeArchived param.Field[bool] `query:"includeArchived"`
+	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
+	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
+	// semantics).
+	Labels param.Field[string] `query:"labels"`
 	// Maximum number of results to return
 	Limit param.Field[int64] `query:"limit"`
 }
