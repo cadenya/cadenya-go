@@ -503,10 +503,16 @@ func (r AgentVariationSpecCompactionConfigParam) MarshalJSON() (data []byte, err
 
 type AgentVariationSpecConstraints struct {
 	// How long an objective may sit with no activity (no user messages, no LLM calls)
-	// before it is finalized as timed out. Between 1 minute and 24 hours. When not
-	// set, objectives are still swept at the system-wide 24 hour maximum — every
-	// objective eventually reaches a terminal state.
-	InactivityTimeout int64 `json:"inactivityTimeout"`
+	// before it is finalized as timed out. Between 1 minute and 24 hours, expressed as
+	// a duration string in seconds (e.g. "7200s"). When not set, objectives are still
+	// swept at the system-wide 24 hour maximum — every objective eventually reaches a
+	// terminal state.
+	//
+	// Note: no gnostic integer hint here on purpose. The Envoy gRPC-JSON transcoder
+	// only accepts the canonical protobuf JSON form for Durations — a "<seconds>s"
+	// string — so the SDKs must type this as a string (like AgentScheduleSpec.every),
+	// not an integer.
+	InactivityTimeout string `json:"inactivityTimeout"`
 	// The maximum number of sub-objectives that can be created. 0 means no limit.
 	MaxSubObjectives int64 `json:"maxSubObjectives"`
 	// The maximum number of tool calls that can be made. 0 means no limit.
@@ -534,10 +540,16 @@ func (r agentVariationSpecConstraintsJSON) RawJSON() string {
 
 type AgentVariationSpecConstraintsParam struct {
 	// How long an objective may sit with no activity (no user messages, no LLM calls)
-	// before it is finalized as timed out. Between 1 minute and 24 hours. When not
-	// set, objectives are still swept at the system-wide 24 hour maximum — every
-	// objective eventually reaches a terminal state.
-	InactivityTimeout param.Field[int64] `json:"inactivityTimeout"`
+	// before it is finalized as timed out. Between 1 minute and 24 hours, expressed as
+	// a duration string in seconds (e.g. "7200s"). When not set, objectives are still
+	// swept at the system-wide 24 hour maximum — every objective eventually reaches a
+	// terminal state.
+	//
+	// Note: no gnostic integer hint here on purpose. The Envoy gRPC-JSON transcoder
+	// only accepts the canonical protobuf JSON form for Durations — a "<seconds>s"
+	// string — so the SDKs must type this as a string (like AgentScheduleSpec.every),
+	// not an integer.
+	InactivityTimeout param.Field[string] `json:"inactivityTimeout"`
 	// The maximum number of sub-objectives that can be created. 0 means no limit.
 	MaxSubObjectives param.Field[int64] `json:"maxSubObjectives"`
 	// The maximum number of tool calls that can be made. 0 means no limit.
