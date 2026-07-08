@@ -401,16 +401,17 @@ func (r AgentSpecParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// Page carries cursor-based pagination state. There is no total: the cursor walks
+// the result set without ever counting it, and a count would cost a second query
+// on every list.
 type Page struct {
 	NextCursor string   `json:"nextCursor"`
-	Total      int64    `json:"total"`
 	JSON       pageJSON `json:"-"`
 }
 
 // pageJSON contains the JSON metadata for the struct [Page]
 type pageJSON struct {
 	NextCursor  apijson.Field
-	Total       apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
