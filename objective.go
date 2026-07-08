@@ -348,22 +348,24 @@ func (r callableToolJSON) RawJSON() string {
 // New components are added as new fields — wire-compatible; absent components read
 // as 0.
 type ContextLengths struct {
-	// Chat history messages with the assistant role.
+	// Character length of the chat history messages with the assistant role.
 	AssistantMessages int64 `json:"assistantMessages" api:"required"`
-	// The discoverable/available-tools appendix attached to the system prompt.
+	// Character length of the discoverable/available-tools appendix attached to the
+	// system prompt.
 	AvailableTools int64 `json:"availableTools" api:"required"`
-	// The episodic memory appendix attached to the system prompt.
+	// Character length of the episodic memory appendix attached to the system prompt.
 	EpisodicMemory int64 `json:"episodicMemory" api:"required"`
-	// The skills memory appendix attached to the system prompt.
+	// Character length of the skills memory appendix attached to the system prompt.
 	SkillsMemory int64 `json:"skillsMemory" api:"required"`
-	// The objective's base system prompt (rendered variation template).
+	// Character length of the objective's base system prompt (rendered variation
+	// template). Not tokens -- see the message comment.
 	SystemPrompt int64 `json:"systemPrompt" api:"required"`
-	// Serialized tool definitions sent with the completion request (names,
-	// descriptions, and JSON-schema parameters).
+	// Character length of the serialized tool definitions sent with the completion
+	// request (names, descriptions, and JSON-schema parameters).
 	ToolDefinitions int64 `json:"toolDefinitions" api:"required"`
-	// Tool results present in the chat history.
+	// Character length of the tool results present in the chat history.
 	ToolResults int64 `json:"toolResults" api:"required"`
-	// Chat history messages with the user role.
+	// Character length of the chat history messages with the user role.
 	UserMessages int64              `json:"userMessages" api:"required"`
 	JSON         contextLengthsJSON `json:"-"`
 }
