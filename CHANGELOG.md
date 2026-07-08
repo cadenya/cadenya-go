@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.58.0 (2026-07-08)
+
+Full Changelog: [v0.57.0...v0.58.0](https://github.com/cadenya/cadenya-go/compare/v0.57.0...v0.58.0)
+
+### Features
+
+* Remove the GetCurrentWorkspace RPC and /v1/workspaces/current (ENG-436) ([12e64c3](https://github.com/cadenya/cadenya-go/commit/12e64c309f01b793276e6da570ede865294f7bf5))
+
 ## 0.57.0 (2026-07-08)
 
 Full Changelog: [v0.56.0...v0.57.0](https://github.com/cadenya/cadenya-go/compare/v0.56.0...v0.57.0)
