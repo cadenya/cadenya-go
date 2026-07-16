@@ -203,8 +203,8 @@ type APIKeySpec struct {
 	// "x:read" when "x:manage" is present. The secrets and account resources support
 	// only manage. "\*" is an explicit full-access grant.
 	//
-	// An empty list grants full access (grandfathered legacy behavior); new keys
-	// should be created with explicit scopes.
+	// Scopes are deny-by-default: a key with an empty list can call only scope-free
+	// endpoints. Full access is always an explicit "\*" grant.
 	Permissions []string `json:"permissions"`
 	// True when this key is managed by the system (e.g. the auto-provisioned global
 	// account key). System keys cannot be deleted but can be rotated.
@@ -242,8 +242,8 @@ type APIKeySpecParam struct {
 	// "x:read" when "x:manage" is present. The secrets and account resources support
 	// only manage. "\*" is an explicit full-access grant.
 	//
-	// An empty list grants full access (grandfathered legacy behavior); new keys
-	// should be created with explicit scopes.
+	// Scopes are deny-by-default: a key with an empty list can call only scope-free
+	// endpoints. Full access is always an explicit "\*" grant.
 	Permissions param.Field[[]string] `json:"permissions"`
 }
 
