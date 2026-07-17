@@ -198,10 +198,10 @@ type APIKeySpec struct {
 	// Scopes granted to this key. Each entry is a colon-separated resource:verb string
 	// (e.g. "objectives:manage").
 	//
-	// Resources: agents, objectives, tools, memory, secrets, account. Verbs: read and
-	// manage, where manage implies read — a stored scope set is normalized to drop
-	// "x:read" when "x:manage" is present. The secrets and account resources support
-	// only manage. "\*" is an explicit full-access grant.
+	// Resources: agents, objectives, tools, memory, api_keys, secrets, account. Verbs:
+	// read and manage, where manage implies read — a stored scope set is normalized to
+	// drop "x:read" when "x:manage" is present. The secrets and account resources
+	// support only manage. "\*" is an explicit full-access grant.
 	//
 	// Scopes are deny-by-default: a key with an empty list can call only scope-free
 	// endpoints. Full access is always an explicit "\*" grant.
@@ -237,10 +237,10 @@ type APIKeySpecParam struct {
 	// Scopes granted to this key. Each entry is a colon-separated resource:verb string
 	// (e.g. "objectives:manage").
 	//
-	// Resources: agents, objectives, tools, memory, secrets, account. Verbs: read and
-	// manage, where manage implies read — a stored scope set is normalized to drop
-	// "x:read" when "x:manage" is present. The secrets and account resources support
-	// only manage. "\*" is an explicit full-access grant.
+	// Resources: agents, objectives, tools, memory, api_keys, secrets, account. Verbs:
+	// read and manage, where manage implies read — a stored scope set is normalized to
+	// drop "x:read" when "x:manage" is present. The secrets and account resources
+	// support only manage. "\*" is an explicit full-access grant.
 	//
 	// Scopes are deny-by-default: a key with an empty list can call only scope-free
 	// endpoints. Full access is always an explicit "\*" grant.
