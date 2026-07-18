@@ -19,8 +19,9 @@ import (
 	"github.com/cadenya/cadenya-go/shared"
 )
 
-// Issue, rotate, and revoke API keys for the account, and grant or revoke each
-// key's access to individual workspaces.
+// Issue, rotate, disable, and revoke a workspace's API keys. Every key belongs to
+// exactly one workspace; the system-managed global account key is managed via
+// GlobalAPIKeyService instead.
 //
 // APIKeyService contains methods and other services that help with interacting
 // with the cadenya API.
@@ -30,9 +31,6 @@ import (
 // the [NewAPIKeyService] method instead.
 type APIKeyService struct {
 	Options []option.RequestOption
-	// Issue, rotate, and revoke API keys for the account, and grant or revoke each
-	// key's access to individual workspaces.
-	Access *APIKeyAccessService
 }
 
 // NewAPIKeyService generates a new service that applies the given options to each
@@ -41,49 +39,63 @@ type APIKeyService struct {
 func NewAPIKeyService(opts ...option.RequestOption) (r *APIKeyService) {
 	r = &APIKeyService{}
 	r.Options = opts
-	r.Access = NewAPIKeyAccessService(opts...)
 	return
 }
 
-// Creates a new API key on the account. Optionally grants the key access to one or
-// more workspaces via initial_workspace_ids.
-func (r *APIKeyService) New(ctx context.Context, body APIKeyNewParams, opts ...option.RequestOption) (res *APIKey, err error) {
+// Creates a new API key in the workspace.
+func (r *APIKeyService) New(ctx context.Context, workspaceID string, body APIKeyNewParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/account/api_keys"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieves an API key by ID.
-func (r *APIKeyService) Get(ctx context.Context, id string, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/account/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates an API key.
-func (r *APIKeyService) Update(ctx context.Context, id string, body APIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
+func (r *APIKeyService) Update(ctx context.Context, workspaceID string, id string, body APIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/account/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
-// Lists all API keys on the account.
-func (r *APIKeyService) List(ctx context.Context, query APIKeyListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[APIKey], err error) {
+// Lists the workspace's API keys.
+func (r *APIKeyService) List(ctx context.Context, workspaceID string, query APIKeyListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[APIKey], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/account/api_keys"
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -96,54 +108,101 @@ func (r *APIKeyService) List(ctx context.Context, query APIKeyListParams, opts .
 	return res, nil
 }
 
-// Lists all API keys on the account.
-func (r *APIKeyService) ListAutoPaging(ctx context.Context, query APIKeyListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[APIKey] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, query, opts...))
+// Lists the workspace's API keys.
+func (r *APIKeyService) ListAutoPaging(ctx context.Context, workspaceID string, query APIKeyListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[APIKey] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Deletes an API key.
-func (r *APIKeyService) Delete(ctx context.Context, id string, opts ...option.RequestOption) (err error) {
+func (r *APIKeyService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/account/api_keys/%s", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
-// Rotates an API key and returns a new token. All previous tokens for this key are
-// invalidated.
-func (r *APIKeyService) Rotate(ctx context.Context, id string, body APIKeyRotateParams, opts ...option.RequestOption) (res *APIKey, err error) {
+// Disables an API key. While disabled, presenting the key's token fails
+// authentication on every endpoint; the key is retained. Idempotent.
+func (r *APIKeyService) Disable(ctx context.Context, workspaceID string, id string, body APIKeyDisableParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
 	if id == "" {
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/account/api_keys/%s:rotate", id)
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s:disable", workspaceID, id)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
-// An API key for the account. Use workspace-association RPCs to grant the key
-// access to specific workspaces; a key with zero workspaces is valid but cannot
-// access workspace-scoped resources.
+// Re-enables a disabled API key so its token authenticates again. Idempotent.
+func (r *APIKeyService) Enable(ctx context.Context, workspaceID string, id string, body APIKeyEnableParams, opts ...option.RequestOption) (res *APIKey, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s:enable", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Rotates an API key and returns a new token. All previous tokens for this key are
+// invalidated.
+func (r *APIKeyService) Rotate(ctx context.Context, workspaceID string, id string, body APIKeyRotateParams, opts ...option.RequestOption) (res *APIKey, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if workspaceID == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if id == "" {
+		err = errors.New("missing required id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/api_keys/%s:rotate", workspaceID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// An API key. Every key belongs to exactly one workspace and is managed via the
+// workspace-scoped API key routes. The only exception is the system-managed global
+// account key, which spans all workspaces and is managed via the account
+// global_api_key routes.
 type APIKey struct {
 	// AccountResourceMetadata is used to represent a resource that is associated to an
 	// account but not to a workspace.
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
 	// Configuration for an API key.
 	Spec APIKeySpec `json:"spec" api:"required"`
-	Info APIKeyInfo `json:"info"`
-	JSON apiKeyJSON `json:"-"`
+	// The current lifecycle state of the API key. Output only. Keys are created
+	// STATE_ENABLED; use the :disable and :enable actions to transition between
+	// states.
+	State APIKeyState `json:"state" api:"required"`
+	Info  APIKeyInfo  `json:"info"`
+	JSON  apiKeyJSON  `json:"-"`
 }
 
 // apiKeyJSON contains the JSON metadata for the struct [APIKey]
 type apiKeyJSON struct {
 	Metadata    apijson.Field
 	Spec        apijson.Field
+	State       apijson.Field
 	Info        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -157,27 +216,38 @@ func (r apiKeyJSON) RawJSON() string {
 	return r.raw
 }
 
+// The current lifecycle state of the API key. Output only. Keys are created
+// STATE_ENABLED; use the :disable and :enable actions to transition between
+// states.
+type APIKeyState string
+
+const (
+	APIKeyStateStateUnspecified APIKeyState = "STATE_UNSPECIFIED"
+	APIKeyStateStateEnabled     APIKeyState = "STATE_ENABLED"
+	APIKeyStateStateDisabled    APIKeyState = "STATE_DISABLED"
+)
+
+func (r APIKeyState) IsKnown() bool {
+	switch r {
+	case APIKeyStateStateUnspecified, APIKeyStateStateEnabled, APIKeyStateStateDisabled:
+		return true
+	}
+	return false
+}
+
 type APIKeyInfo struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	CreatedBy Profile `json:"createdBy"`
-	// Up to a small number of workspaces this key has access to, intended for display
-	// ("Workspace 1, Workspace 2, and 4 more"). Use ListAPIKeyWorkspaces for the full
-	// paginated list.
-	WorkspacesPreview []shared.BareMetadata `json:"workspacesPreview"`
-	// Total number of workspaces this key has access to.
-	WorkspacesTotal int64          `json:"workspacesTotal"`
-	JSON            apiKeyInfoJSON `json:"-"`
+	CreatedBy Profile        `json:"createdBy"`
+	JSON      apiKeyInfoJSON `json:"-"`
 }
 
 // apiKeyInfoJSON contains the JSON metadata for the struct [APIKeyInfo]
 type apiKeyInfoJSON struct {
-	CreatedBy         apijson.Field
-	WorkspacesPreview apijson.Field
-	WorkspacesTotal   apijson.Field
-	raw               string
-	ExtraFields       map[string]apijson.Field
+	CreatedBy   apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
 }
 
 func (r *APIKeyInfo) UnmarshalJSON(data []byte) (err error) {
@@ -206,7 +276,7 @@ type APIKeySpec struct {
 	// Scopes are deny-by-default: a key with an empty list can call only scope-free
 	// endpoints. Full access is always an explicit "\*" grant.
 	Permissions []string `json:"permissions"`
-	// True when this key is managed by the system (e.g. the auto-provisioned global
+	// True when this key is managed by the system (i.e. the auto-provisioned global
 	// account key). System keys cannot be deleted but can be rotated.
 	System bool           `json:"system"`
 	JSON   apiKeySpecJSON `json:"-"`
@@ -258,9 +328,6 @@ type APIKeyNewParams struct {
 	Metadata param.Field[APIKeyNewParamsMetadata] `json:"metadata" api:"required"`
 	// Configuration for an API key.
 	Spec param.Field[APIKeySpecParam] `json:"spec" api:"required"`
-	// Workspaces this API key will have access to on creation. Optional — a key can be
-	// created with no workspace access and granted later via AddAPIKeyWorkspace.
-	InitialWorkspaceIDs param.Field[[]string] `json:"initialWorkspaceIds"`
 }
 
 func (r APIKeyNewParams) MarshalJSON() (data []byte, err error) {
@@ -350,6 +417,20 @@ func (r APIKeyListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type APIKeyDisableParams struct {
+}
+
+func (r APIKeyDisableParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type APIKeyEnableParams struct {
+}
+
+func (r APIKeyEnableParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
 type APIKeyRotateParams struct {
