@@ -13,7 +13,7 @@ import (
 	"github.com/cadenya/cadenya-go/option"
 )
 
-func TestAPIKeyAccessListWithOptionalParams(t *testing.T) {
+func TestGlobalAPIKeyGet(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,15 +26,7 @@ func TestAPIKeyAccessListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.Access.List(
-		context.TODO(),
-		"id",
-		cadenya.APIKeyAccessListParams{
-			Cursor: cadenya.F("cursor"),
-			Labels: cadenya.F("labels"),
-			Limit:  cadenya.F(int64(0)),
-		},
-	)
+	_, err := client.GlobalAPIKey.Get(context.TODO())
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -44,7 +36,7 @@ func TestAPIKeyAccessListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAPIKeyAccessAddWithOptionalParams(t *testing.T) {
+func TestGlobalAPIKeyDisable(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -57,13 +49,7 @@ func TestAPIKeyAccessAddWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.Access.Add(
-		context.TODO(),
-		"id",
-		cadenya.APIKeyAccessAddParams{
-			WorkspaceID: cadenya.F("workspaceId"),
-		},
-	)
+	_, err := client.GlobalAPIKey.Disable(context.TODO())
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -73,7 +59,7 @@ func TestAPIKeyAccessAddWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestAPIKeyAccessRemove(t *testing.T) {
+func TestGlobalAPIKeyEnable(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -86,11 +72,30 @@ func TestAPIKeyAccessRemove(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.APIKeys.Access.Remove(
-		context.TODO(),
-		"id",
-		"workspaceId",
+	_, err := client.GlobalAPIKey.Enable(context.TODO())
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestGlobalAPIKeyRotate(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
 	)
+	_, err := client.GlobalAPIKey.Rotate(context.TODO())
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

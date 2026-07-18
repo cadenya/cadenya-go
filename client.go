@@ -48,9 +48,14 @@ type Client struct {
 	// When a tool set is managed, only API key actors can modify its tools; human
 	// (profile) actors cannot.
 	ToolSets *ToolSetService
-	// Issue, rotate, and revoke API keys for the account, and grant or revoke each
-	// key's access to individual workspaces.
-	APIKeys          *APIKeyService
+	// Issue, rotate, disable, and revoke a workspace's API keys. Every key belongs to
+	// exactly one workspace; the system-managed global account key is managed via
+	// GlobalAPIKeyService instead.
+	APIKeys *APIKeyService
+	// Manage the account's system-provisioned global API key. The global key is the
+	// only key that spans every workspace; it is created by the system and cannot be
+	// deleted, so the surface is retrieve, rotate, and the disable/enable kill switch.
+	GlobalAPIKey     *GlobalAPIKeyService
 	WorkspaceSecrets *WorkspaceSecretService
 	// Manage workspaces within an account. Workspaces provide organizational grouping
 	// and isolation for resources such as agents, tools, and API keys.
@@ -114,6 +119,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r.Search = NewSearchService(opts...)
 	r.ToolSets = NewToolSetService(opts...)
 	r.APIKeys = NewAPIKeyService(opts...)
+	r.GlobalAPIKey = NewGlobalAPIKeyService(opts...)
 	r.WorkspaceSecrets = NewWorkspaceSecretService(opts...)
 	r.Workspaces = NewWorkspaceService(opts...)
 	r.WorkspaceAdmin = NewWorkspaceAdminService(opts...)
