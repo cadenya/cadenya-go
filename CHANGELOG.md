@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.65.0 (2026-07-18)
+
+Full Changelog: [v0.64.0...v0.65.0](https://github.com/cadenya/cadenya-go/compare/v0.64.0...v0.65.0)
+
+### Features
+
+* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([130b7c9](https://github.com/cadenya/cadenya-go/commit/130b7c960bfa2b5a5f6074f3702b7b380f6487e4))
+
 ## 0.64.0 (2026-07-18)
 
 Full Changelog: [v0.63.0...v0.64.0](https://github.com/cadenya/cadenya-go/compare/v0.63.0...v0.64.0)
