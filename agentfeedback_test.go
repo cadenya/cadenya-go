@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAgentFeedbackListWithOptionalParams(t *testing.T) {
@@ -29,18 +28,18 @@ func TestAgentFeedbackListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Feedback.List(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentFeedbackListParams{
-			AgentVariationID: cadenya.F("agentVariationId"),
-			CreatedAfter:     cadenya.F(time.Now()),
-			CreatedBefore:    cadenya.F(time.Now()),
-			Cursor:           cadenya.F("cursor"),
-			IncludeInfo:      cadenya.F(true),
-			Labels:           cadenya.F("labels"),
-			Limit:            cadenya.F(int64(0)),
-			Query:            cadenya.F("query"),
-			Sentiment:        cadenya.F(cadenya.AgentFeedbackListParamsSentimentFeedbackSentimentUnspecified),
+			WorkspaceID:      cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			AgentVariationID: cadenya.String("agentVariationId"),
+			CreatedAfter:     cadenya.Time(time.Now()),
+			CreatedBefore:    cadenya.Time(time.Now()),
+			Cursor:           cadenya.String("cursor"),
+			IncludeInfo:      cadenya.Bool(true),
+			Labels:           cadenya.String("labels"),
+			Limit:            cadenya.Int(0),
+			Query:            cadenya.String("query"),
+			Sentiment:        cadenya.AgentFeedbackListParamsSentimentFeedbackSentimentUnspecified,
 		},
 	)
 	if err != nil {

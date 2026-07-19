@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
@@ -29,19 +28,19 @@ func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.New(
 		context.TODO(),
-		"workspaceId",
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveFeedbackNewParams{
-			Data: cadenya.F(cadenya.ObjectiveFeedbackDataParam{
-				Comment: cadenya.F("comment"),
-				Score:   cadenya.F(0.000000),
-			}),
-			Metadata: cadenya.F(shared.CreateOperationMetadataParam{
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Data: cadenya.ObjectiveFeedbackDataParam{
+				Comment: cadenya.String("comment"),
+				Score:   cadenya.Float(0),
+			},
+			Metadata: shared.CreateOperationMetadataParam{
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
+				},
+			},
 		},
 	)
 	if err != nil {
@@ -68,12 +67,12 @@ func TestObjectiveFeedbackListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.List(
 		context.TODO(),
-		"workspaceId",
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveFeedbackListParams{
-			Cursor: cadenya.F("cursor"),
-			Labels: cadenya.F("labels"),
-			Limit:  cadenya.F(int64(0)),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			Labels:      cadenya.String("labels"),
+			Limit:       cadenya.Int(0),
 		},
 	)
 	if err != nil {

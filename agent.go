@@ -4,19 +4,20 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // Manage AI agents within a workspace. Agents define AI behavior and tool access.
@@ -28,25 +29,25 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAgentService] method instead.
 type AgentService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
-	Feedback *AgentFeedbackService
+	Feedback AgentFeedbackService
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
-	WebhookDeliveries *AgentWebhookDeliveryService
+	WebhookDeliveries AgentWebhookDeliveryService
 	// Manage variations of an agent and their tool, sub-agent, and memory layer
 	// assignments.
-	Variations *AgentVariationService
+	Variations AgentVariationService
 	// Manage recurring schedules attached to agents. Schedules trigger objectives on a
 	// cadence defined by AgentScheduleSpec.Schedule.
-	Schedules *AgentScheduleService
+	Schedules AgentScheduleService
 }
 
 // NewAgentService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
-	r = &AgentService{}
-	r.Options = opts
+func NewAgentService(opts ...option.RequestOption) (r AgentService) {
+	r = AgentService{}
+	r.options = opts
 	r.Feedback = NewAgentFeedbackService(opts...)
 	r.WebhookDeliveries = NewAgentWebhookDeliveryService(opts...)
 	r.Variations = NewAgentVariationService(opts...)
@@ -55,21 +56,31 @@ func NewAgentService(opts ...option.RequestOption) (r *AgentService) {
 }
 
 // Creates a new agent in the workspace
-func (r *AgentService) New(ctx context.Context, workspaceID string, body AgentNewParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) New(ctx context.Context, params AgentNewParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents", workspaceID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/agents", url.PathEscape(params.WorkspaceID.Value))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Retrieves an agent by ID from the workspace
-func (r *AgentService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Get(ctx context.Context, id string, query AgentGetParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&query.WorkspaceID, precfg.WorkspaceID)
+	if query.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -77,15 +88,20 @@ func (r *AgentService) Get(ctx context.Context, workspaceID string, id string, o
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", url.PathEscape(query.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates an agent in the workspace
-func (r *AgentService) Update(ctx context.Context, workspaceID string, id string, body AgentUpdateParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Update(ctx context.Context, id string, params AgentUpdateParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -93,22 +109,27 @@ func (r *AgentService) Update(ctx context.Context, workspaceID string, id string
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(id))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
 	return res, err
 }
 
 // Lists all agents in the workspace
-func (r *AgentService) List(ctx context.Context, workspaceID string, query AgentListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Agent], err error) {
+func (r *AgentService) List(ctx context.Context, params AgentListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Agent], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents", workspaceID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/agents", url.PathEscape(params.WorkspaceID.Value))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,15 +142,20 @@ func (r *AgentService) List(ctx context.Context, workspaceID string, query Agent
 }
 
 // Lists all agents in the workspace
-func (r *AgentService) ListAutoPaging(ctx context.Context, workspaceID string, query AgentListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Agent] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *AgentService) ListAutoPaging(ctx context.Context, params AgentListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Agent] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, params, opts...))
 }
 
 // Deletes an agent from the workspace
-func (r *AgentService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.Options, opts)
+func (r *AgentService) Delete(ctx context.Context, id string, body AgentDeleteParams, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return err
 	}
@@ -137,16 +163,21 @@ func (r *AgentService) Delete(ctx context.Context, workspaceID string, id string
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
 
 // Transitions an agent to STATE_ARCHIVED. Archived agents are hidden from list
 // results and cannot be used for objectives; active schedules are paused.
-func (r *AgentService) Archive(ctx context.Context, workspaceID string, id string, body AgentArchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Archive(ctx context.Context, id string, body AgentArchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -154,16 +185,21 @@ func (r *AgentService) Archive(ctx context.Context, workspaceID string, id strin
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:archive", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:archive", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Transitions an agent to STATE_PUBLISHED, making it available for objectives. The
 // agent must have at least one variation.
-func (r *AgentService) Publish(ctx context.Context, workspaceID string, id string, body AgentPublishParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Publish(ctx context.Context, id string, body AgentPublishParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -171,16 +207,21 @@ func (r *AgentService) Publish(ctx context.Context, workspaceID string, id strin
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:publish", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:publish", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Transitions an archived agent back to STATE_DRAFT. Publish the agent again to
 // make it available for objectives.
-func (r *AgentService) Unarchive(ctx context.Context, workspaceID string, id string, body AgentUnarchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Unarchive(ctx context.Context, id string, body AgentUnarchiveParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -188,16 +229,21 @@ func (r *AgentService) Unarchive(ctx context.Context, workspaceID string, id str
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unarchive", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unarchive", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Transitions a published agent back to STATE_DRAFT. Active schedules for the
 // agent are paused until it is published again.
-func (r *AgentService) Unpublish(ctx context.Context, workspaceID string, id string, body AgentUnpublishParams, opts ...option.RequestOption) (res *Agent, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *AgentService) Unpublish(ctx context.Context, id string, body AgentUnpublishParams, opts ...option.RequestOption) (res *Agent, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -205,7 +251,7 @@ func (r *AgentService) Unpublish(ctx context.Context, workspaceID string, id str
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unpublish", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/agents/%s:unpublish", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -219,29 +265,27 @@ type Agent struct {
 	// The current lifecycle state of the agent. Output only. Agents are created in
 	// STATE_DRAFT; use the :publish, :unpublish, :archive, and :unarchive actions to
 	// transition between states.
+	//
+	// Any of "STATE_UNSPECIFIED", "STATE_DRAFT", "STATE_PUBLISHED", "STATE_ARCHIVED".
 	State AgentState `json:"state" api:"required"`
 	// AgentInfo contains simple information about an agent for display or quick
 	// reference
 	Info AgentInfo `json:"info"`
-	JSON agentJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		State       respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// agentJSON contains the JSON metadata for the struct [Agent]
-type agentJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	State       apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Agent) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Agent) RawJSON() string { return r.JSON.raw }
+func (r *Agent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r agentJSON) RawJSON() string {
-	return r.raw
 }
 
 // The current lifecycle state of the agent. Output only. Agents are created in
@@ -256,45 +300,36 @@ const (
 	AgentStateStateArchived    AgentState = "STATE_ARCHIVED"
 )
 
-func (r AgentState) IsKnown() bool {
-	switch r {
-	case AgentStateStateUnspecified, AgentStateStateDraft, AgentStateStatePublished, AgentStateStateArchived:
-		return true
-	}
-	return false
-}
-
 // AgentInfo contains simple information about an agent for display or quick
 // reference
 type AgentInfo struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	CreatedBy      Profile       `json:"createdBy"`
-	VariationCount int64         `json:"variationCount"`
-	JSON           agentInfoJSON `json:"-"`
+	CreatedBy      Profile `json:"createdBy"`
+	VariationCount int64   `json:"variationCount"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedBy      respjson.Field
+		VariationCount respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
 }
 
-// agentInfoJSON contains the JSON metadata for the struct [AgentInfo]
-type agentInfoJSON struct {
-	CreatedBy      apijson.Field
-	VariationCount apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *AgentInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r AgentInfo) RawJSON() string { return r.JSON.raw }
+func (r *AgentInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r agentInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 // Agent specification (user-provided configuration)
 type AgentSpec struct {
 	// Controls how variations are automatically selected when creating objectives
 	// Defaults to RANDOM when unspecified
+	//
+	// Any of "VARIATION_SELECTION_MODE_UNSPECIFIED",
+	// "VARIATION_SELECTION_MODE_RANDOM", "VARIATION_SELECTION_MODE_WEIGHTED".
 	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode" api:"required"`
 	// Description of the agent's purpose
 	Description string `json:"description"`
@@ -312,38 +347,43 @@ type AgentSpec struct {
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
-	OutputDefinition map[string]interface{} `json:"outputDefinition"`
+	OutputDefinition map[string]any `json:"outputDefinition"`
 	// SystemPromptDataSchema enforces the shape of system_prompt_data when objectives
 	// are created. This is valuable when using liquid formatting in agent variation
 	// system prompt templates. The schema is also used when the agent is attached as a
 	// sub-agent, as it becomes the tool's input parameter schema. If omitted, the
 	// sub-agent schema will be loaded with a simple "prompt" free text string as its
 	// schema.
-	SystemPromptDataSchema map[string]interface{} `json:"systemPromptDataSchema"`
+	SystemPromptDataSchema map[string]any `json:"systemPromptDataSchema"`
 	// The URL that Cadenya will send events for any objective assigned to the agent.
-	WebhookEventsURL string        `json:"webhookEventsUrl"`
-	JSON             agentSpecJSON `json:"-"`
+	WebhookEventsURL string `json:"webhookEventsUrl"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		VariationSelectionMode respjson.Field
+		Description            respjson.Field
+		EnableEpisodicMemory   respjson.Field
+		EpisodicMemoryTtl      respjson.Field
+		OutputDefinition       respjson.Field
+		SystemPromptDataSchema respjson.Field
+		WebhookEventsURL       respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
 }
 
-// agentSpecJSON contains the JSON metadata for the struct [AgentSpec]
-type agentSpecJSON struct {
-	VariationSelectionMode apijson.Field
-	Description            apijson.Field
-	EnableEpisodicMemory   apijson.Field
-	EpisodicMemoryTtl      apijson.Field
-	OutputDefinition       apijson.Field
-	SystemPromptDataSchema apijson.Field
-	WebhookEventsURL       apijson.Field
-	raw                    string
-	ExtraFields            map[string]apijson.Field
-}
-
-func (r *AgentSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r AgentSpec) RawJSON() string { return r.JSON.raw }
+func (r *AgentSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r agentSpecJSON) RawJSON() string {
-	return r.raw
+// ToParam converts this AgentSpec to a AgentSpecParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// AgentSpecParam.Overrides()
+func (r AgentSpec) ToParam() AgentSpecParam {
+	return param.Override[AgentSpecParam](json.RawMessage(r.RawJSON()))
 }
 
 // Controls how variations are automatically selected when creating objectives
@@ -356,144 +396,181 @@ const (
 	AgentSpecVariationSelectionModeVariationSelectionModeWeighted    AgentSpecVariationSelectionMode = "VARIATION_SELECTION_MODE_WEIGHTED"
 )
 
-func (r AgentSpecVariationSelectionMode) IsKnown() bool {
-	switch r {
-	case AgentSpecVariationSelectionModeVariationSelectionModeUnspecified, AgentSpecVariationSelectionModeVariationSelectionModeRandom, AgentSpecVariationSelectionModeVariationSelectionModeWeighted:
-		return true
-	}
-	return false
-}
-
 // Agent specification (user-provided configuration)
+//
+// The property VariationSelectionMode is required.
 type AgentSpecParam struct {
 	// Controls how variations are automatically selected when creating objectives
 	// Defaults to RANDOM when unspecified
-	VariationSelectionMode param.Field[AgentSpecVariationSelectionMode] `json:"variationSelectionMode" api:"required"`
+	//
+	// Any of "VARIATION_SELECTION_MODE_UNSPECIFIED",
+	// "VARIATION_SELECTION_MODE_RANDOM", "VARIATION_SELECTION_MODE_WEIGHTED".
+	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode,omitzero" api:"required"`
 	// Description of the agent's purpose
-	Description param.Field[string] `json:"description"`
+	Description param.Opt[string] `json:"description,omitzero"`
 	// Enable episodic memory for objectives created for this agent. When true,
 	// objective creation requires an episodic_memory key and the system finds or
 	// creates a memory layer for that (agent, key) pair, letting the agent store and
 	// retrieve memories across objectives that share the key. Memory is agent-level so
 	// all variations of the agent share the same layers.
-	EnableEpisodicMemory param.Field[bool] `json:"enableEpisodicMemory"`
+	EnableEpisodicMemory param.Opt[bool] `json:"enableEpisodicMemory,omitzero"`
 	// How long episodic memories should be retained. Each new objective slides the
 	// layer's expiry forward by this duration, and stored entries expire this long
 	// after they are written. If not set, episodic memories are retained indefinitely.
-	EpisodicMemoryTtl param.Field[int64] `json:"episodicMemoryTtl"`
+	EpisodicMemoryTtl param.Opt[int64] `json:"episodicMemoryTtl,omitzero"`
+	// The URL that Cadenya will send events for any objective assigned to the agent.
+	WebhookEventsURL param.Opt[string] `json:"webhookEventsUrl,omitzero"`
 	// Optional output definition for objectives created for this agent. When provided,
 	// Cadenya will append a tool to that will be called by the LLM in use by the
 	// variant to extract information in the format provided here. Use this option when
 	// you want structured data to be created by your objectives.
-	OutputDefinition param.Field[map[string]interface{}] `json:"outputDefinition"`
+	OutputDefinition map[string]any `json:"outputDefinition,omitzero"`
 	// SystemPromptDataSchema enforces the shape of system_prompt_data when objectives
 	// are created. This is valuable when using liquid formatting in agent variation
 	// system prompt templates. The schema is also used when the agent is attached as a
 	// sub-agent, as it becomes the tool's input parameter schema. If omitted, the
 	// sub-agent schema will be loaded with a simple "prompt" free text string as its
 	// schema.
-	SystemPromptDataSchema param.Field[map[string]interface{}] `json:"systemPromptDataSchema"`
-	// The URL that Cadenya will send events for any objective assigned to the agent.
-	WebhookEventsURL param.Field[string] `json:"webhookEventsUrl"`
+	SystemPromptDataSchema map[string]any `json:"systemPromptDataSchema,omitzero"`
+	paramObj
 }
 
 func (r AgentSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentSpecParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentSpecParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Page carries cursor-based pagination state. There is no total: the cursor walks
 // the result set without ever counting it, and a count would cost a second query
 // on every list.
 type Page struct {
-	NextCursor string   `json:"nextCursor"`
-	JSON       pageJSON `json:"-"`
+	NextCursor string `json:"nextCursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// pageJSON contains the JSON metadata for the struct [Page]
-type pageJSON struct {
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Page) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Page) RawJSON() string { return r.JSON.raw }
+func (r *Page) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r pageJSON) RawJSON() string {
-	return r.raw
-}
-
 type AgentNewParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateResourceMetadataParam] `json:"metadata" api:"required"`
+	Metadata shared.CreateResourceMetadataParam `json:"metadata,omitzero" api:"required"`
 	// Agent specification (user-provided configuration)
-	Spec param.Field[AgentSpecParam] `json:"spec" api:"required"`
+	Spec AgentSpecParam `json:"spec,omitzero" api:"required"`
 	// Create agent variation request
-	DefaultVariation param.Field[AgentNewParamsDefaultVariation] `json:"defaultVariation"`
+	DefaultVariation AgentNewParamsDefaultVariation `json:"defaultVariation,omitzero"`
+	paramObj
 }
 
 func (r AgentNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Create agent variation request
+//
+// The properties Metadata, Spec are required.
 type AgentNewParamsDefaultVariation struct {
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateResourceMetadataParam] `json:"metadata" api:"required"`
+	Metadata shared.CreateResourceMetadataParam `json:"metadata,omitzero" api:"required"`
 	// AgentVariationSpec defines the operational configuration for a variation
-	Spec param.Field[AgentVariationSpecParam] `json:"spec" api:"required"`
+	Spec AgentVariationSpecParam `json:"spec,omitzero" api:"required"`
+	paramObj
 }
 
 func (r AgentNewParamsDefaultVariation) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentNewParamsDefaultVariation
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentNewParamsDefaultVariation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AgentGetParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 type AgentUpdateParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	// Fields to update
+	UpdateMask param.Opt[string] `json:"updateMask,omitzero" format:"field-mask"`
 	// UpdateResourceMetadata contains the user-provided fields for updating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.UpdateResourceMetadataParam] `json:"metadata"`
+	Metadata shared.UpdateResourceMetadataParam `json:"metadata,omitzero"`
 	// Agent specification (user-provided configuration)
-	Spec param.Field[AgentSpecParam] `json:"spec"`
-	// Fields to update
-	UpdateMask param.Field[string] `json:"updateMask" format:"field-mask"`
+	Spec AgentSpecParam `json:"spec,omitzero"`
+	paramObj
 }
 
 func (r AgentUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type AgentListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When true, the `info` field on each returned agent is populated. Requests with
 	// this flag count more against your rate limit.
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter expression (query param: prefix)
-	Prefix param.Field[string] `query:"prefix"`
+	Prefix param.Opt[string] `query:"prefix,omitzero" json:"-"`
 	// Free-form search query
-	Query param.Field[string] `query:"query"`
+	Query param.Opt[string] `query:"query,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
-	SortOrder param.Field[string] `query:"sortOrder"`
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
 	// Filter by agent lifecycle state
-	State param.Field[AgentListParamsState] `query:"state"`
+	//
+	// Any of "STATE_UNSPECIFIED", "STATE_DRAFT", "STATE_PUBLISHED", "STATE_ARCHIVED".
+	State AgentListParamsState `query:"state,omitzero" json:"-"`
 	// Filter by variation selection mode
-	VariationSelectionMode param.Field[AgentListParamsVariationSelectionMode] `query:"variationSelectionMode"`
+	//
+	// Any of "VARIATION_SELECTION_MODE_UNSPECIFIED",
+	// "VARIATION_SELECTION_MODE_RANDOM", "VARIATION_SELECTION_MODE_WEIGHTED".
+	VariationSelectionMode AgentListParamsVariationSelectionMode `query:"variationSelectionMode,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [AgentListParams]'s query parameters as `url.Values`.
-func (r AgentListParams) URLQuery() (v url.Values) {
+func (r AgentListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -510,14 +587,6 @@ const (
 	AgentListParamsStateStateArchived    AgentListParamsState = "STATE_ARCHIVED"
 )
 
-func (r AgentListParamsState) IsKnown() bool {
-	switch r {
-	case AgentListParamsStateStateUnspecified, AgentListParamsStateStateDraft, AgentListParamsStateStatePublished, AgentListParamsStateStateArchived:
-		return true
-	}
-	return false
-}
-
 // Filter by variation selection mode
 type AgentListParamsVariationSelectionMode string
 
@@ -527,38 +596,69 @@ const (
 	AgentListParamsVariationSelectionModeVariationSelectionModeWeighted    AgentListParamsVariationSelectionMode = "VARIATION_SELECTION_MODE_WEIGHTED"
 )
 
-func (r AgentListParamsVariationSelectionMode) IsKnown() bool {
-	switch r {
-	case AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified, AgentListParamsVariationSelectionModeVariationSelectionModeRandom, AgentListParamsVariationSelectionModeVariationSelectionModeWeighted:
-		return true
-	}
-	return false
+type AgentDeleteParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 type AgentArchiveParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r AgentArchiveParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentArchiveParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentArchiveParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type AgentPublishParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r AgentPublishParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentPublishParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentPublishParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type AgentUnarchiveParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r AgentUnarchiveParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentUnarchiveParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentUnarchiveParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type AgentUnpublishParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r AgentUnpublishParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow AgentUnpublishParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AgentUnpublishParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

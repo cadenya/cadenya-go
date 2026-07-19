@@ -7,6 +7,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal"
+	"go.cadenya.com/cadenya-go/internal/apierror"
+	"go.cadenya.com/cadenya-go/internal/apiform"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/packages/param"
 	"io"
 	"math"
 	"math/rand"
@@ -17,12 +22,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/cadenya/cadenya-go/internal"
-	"github.com/cadenya/cadenya-go/internal/apierror"
-	"github.com/cadenya/cadenya-go/internal/apiform"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -88,7 +87,7 @@ type PreRequestOptionFunc func(*RequestConfig) error
 func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
-func NewRequestConfig(ctx context.Context, method string, u string, body interface{}, dst interface{}, opts ...RequestOption) (*RequestConfig, error) {
+func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
 	var reader io.Reader
 
 	contentType := "application/json"
@@ -116,7 +115,11 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 	if body, ok := body.(apiquery.Queryer); ok {
 		hasSerializationFunc = true
-		params := body.URLQuery().Encode()
+		q, err := body.URLQuery()
+		if err != nil {
+			return nil, err
+		}
+		params := q.Encode()
 		if params != "" {
 			parsed, _ := url.Parse(u)
 			if parsed.RawQuery != "" {
@@ -167,7 +170,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 		req.Header.Add(k, v)
 	}
 	cfg := RequestConfig{
-		MaxRetries: 2,
+		MaxRetries: 0,
 		Context:    ctx,
 		Request:    req,
 		HTTPClient: http.DefaultClient,
@@ -193,10 +196,9 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	return &cfg, nil
 }
 
-func UseDefaultParam[T any](dst *param.Field[T], src *T) {
-	if !dst.Present && src != nil {
-		dst.Value = *src
-		dst.Present = true
+func UseDefaultParam[T comparable](dst *param.Opt[T], src *T) {
+	if param.IsOmitted(*dst) && src != nil {
+		*dst = param.NewOpt(*src)
 	}
 }
 
@@ -224,10 +226,11 @@ type RequestConfig struct {
 	Middlewares    []middleware
 	APIKey         string
 	WebhookKey     string
+	WorkspaceID    *string
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
-	ResponseBodyInto interface{}
+	ResponseBodyInto any
 	// ResponseInto copies the \*http.Response of the corresponding request into the
 	// given address
 	ResponseInto **http.Response
@@ -569,7 +572,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 	return nil
 }
 
-func ExecuteNewRequest(ctx context.Context, method string, u string, body interface{}, dst interface{}, opts ...RequestOption) error {
+func ExecuteNewRequest(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) error {
 	cfg, err := NewRequestConfig(ctx, method, u, body, dst, opts...)
 	if err != nil {
 		return err
@@ -599,6 +602,7 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		Middlewares:    cfg.Middlewares,
 		APIKey:         cfg.APIKey,
 		WebhookKey:     cfg.WebhookKey,
+		WorkspaceID:    cfg.WorkspaceID,
 	}
 
 	return new

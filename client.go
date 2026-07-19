@@ -4,79 +4,78 @@ package cadenya
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
 	"net/http"
 	"os"
 	"slices"
 	"strings"
-
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 // Client creates a struct with services and top level methods that help with
 // interacting with the cadenya API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options        []option.RequestOption
-	AIProviderKeys *AIProviderKeyService
+	options        []option.RequestOption
+	AIProviderKeys AIProviderKeyService
 	// Manage the authenticated account. Accounts are the top-level organizational unit
 	// and contain one or more workspaces.
-	Account *AccountService
+	Account AccountService
 	// Operations on profiles, the account-level principals (users, API keys, system)
 	// that authenticate against the API.
-	Profiles *ProfileService
+	Profiles ProfileService
 	// Manage AI agents within a workspace. Agents define AI behavior and tool access.
-	Agents     *AgentService
-	Objectives *ObjectiveService
+	Agents     AgentService
+	Objectives ObjectiveService
 	// Manage memory layers and their entries. Layers are named containers that can be
 	// composed into an objective's memory cascade; entries are the keyed values within
 	// a layer. System-managed layers (e.g., episodic layers created by the runtime)
 	// cannot be mutated through this API.
-	MemoryLayers *MemoryLayerService
+	MemoryLayers MemoryLayerService
 	// Issue short-lived presigned URLs for direct client-to-object-storage uploads.
 	// Created uploads can be referenced by id when creating or updating resources that
 	// accept binary content (e.g., MemoryEntry).
-	Uploads *UploadService
+	Uploads UploadService
 	// Manage LLM models available to a workspace. Models represent provider and family
 	// pairs (e.g., "anthropic/claude-sonnet-4.6"). Workspaces are seeded with the
 	// supported models and you can enable or disable each one.
-	Models *ModelService
-	Search *SearchService
+	Models ModelService
+	Search SearchService
 	// Manage tool sets and the tools they contain. Tool sets group related tools, and
 	// tools define specific capabilities available to agents.
 	//
 	// When a tool set is managed, only API key actors can modify its tools; human
 	// (profile) actors cannot.
-	ToolSets *ToolSetService
+	ToolSets ToolSetService
 	// Issue, rotate, disable, and revoke a workspace's API keys. Every key belongs to
 	// exactly one workspace; the system-managed global account key is managed via
 	// GlobalAPIKeyService instead.
-	APIKeys *APIKeyService
+	APIKeys APIKeyService
 	// Manage the account's system-provisioned global API key. The global key is the
 	// only key that spans every workspace; it is created by the system and cannot be
 	// deleted, so the surface is retrieve, rotate, and the disable/enable kill switch.
-	GlobalAPIKey     *GlobalAPIKeyService
-	WorkspaceSecrets *WorkspaceSecretService
+	GlobalAPIKey     GlobalAPIKeyService
+	WorkspaceSecrets WorkspaceSecretService
 	// Manage workspaces within an account. Workspaces provide organizational grouping
 	// and isolation for resources such as agents, tools, and API keys.
 	//
 	// This is the workspace-scoped, end-user surface. Administrative operations
 	// (create / archive workspaces, manage members) live in WorkspaceAdminService
 	// under /v1/account/workspaces and require the admin role.
-	Workspaces *WorkspaceService
+	Workspaces WorkspaceService
 	// Administer workspaces across the account: create and archive workspaces and
 	// manage their membership. These operations are account-scoped and require the
 	// admin role (a token whose profile holds the WorkOS admin role); they live under
 	// /v1/account/workspaces rather than the workspace-scoped /v1/workspaces tree so
 	// an admin can manage any workspace in the account, including ones they are not
 	// themselves a member of.
-	WorkspaceAdmin *WorkspaceAdminService
-	Webhooks       *WebhookService
+	WorkspaceAdmin WorkspaceAdminService
+	Webhooks       WebhookService
 }
 
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
-// CADENYA_WEBHOOK_KEY, CADENYA_BASE_URL). This should be used to initialize new
-// clients.
+// CADENYA_WEBHOOK_KEY, CADENYA_WORKSPACE_ID, CADENYA_BASE_URL). This should be
+// used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{option.WithHTTPClient(defaultHTTPClient()), option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("CADENYA_BASE_URL"); ok {
@@ -87,6 +86,9 @@ func DefaultClientOptions() []option.RequestOption {
 	}
 	if o, ok := os.LookupEnv("CADENYA_WEBHOOK_KEY"); ok {
 		defaults = append(defaults, option.WithWebhookKey(o))
+	}
+	if o, ok := os.LookupEnv("CADENYA_WORKSPACE_ID"); ok {
+		defaults = append(defaults, option.WithWorkspaceID(o))
 	}
 	if o, ok := os.LookupEnv("CADENYA_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
@@ -100,13 +102,14 @@ func DefaultClientOptions() []option.RequestOption {
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (CADENYA_API_KEY, CADENYA_WEBHOOK_KEY, CADENYA_BASE_URL). The option
-// passed in as arguments are applied after these default arguments, and all option
-// will be passed down to the services and requests that this client makes.
-func NewClient(opts ...option.RequestOption) (r *Client) {
+// environment (CADENYA_API_KEY, CADENYA_WEBHOOK_KEY, CADENYA_WORKSPACE_ID,
+// CADENYA_BASE_URL). The option passed in as arguments are applied after these
+// default arguments, and all option will be passed down to the services and
+// requests that this client makes.
+func NewClient(opts ...option.RequestOption) (r Client) {
 	opts = append(DefaultClientOptions(), opts...)
 
-	r = &Client{Options: opts}
+	r = Client{options: opts}
 
 	r.AIProviderKeys = NewAIProviderKeyService(opts...)
 	r.Account = NewAccountService(opts...)
@@ -159,40 +162,40 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 //
 // For even greater flexibility, see [option.WithResponseInto] and
 // [option.WithResponseBodyInto].
-func (r *Client) Execute(ctx context.Context, method string, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
-	opts = slices.Concat(r.Options, opts)
+func (r *Client) Execute(ctx context.Context, method string, path string, params any, res any, opts ...option.RequestOption) error {
+	opts = slices.Concat(r.options, opts)
 	return requestconfig.ExecuteNewRequest(ctx, method, path, params, res, opts...)
 }
 
 // Get makes a GET request with the given URL, params, and optionally deserializes
 // to a response. See [Execute] documentation on the params and response.
-func (r *Client) Get(ctx context.Context, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
+func (r *Client) Get(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodGet, path, params, res, opts...)
 }
 
 // Post makes a POST request with the given URL, params, and optionally
 // deserializes to a response. See [Execute] documentation on the params and
 // response.
-func (r *Client) Post(ctx context.Context, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
+func (r *Client) Post(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodPost, path, params, res, opts...)
 }
 
 // Put makes a PUT request with the given URL, params, and optionally deserializes
 // to a response. See [Execute] documentation on the params and response.
-func (r *Client) Put(ctx context.Context, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
+func (r *Client) Put(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodPut, path, params, res, opts...)
 }
 
 // Patch makes a PATCH request with the given URL, params, and optionally
 // deserializes to a response. See [Execute] documentation on the params and
 // response.
-func (r *Client) Patch(ctx context.Context, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
+func (r *Client) Patch(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodPatch, path, params, res, opts...)
 }
 
 // Delete makes a DELETE request with the given URL, params, and optionally
 // deserializes to a response. See [Execute] documentation on the params and
 // response.
-func (r *Client) Delete(ctx context.Context, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
+func (r *Client) Delete(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
 }

@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestMemoryLayerEntryNewWithOptionalParams(t *testing.T) {
@@ -29,22 +28,24 @@ func TestMemoryLayerEntryNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.New(
 		context.TODO(),
-		"workspaceId",
-		"memoryLayerId",
+		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
 		cadenya.MemoryLayerEntryNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.CreateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.MemoryEntryCreateSpecParam{
-				Key:         cadenya.F("key"),
-				Content:     cadenya.F("content"),
-				Description: cadenya.F("description"),
-				UploadID:    cadenya.F("uploadId"),
-			}),
+				},
+			},
+			Spec: cadenya.MemoryEntryCreateSpecUnionParam{
+				OfContent: &cadenya.MemoryEntryCreateSpecContentParam{
+					Content:     "content",
+					Type:        cadenya.MemoryEntryCreateSpecContentTypeContent,
+					Description: cadenya.String("description"),
+					Key:         cadenya.String("key"),
+				},
+			},
 		},
 	)
 	if err != nil {
@@ -71,9 +72,11 @@ func TestMemoryLayerEntryGet(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.Get(
 		context.TODO(),
-		"workspaceId",
-		"memoryLayerId",
-		"id",
+		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"mementry_01HXKD2E5NQM3T9AYWCF5E52Z0",
+		cadenya.MemoryLayerEntryGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -99,24 +102,24 @@ func TestMemoryLayerEntryUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.Update(
 		context.TODO(),
-		"workspaceId",
-		"memoryLayerId",
-		"id",
+		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"mementry_01HXKD2E5NQM3T9AYWCF5E52Z0",
 		cadenya.MemoryLayerEntryUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.MemoryEntryUpdateSpecParam{
-				Content:     cadenya.F("content"),
-				Description: cadenya.F("description"),
-				Key:         cadenya.F("key"),
-				UploadID:    cadenya.F("uploadId"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.MemoryEntryUpdateSpecParam{
+				Content:     cadenya.String("content"),
+				Description: cadenya.String("description"),
+				Key:         cadenya.String("key"),
+				UploadID:    cadenya.String("upload_01HXKD2E5NQM3T9AYWCFZ05DNK"),
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -143,16 +146,16 @@ func TestMemoryLayerEntryListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Entries.List(
 		context.TODO(),
-		"workspaceId",
-		"memoryLayerId",
+		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
 		cadenya.MemoryLayerEntryListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			IncludeInfo: cadenya.Bool(true),
+			Labels:      cadenya.String("labels"),
+			Limit:       cadenya.Int(0),
+			Prefix:      cadenya.String("prefix"),
+			Query:       cadenya.String("query"),
+			SortOrder:   cadenya.String("sortOrder"),
 		},
 	)
 	if err != nil {
@@ -179,9 +182,11 @@ func TestMemoryLayerEntryDelete(t *testing.T) {
 	)
 	err := client.MemoryLayers.Entries.Delete(
 		context.TODO(),
-		"workspaceId",
-		"memoryLayerId",
-		"id",
+		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"mementry_01HXKD2E5NQM3T9AYWCF5E52Z0",
+		cadenya.MemoryLayerEntryDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

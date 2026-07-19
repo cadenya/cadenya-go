@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestUploadNewWithOptionalParams(t *testing.T) {
@@ -27,24 +26,21 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Uploads.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.UploadNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.UploadSpecParam{
-				ContentType: cadenya.F("contentType"),
-				Filename:    cadenya.F("filename"),
-				SizeBytes:   cadenya.F("sizeBytes"),
-			}),
+	_, err := client.Uploads.New(context.TODO(), cadenya.UploadNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: shared.CreateResourceMetadataParam{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.UploadSpecParam{
+			ContentType: "contentType",
+			Filename:    "filename",
+			SizeBytes:   "sizeBytes",
+		},
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -69,8 +65,10 @@ func TestUploadGet(t *testing.T) {
 	)
 	_, err := client.Uploads.Get(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"upload_01HXKD2E5NQM3T9AYWCFZ05DNK",
+		cadenya.UploadGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

@@ -1,10 +1,10 @@
-module github.com/cadenya/cadenya-go
+module go.cadenya.com/cadenya-go
 
 go 1.22
 
 require (
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.1
-	github.com/tidwall/gjson v1.14.4
+	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )
 

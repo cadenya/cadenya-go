@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
@@ -29,63 +28,63 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.New(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentScheduleNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.CreateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AgentScheduleSpecParam{
-				Schedule: cadenya.F(cadenya.AgentScheduleSpecScheduleParam{
-					Calendars: cadenya.F([]cadenya.ScheduleCalendarParam{{
-						Comment: cadenya.F("comment"),
-						DayOfMonth: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						DayOfWeek: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Hour: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Minute: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Month: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Second: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-					}}),
-					Intervals: cadenya.F([]cadenya.ScheduleIntervalParam{{
-						Every:  cadenya.F("-160513s"),
-						Offset: cadenya.F("-160513s"),
-					}}),
-					Timezone: cadenya.F("timezone"),
-				}),
-				FirstUserMessage:     cadenya.F("firstUserMessage"),
-				FirstUserMessageData: cadenya.F[any](map[string]interface{}{}),
-				OverlapPolicy:        cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				SystemPromptData:     cadenya.F[any](map[string]interface{}{}),
-				VariationID:          cadenya.F("variationId"),
-			}),
+				},
+			},
+			Spec: cadenya.AgentScheduleSpecParam{
+				Schedule: cadenya.AgentScheduleSpecScheduleParam{
+					Calendars: []cadenya.ScheduleCalendarParam{{
+						Comment: cadenya.String("comment"),
+						DayOfMonth: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						DayOfWeek: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Hour: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Minute: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Month: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Second: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+					}},
+					Intervals: []cadenya.ScheduleIntervalParam{{
+						Every:  cadenya.String("-160513s"),
+						Offset: cadenya.String("-160513s"),
+					}},
+					Timezone: cadenya.String("timezone"),
+				},
+				FirstUserMessage:     cadenya.String("firstUserMessage"),
+				FirstUserMessageData: map[string]any{},
+				OverlapPolicy:        cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified,
+				SystemPromptData:     map[string]any{},
+				VariationID:          cadenya.String("agentvar_01HXKD2E5NQM3T9AYWCF32BSPP"),
+			},
 		},
 	)
 	if err != nil {
@@ -112,9 +111,11 @@ func TestAgentScheduleGet(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Get(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		cadenya.AgentScheduleGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -140,65 +141,65 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Update(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
 		cadenya.AgentScheduleUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AgentScheduleSpecParam{
-				Schedule: cadenya.F(cadenya.AgentScheduleSpecScheduleParam{
-					Calendars: cadenya.F([]cadenya.ScheduleCalendarParam{{
-						Comment: cadenya.F("comment"),
-						DayOfMonth: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						DayOfWeek: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Hour: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Minute: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Month: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-						Second: cadenya.F([]cadenya.ScheduleRangeParam{{
-							End:   cadenya.F(int64(0)),
-							Start: cadenya.F(int64(0)),
-							Step:  cadenya.F(int64(0)),
-						}}),
-					}}),
-					Intervals: cadenya.F([]cadenya.ScheduleIntervalParam{{
-						Every:  cadenya.F("-160513s"),
-						Offset: cadenya.F("-160513s"),
-					}}),
-					Timezone: cadenya.F("timezone"),
-				}),
-				FirstUserMessage:     cadenya.F("firstUserMessage"),
-				FirstUserMessageData: cadenya.F[any](map[string]interface{}{}),
-				OverlapPolicy:        cadenya.F(cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified),
-				SystemPromptData:     cadenya.F[any](map[string]interface{}{}),
-				VariationID:          cadenya.F("variationId"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.AgentScheduleSpecParam{
+				Schedule: cadenya.AgentScheduleSpecScheduleParam{
+					Calendars: []cadenya.ScheduleCalendarParam{{
+						Comment: cadenya.String("comment"),
+						DayOfMonth: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						DayOfWeek: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Hour: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Minute: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Month: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+						Second: []cadenya.ScheduleRangeParam{{
+							End:   cadenya.Int(0),
+							Start: cadenya.Int(0),
+							Step:  cadenya.Int(0),
+						}},
+					}},
+					Intervals: []cadenya.ScheduleIntervalParam{{
+						Every:  cadenya.String("-160513s"),
+						Offset: cadenya.String("-160513s"),
+					}},
+					Timezone: cadenya.String("timezone"),
+				},
+				FirstUserMessage:     cadenya.String("firstUserMessage"),
+				FirstUserMessageData: map[string]any{},
+				OverlapPolicy:        cadenya.AgentScheduleSpecOverlapPolicyOverlapPolicyUnspecified,
+				SystemPromptData:     map[string]any{},
+				VariationID:          cadenya.String("agentvar_01HXKD2E5NQM3T9AYWCF32BSPP"),
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -225,16 +226,16 @@ func TestAgentScheduleListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.List(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentScheduleListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			IncludeInfo: cadenya.Bool(true),
+			Labels:      cadenya.String("labels"),
+			Limit:       cadenya.Int(0),
+			Prefix:      cadenya.String("prefix"),
+			Query:       cadenya.String("query"),
+			SortOrder:   cadenya.String("sortOrder"),
 		},
 	)
 	if err != nil {
@@ -261,9 +262,11 @@ func TestAgentScheduleDelete(t *testing.T) {
 	)
 	err := client.Agents.Schedules.Delete(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		cadenya.AgentScheduleDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -289,10 +292,11 @@ func TestAgentScheduleArchive(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Archive(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
-		cadenya.AgentScheduleArchiveParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		cadenya.AgentScheduleArchiveParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -318,10 +322,11 @@ func TestAgentSchedulePause(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Pause(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
-		cadenya.AgentSchedulePauseParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		cadenya.AgentSchedulePauseParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -347,10 +352,11 @@ func TestAgentScheduleResume(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Resume(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
-		"id",
-		cadenya.AgentScheduleResumeParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		cadenya.AgentScheduleResumeParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

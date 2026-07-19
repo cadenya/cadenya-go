@@ -3,57 +3,54 @@
 package pagination
 
 import (
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
 	"net/http"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
 )
 
+// aliased to make [param.APIUnion] private when embedding
+type paramUnion = param.APIUnion
+
+// aliased to make [param.APIObject] private when embedding
+type paramObj = param.APIObject
+
 type CursorPaginationPagination struct {
-	NextCursor string                         `json:"nextCursor"`
-	JSON       cursorPaginationPaginationJSON `json:"-"`
+	NextCursor string `json:"nextCursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// cursorPaginationPaginationJSON contains the JSON metadata for the struct
-// [CursorPaginationPagination]
-type cursorPaginationPaginationJSON struct {
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *CursorPaginationPagination) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r CursorPaginationPagination) RawJSON() string { return r.JSON.raw }
+func (r *CursorPaginationPagination) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r cursorPaginationPaginationJSON) RawJSON() string {
-	return r.raw
 }
 
 type CursorPagination[T any] struct {
 	Items      []T                        `json:"items"`
 	Pagination CursorPaginationPagination `json:"pagination"`
-	JSON       cursorPaginationJSON       `json:"-"`
-	cfg        *requestconfig.RequestConfig
-	res        *http.Response
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		Pagination  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+	cfg *requestconfig.RequestConfig
+	res *http.Response
 }
 
-// cursorPaginationJSON contains the JSON metadata for the struct
-// [CursorPagination[T]]
-type cursorPaginationJSON struct {
-	Items       apijson.Field
-	Pagination  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *CursorPagination[T]) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r CursorPagination[T]) RawJSON() string { return r.JSON.raw }
+func (r *CursorPagination[T]) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r cursorPaginationJSON) RawJSON() string {
-	return r.raw
 }
 
 // GetNextPage returns the next page as defined by this pagination style. When
@@ -97,6 +94,7 @@ type CursorPaginationAutoPager[T any] struct {
 	idx  int
 	run  int
 	err  error
+	paramObj
 }
 
 func NewCursorPaginationAutoPager[T any](page *CursorPagination[T], err error) *CursorPaginationAutoPager[T] {

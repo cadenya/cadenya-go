@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestObjectiveToolListWithOptionalParams(t *testing.T) {
@@ -28,11 +27,11 @@ func TestObjectiveToolListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Tools.List(
 		context.TODO(),
-		"workspaceId",
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveToolListParams{
-			Cursor: cadenya.F("cursor"),
-			Limit:  cadenya.F(int64(0)),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			Limit:       cadenya.Int(0),
 		},
 	)
 	if err != nil {
