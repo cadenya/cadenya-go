@@ -95,6 +95,11 @@ type AccountInfo struct {
 	// requiring real auth on tools/call. Rotate with RotateChallengeToken; update any
 	// servers validating the token before rotating.
 	ChallengeToken string `json:"challengeToken"`
+	// An API key. Every key belongs to exactly one workspace and is managed via the
+	// workspace-scoped API key routes. The only exception is the system-managed global
+	// account key, which spans all workspaces and is managed via the account
+	// global_api_key routes.
+	GlobalAPIKey APIKey `json:"globalApiKey"`
 	// The generated secret that will sign all webhooks that are sent to your
 	// configured Webhook URL. Formatted as "wh_asdf1234" per the
 	// https://www.standardwebhooks.com/ format.
@@ -102,6 +107,7 @@ type AccountInfo struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChallengeToken          respjson.Field
+		GlobalAPIKey            respjson.Field
 		WebhookEventsHMACSecret respjson.Field
 		ExtraFields             map[string]respjson.Field
 		raw                     string
