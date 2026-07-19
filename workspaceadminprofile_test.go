@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestWorkspaceAdminProfileListWithOptionalParams(t *testing.T) {
@@ -27,10 +26,10 @@ func TestWorkspaceAdminProfileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.Profiles.List(context.TODO(), cadenya.WorkspaceAdminProfileListParams{
-		Cursor: cadenya.F("cursor"),
-		Labels: cadenya.F("labels"),
-		Limit:  cadenya.F(int64(0)),
-		Query:  cadenya.F("query"),
+		Cursor: cadenya.String("cursor"),
+		Labels: cadenya.String("labels"),
+		Limit:  cadenya.Int(0),
+		Query:  cadenya.String("query"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error

@@ -3,11 +3,17 @@
 package shared
 
 import (
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
 	"time"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/param"
 )
+
+// aliased to make [param.APIUnion] private when embedding
+type paramUnion = param.APIUnion
+
+// aliased to make [param.APIObject] private when embedding
+type paramObj = param.APIObject
 
 // AccountResourceMetadata is used to represent a resource that is associated to an
 // account but not to a workspace.
@@ -28,30 +34,25 @@ type AccountResourceMetadata struct {
 	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
 	// of at most 253 characters. Examples: {"environment": "production", "team":
 	// "platform", "version": "v2"}
-	Labels map[string]string           `json:"labels"`
-	JSON   accountResourceMetadataJSON `json:"-"`
+	Labels map[string]string `json:"labels"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		AccountID   respjson.Field
+		Name        respjson.Field
+		ProfileID   respjson.Field
+		CreatedAt   respjson.Field
+		ExternalID  respjson.Field
+		Labels      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// accountResourceMetadataJSON contains the JSON metadata for the struct
-// [AccountResourceMetadata]
-type accountResourceMetadataJSON struct {
-	ID          apijson.Field
-	AccountID   apijson.Field
-	Name        apijson.Field
-	ProfileID   apijson.Field
-	CreatedAt   apijson.Field
-	ExternalID  apijson.Field
-	Labels      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AccountResourceMetadata) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r AccountResourceMetadata) RawJSON() string { return r.JSON.raw }
+func (r *AccountResourceMetadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountResourceMetadataJSON) RawJSON() string {
-	return r.raw
 }
 
 // BareMetadata contains the minimal metadata for a resource: the ID and an
@@ -65,24 +66,20 @@ type BareMetadata struct {
 	// Human-readable name of the referenced resource, populated by the server on reads
 	// for convenience. Absent on references to resources that do not have a name
 	// (e.g., objective tasks).
-	Name string           `json:"name"`
-	JSON bareMetadataJSON `json:"-"`
+	Name string `json:"name"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Name        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// bareMetadataJSON contains the JSON metadata for the struct [BareMetadata]
-type bareMetadataJSON struct {
-	ID          apijson.Field
-	Name        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BareMetadata) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BareMetadata) RawJSON() string { return r.JSON.raw }
+func (r *BareMetadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r bareMetadataJSON) RawJSON() string {
-	return r.raw
 }
 
 // CreateOperationMetadata contains the user-provided fields for creating an
@@ -90,38 +87,50 @@ func (r bareMetadataJSON) RawJSON() string {
 // profile_id) are excluded since they are set by the server.
 type CreateOperationMetadataParam struct {
 	// External ID for the operation (e.g., a workflow ID from an external system)
-	ExternalID param.Field[string] `json:"externalId"`
+	ExternalID param.Opt[string] `json:"externalId,omitzero"`
 	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
 	// characters with "-", "\_", or "." allowed between; keys follow the same shape
 	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
 	// of at most 253 characters. Examples: {"priority": "high", "source": "api",
 	// "workflow": "onboarding"}
-	Labels param.Field[map[string]string] `json:"labels"`
+	Labels map[string]string `json:"labels,omitzero"`
+	paramObj
 }
 
 func (r CreateOperationMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow CreateOperationMetadataParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CreateOperationMetadataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // CreateResourceMetadata contains the user-provided fields for creating a
 // workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 // profile_id, created_at) are excluded since they are set by the server.
+//
+// The property Name is required.
 type CreateResourceMetadataParam struct {
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool")
-	Name param.Field[string] `json:"name" api:"required"`
+	Name string `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
-	ExternalID param.Field[string] `json:"externalId"`
+	ExternalID param.Opt[string] `json:"externalId,omitzero"`
 	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
 	// characters with "-", "\_", or "." allowed between; keys follow the same shape
 	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
 	// of at most 253 characters. Examples: {"environment": "production", "team":
 	// "platform", "version": "v2"}
-	Labels param.Field[map[string]string] `json:"labels"`
+	Labels map[string]string `json:"labels,omitzero"`
+	paramObj
 }
 
 func (r CreateResourceMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow CreateResourceMetadataParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CreateResourceMetadataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Metadata for ephemeral operations and activities (e.g., objectives, executions,
@@ -145,30 +154,25 @@ type OperationMetadata struct {
 	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
 	// of at most 253 characters. Examples: {"priority": "high", "source": "api",
 	// "workflow": "onboarding"}
-	Labels map[string]string     `json:"labels"`
-	JSON   operationMetadataJSON `json:"-"`
+	Labels map[string]string `json:"labels"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		AccountID   respjson.Field
+		CreatedAt   respjson.Field
+		ProfileID   respjson.Field
+		WorkspaceID respjson.Field
+		ExternalID  respjson.Field
+		Labels      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// operationMetadataJSON contains the JSON metadata for the struct
-// [OperationMetadata]
-type operationMetadataJSON struct {
-	ID          apijson.Field
-	AccountID   apijson.Field
-	CreatedAt   apijson.Field
-	ProfileID   apijson.Field
-	WorkspaceID apijson.Field
-	ExternalID  apijson.Field
-	Labels      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *OperationMetadata) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r OperationMetadata) RawJSON() string { return r.JSON.raw }
+func (r *OperationMetadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r operationMetadataJSON) RawJSON() string {
-	return r.raw
 }
 
 // Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
@@ -195,51 +199,53 @@ type ResourceMetadata struct {
 	// "platform", "version": "v2"}
 	Labels map[string]string `json:"labels"`
 	// Timestamp when this resource was last updated
-	UpdatedAt time.Time            `json:"updatedAt" format:"date-time"`
-	JSON      resourceMetadataJSON `json:"-"`
+	UpdatedAt time.Time `json:"updatedAt" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		AccountID   respjson.Field
+		CreatedAt   respjson.Field
+		Name        respjson.Field
+		ProfileID   respjson.Field
+		WorkspaceID respjson.Field
+		ExternalID  respjson.Field
+		Labels      respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// resourceMetadataJSON contains the JSON metadata for the struct
-// [ResourceMetadata]
-type resourceMetadataJSON struct {
-	ID          apijson.Field
-	AccountID   apijson.Field
-	CreatedAt   apijson.Field
-	Name        apijson.Field
-	ProfileID   apijson.Field
-	WorkspaceID apijson.Field
-	ExternalID  apijson.Field
-	Labels      apijson.Field
-	UpdatedAt   apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ResourceMetadata) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ResourceMetadata) RawJSON() string { return r.JSON.raw }
+func (r *ResourceMetadata) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r resourceMetadataJSON) RawJSON() string {
-	return r.raw
 }
 
 // UpdateResourceMetadata contains the user-provided fields for updating a
 // workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 // profile_id, created_at) are excluded since they are set by the server.
+//
+// The property Name is required.
 type UpdateResourceMetadataParam struct {
 	// Human-readable name for the resource (e.g., "Customer Support Agent", "Email
 	// Tool")
-	Name param.Field[string] `json:"name" api:"required"`
+	Name string `json:"name" api:"required"`
 	// External ID for the resource (e.g., a workflow ID from an external system)
-	ExternalID param.Field[string] `json:"externalId"`
+	ExternalID param.Opt[string] `json:"externalId,omitzero"`
 	// Key-value pairs for categorization and filtering. Values are 0-63 alphanumeric
 	// characters with "-", "\_", or "." allowed between; keys follow the same shape
 	// and additionally accept an optional DNS-subdomain prefix (e.g. "cadenya.com/")
 	// of at most 253 characters. Examples: {"environment": "production", "team":
 	// "platform", "version": "v2"}
-	Labels param.Field[map[string]string] `json:"labels"`
+	Labels map[string]string `json:"labels,omitzero"`
+	paramObj
 }
 
 func (r UpdateResourceMetadataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow UpdateResourceMetadataParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *UpdateResourceMetadataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

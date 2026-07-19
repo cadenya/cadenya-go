@@ -6,15 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 // SearchService contains methods and other services that help with interacting
@@ -24,62 +24,66 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewSearchService] method instead.
 type SearchService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewSearchService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewSearchService(opts ...option.RequestOption) (r *SearchService) {
-	r = &SearchService{}
-	r.Options = opts
+func NewSearchService(opts ...option.RequestOption) (r SearchService) {
+	r = SearchService{}
+	r.options = opts
 	return
 }
 
 // Searches for tools or tool sets in the workspace
-func (r *SearchService) SearchToolsOrToolSets(ctx context.Context, workspaceID string, query SearchSearchToolsOrToolSetsParams, opts ...option.RequestOption) (res *SearchSearchToolsOrToolSetsResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *SearchService) SearchToolsOrToolSets(ctx context.Context, params SearchSearchToolsOrToolSetsParams, opts ...option.RequestOption) (res *SearchSearchToolsOrToolSetsResponse, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/search/tools_or_tool_sets", workspaceID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/search/tools_or_tool_sets", url.PathEscape(params.WorkspaceID.Value))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
 
 type SearchSearchToolsOrToolSetsResponse struct {
-	Agents   []Agent                                 `json:"agents"`
-	Tools    []Tool                                  `json:"tools"`
-	ToolSets []ToolSet                               `json:"toolSets"`
-	JSON     searchSearchToolsOrToolSetsResponseJSON `json:"-"`
+	Agents   []Agent   `json:"agents"`
+	Tools    []Tool    `json:"tools"`
+	ToolSets []ToolSet `json:"toolSets"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agents      respjson.Field
+		Tools       respjson.Field
+		ToolSets    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// searchSearchToolsOrToolSetsResponseJSON contains the JSON metadata for the
-// struct [SearchSearchToolsOrToolSetsResponse]
-type searchSearchToolsOrToolSetsResponseJSON struct {
-	Agents      apijson.Field
-	Tools       apijson.Field
-	ToolSets    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *SearchSearchToolsOrToolSetsResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r SearchSearchToolsOrToolSetsResponse) RawJSON() string { return r.JSON.raw }
+func (r *SearchSearchToolsOrToolSetsResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r searchSearchToolsOrToolSetsResponseJSON) RawJSON() string {
-	return r.raw
-}
-
 type SearchSearchToolsOrToolSetsParams struct {
-	Query param.Field[string] `query:"query"`
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	Query       string            `query:"query" api:"required" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [SearchSearchToolsOrToolSetsParams]'s query parameters as
 // `url.Values`.
-func (r SearchSearchToolsOrToolSetsParams) URLQuery() (v url.Values) {
+func (r SearchSearchToolsOrToolSetsParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

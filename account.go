@@ -4,13 +4,13 @@ package cadenya
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // Manage the authenticated account. Accounts are the top-level organizational unit
@@ -23,22 +23,22 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewAccountService] method instead.
 type AccountService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewAccountService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewAccountService(opts ...option.RequestOption) (r *AccountService) {
-	r = &AccountService{}
-	r.Options = opts
+func NewAccountService(opts ...option.RequestOption) (r AccountService) {
+	r = AccountService{}
+	r.options = opts
 	return
 }
 
 // Retrieves the current account for the token accessing the API. Useful to check
 // if the credentials are valid.
 func (r *AccountService) Get(ctx context.Context, opts ...option.RequestOption) (res *Account, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -47,7 +47,7 @@ func (r *AccountService) Get(ctx context.Context, opts ...option.RequestOption) 
 // Rotates the challenge token sent in the X-Cadenya-Challenge-Token header on MCP
 // tools/list requests. Returns only the new token.
 func (r *AccountService) RotateChallengeToken(ctx context.Context, opts ...option.RequestOption) (res *RotateChallengeTokenResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account:rotateChallengeToken"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -55,7 +55,7 @@ func (r *AccountService) RotateChallengeToken(ctx context.Context, opts ...optio
 
 // Rotates the webhook signing key for the account. Returns only the new key.
 func (r *AccountService) RotateWebhookSigningKey(ctx context.Context, opts ...option.RequestOption) (res *RotateWebhookSigningKeyResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account:rotateWebhookSigningKey"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -71,24 +71,20 @@ type Account struct {
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
 	// Configuration for an account.
 	Spec AccountSpec `json:"spec" api:"required"`
-	JSON accountJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Info        respjson.Field
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// accountJSON contains the JSON metadata for the struct [Account]
-type accountJSON struct {
-	Info        apijson.Field
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Account) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Account) RawJSON() string { return r.JSON.raw }
+func (r *Account) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountJSON) RawJSON() string {
-	return r.raw
 }
 
 // Server-populated information about the account.
@@ -102,51 +98,43 @@ type AccountInfo struct {
 	// The generated secret that will sign all webhooks that are sent to your
 	// configured Webhook URL. Formatted as "wh_asdf1234" per the
 	// https://www.standardwebhooks.com/ format.
-	WebhookEventsHmacSecret string          `json:"webhookEventsHmacSecret"`
-	JSON                    accountInfoJSON `json:"-"`
+	WebhookEventsHMACSecret string `json:"webhookEventsHmacSecret"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChallengeToken          respjson.Field
+		WebhookEventsHMACSecret respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
+	} `json:"-"`
 }
 
-// accountInfoJSON contains the JSON metadata for the struct [AccountInfo]
-type accountInfoJSON struct {
-	ChallengeToken          apijson.Field
-	WebhookEventsHmacSecret apijson.Field
-	raw                     string
-	ExtraFields             map[string]apijson.Field
-}
-
-func (r *AccountInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r AccountInfo) RawJSON() string { return r.JSON.raw }
+func (r *AccountInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 // Configuration for an account.
 type AccountSpec struct {
-	BillingEmail string          `json:"billingEmail"`
-	Description  string          `json:"description"`
-	Domain       string          `json:"domain"`
-	Workspaces   []Workspace     `json:"workspaces"`
-	JSON         accountSpecJSON `json:"-"`
+	BillingEmail string      `json:"billingEmail"`
+	Description  string      `json:"description"`
+	Domain       string      `json:"domain"`
+	Workspaces   []Workspace `json:"workspaces"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BillingEmail respjson.Field
+		Description  respjson.Field
+		Domain       respjson.Field
+		Workspaces   respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
 }
 
-// accountSpecJSON contains the JSON metadata for the struct [AccountSpec]
-type accountSpecJSON struct {
-	BillingEmail apijson.Field
-	Description  apijson.Field
-	Domain       apijson.Field
-	Workspaces   apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *AccountSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r AccountSpec) RawJSON() string { return r.JSON.raw }
+func (r *AccountSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r accountSpecJSON) RawJSON() string {
-	return r.raw
 }
 
 // A profile identifies a user or non-human principal (such as an API key) at the
@@ -158,52 +146,47 @@ type Profile struct {
 	Metadata shared.AccountResourceMetadata `json:"metadata" api:"required"`
 	// Configuration for a profile.
 	Spec ProfileSpec `json:"spec" api:"required"`
-	JSON profileJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// profileJSON contains the JSON metadata for the struct [Profile]
-type profileJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Profile) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Profile) RawJSON() string { return r.JSON.raw }
+func (r *Profile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r profileJSON) RawJSON() string {
-	return r.raw
 }
 
 // Configuration for a profile.
 type ProfileSpec struct {
 	// Whether this profile represents a human user, an API key, or a system principal.
+	//
+	// Any of "PROFILE_TYPE_UNSPECIFIED", "PROFILE_TYPE_USER", "PROFILE_TYPE_API_KEY",
+	// "PROFILE_TYPE_SYSTEM".
 	Type ProfileSpecType `json:"type" api:"required"`
 	// Email address of the profile. Required and unique within an account for user
 	// profiles.
 	Email string `json:"email"`
 	// Display name (e.g., "Bobby Tables").
-	Name string          `json:"name"`
-	JSON profileSpecJSON `json:"-"`
+	Name string `json:"name"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Email       respjson.Field
+		Name        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// profileSpecJSON contains the JSON metadata for the struct [ProfileSpec]
-type profileSpecJSON struct {
-	Type        apijson.Field
-	Email       apijson.Field
-	Name        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ProfileSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ProfileSpec) RawJSON() string { return r.JSON.raw }
+func (r *ProfileSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r profileSpecJSON) RawJSON() string {
-	return r.raw
 }
 
 // Whether this profile represents a human user, an API key, or a system principal.
@@ -216,54 +199,36 @@ const (
 	ProfileSpecTypeProfileTypeSystem      ProfileSpecType = "PROFILE_TYPE_SYSTEM"
 )
 
-func (r ProfileSpecType) IsKnown() bool {
-	switch r {
-	case ProfileSpecTypeProfileTypeUnspecified, ProfileSpecTypeProfileTypeUser, ProfileSpecTypeProfileTypeAPIKey, ProfileSpecTypeProfileTypeSystem:
-		return true
-	}
-	return false
-}
-
 // Response containing the newly generated challenge token.
 type RotateChallengeTokenResponse struct {
-	ChallengeToken string                           `json:"challengeToken"`
-	JSON           rotateChallengeTokenResponseJSON `json:"-"`
+	ChallengeToken string `json:"challengeToken"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ChallengeToken respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
 }
 
-// rotateChallengeTokenResponseJSON contains the JSON metadata for the struct
-// [RotateChallengeTokenResponse]
-type rotateChallengeTokenResponseJSON struct {
-	ChallengeToken apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *RotateChallengeTokenResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r RotateChallengeTokenResponse) RawJSON() string { return r.JSON.raw }
+func (r *RotateChallengeTokenResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r rotateChallengeTokenResponseJSON) RawJSON() string {
-	return r.raw
 }
 
 // Response containing the newly generated webhook signing secret.
 type RotateWebhookSigningKeyResponse struct {
-	WebhookEventsHmacSecret string                              `json:"webhookEventsHmacSecret"`
-	JSON                    rotateWebhookSigningKeyResponseJSON `json:"-"`
+	WebhookEventsHMACSecret string `json:"webhookEventsHmacSecret"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		WebhookEventsHMACSecret respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
+	} `json:"-"`
 }
 
-// rotateWebhookSigningKeyResponseJSON contains the JSON metadata for the struct
-// [RotateWebhookSigningKeyResponse]
-type rotateWebhookSigningKeyResponseJSON struct {
-	WebhookEventsHmacSecret apijson.Field
-	raw                     string
-	ExtraFields             map[string]apijson.Field
-}
-
-func (r *RotateWebhookSigningKeyResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r RotateWebhookSigningKeyResponse) RawJSON() string { return r.JSON.raw }
+func (r *RotateWebhookSigningKeyResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r rotateWebhookSigningKeyResponseJSON) RawJSON() string {
-	return r.raw
 }

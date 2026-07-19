@@ -6,17 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // ObjectiveToolService contains methods and other services that help with
@@ -26,24 +26,29 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewObjectiveToolService] method instead.
 type ObjectiveToolService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewObjectiveToolService generates a new service that applies the given options
 // to each request. These options are applied after the parent client's options (if
 // there is one), and before any request-specific options.
-func NewObjectiveToolService(opts ...option.RequestOption) (r *ObjectiveToolService) {
-	r = &ObjectiveToolService{}
-	r.Options = opts
+func NewObjectiveToolService(opts ...option.RequestOption) (r ObjectiveToolService) {
+	r = ObjectiveToolService{}
+	r.options = opts
 	return
 }
 
 // Lists all tools that were assigned to an objective
-func (r *ObjectiveToolService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTool], err error) {
+func (r *ObjectiveToolService) List(ctx context.Context, objectiveID string, params ObjectiveToolListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveTool], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -51,8 +56,8 @@ func (r *ObjectiveToolService) List(ctx context.Context, workspaceID string, obj
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tools", workspaceID, objectiveID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tools", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +70,8 @@ func (r *ObjectiveToolService) List(ctx context.Context, workspaceID string, obj
 }
 
 // Lists all tools that were assigned to an objective
-func (r *ObjectiveToolService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTool] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
+func (r *ObjectiveToolService) ListAutoPaging(ctx context.Context, objectiveID string, params ObjectiveToolListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveTool] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, params, opts...))
 }
 
 // ObjectiveTool represents a tool that was assigned to an objective.
@@ -81,36 +86,36 @@ type ObjectiveTool struct {
 	// Snapshot of the tool at the time it was assigned to the objective. Because tools
 	// can change over time, snapshots are used to ensure tools don't change
 	// unexpectedly during an objective's lifecycle.
-	Snapshot Tool              `json:"snapshot"`
-	JSON     objectiveToolJSON `json:"-"`
+	Snapshot Tool `json:"snapshot"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Snapshot    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolJSON contains the JSON metadata for the struct [ObjectiveTool]
-type objectiveToolJSON struct {
-	Metadata    apijson.Field
-	Snapshot    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveTool) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveTool) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveTool) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveToolJSON) RawJSON() string {
-	return r.raw
-}
-
 type ObjectiveToolListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [ObjectiveToolListParams]'s query parameters as
 // `url.Values`.
-func (r ObjectiveToolListParams) URLQuery() (v url.Values) {
+func (r ObjectiveToolListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

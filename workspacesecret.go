@@ -4,20 +4,21 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
 	"time"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // WorkspaceSecretService contains methods and other services that help with
@@ -27,34 +28,44 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewWorkspaceSecretService] method instead.
 type WorkspaceSecretService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewWorkspaceSecretService generates a new service that applies the given options
 // to each request. These options are applied after the parent client's options (if
 // there is one), and before any request-specific options.
-func NewWorkspaceSecretService(opts ...option.RequestOption) (r *WorkspaceSecretService) {
-	r = &WorkspaceSecretService{}
-	r.Options = opts
+func NewWorkspaceSecretService(opts ...option.RequestOption) (r WorkspaceSecretService) {
+	r = WorkspaceSecretService{}
+	r.options = opts
 	return
 }
 
 // Creates a new workspace secret in the workspace
-func (r *WorkspaceSecretService) New(ctx context.Context, workspaceID string, body WorkspaceSecretNewParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *WorkspaceSecretService) New(ctx context.Context, params WorkspaceSecretNewParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", workspaceID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", url.PathEscape(params.WorkspaceID.Value))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Retrieves a workspace secret by ID from the workspace
-func (r *WorkspaceSecretService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *WorkspaceSecretService) Get(ctx context.Context, id string, query WorkspaceSecretGetParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&query.WorkspaceID, precfg.WorkspaceID)
+	if query.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -62,15 +73,20 @@ func (r *WorkspaceSecretService) Get(ctx context.Context, workspaceID string, id
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", url.PathEscape(query.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a workspace secret in the workspace
-func (r *WorkspaceSecretService) Update(ctx context.Context, workspaceID string, id string, body WorkspaceSecretUpdateParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *WorkspaceSecretService) Update(ctx context.Context, id string, params WorkspaceSecretUpdateParams, opts ...option.RequestOption) (res *WorkspaceSecret, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -78,22 +94,27 @@ func (r *WorkspaceSecretService) Update(ctx context.Context, workspaceID string,
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(id))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
 	return res, err
 }
 
 // Lists all workspace secrets in the workspace
-func (r *WorkspaceSecretService) List(ctx context.Context, workspaceID string, query WorkspaceSecretListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WorkspaceSecret], err error) {
+func (r *WorkspaceSecretService) List(ctx context.Context, params WorkspaceSecretListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[WorkspaceSecret], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", workspaceID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets", url.PathEscape(params.WorkspaceID.Value))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,15 +127,20 @@ func (r *WorkspaceSecretService) List(ctx context.Context, workspaceID string, q
 }
 
 // Lists all workspace secrets in the workspace
-func (r *WorkspaceSecretService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSecretListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WorkspaceSecret] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspaceSecretService) ListAutoPaging(ctx context.Context, params WorkspaceSecretListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[WorkspaceSecret] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, params, opts...))
 }
 
 // Deletes a workspace secret from the workspace
-func (r *WorkspaceSecretService) Delete(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.Options, opts)
+func (r *WorkspaceSecretService) Delete(ctx context.Context, id string, body WorkspaceSecretDeleteParams, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return err
 	}
@@ -122,7 +148,7 @@ func (r *WorkspaceSecretService) Delete(ctx context.Context, workspaceID string,
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/workspace_secrets/%s", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -133,131 +159,165 @@ type WorkspaceSecret struct {
 	Spec     WorkspaceSecretSpec     `json:"spec" api:"required"`
 	// Workspace secret information
 	Info WorkspaceSecretInfo `json:"info"`
-	JSON workspaceSecretJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// workspaceSecretJSON contains the JSON metadata for the struct [WorkspaceSecret]
-type workspaceSecretJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSecret) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r WorkspaceSecret) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceSecret) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceSecretJSON) RawJSON() string {
-	return r.raw
 }
 
 type WorkspaceSecretInfo struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	CreatedBy  Profile                 `json:"createdBy"`
-	LastUsedAt time.Time               `json:"lastUsedAt" format:"date-time"`
-	JSON       workspaceSecretInfoJSON `json:"-"`
+	CreatedBy  Profile   `json:"createdBy"`
+	LastUsedAt time.Time `json:"lastUsedAt" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedBy   respjson.Field
+		LastUsedAt  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// workspaceSecretInfoJSON contains the JSON metadata for the struct
-// [WorkspaceSecretInfo]
-type workspaceSecretInfoJSON struct {
-	CreatedBy   apijson.Field
-	LastUsedAt  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSecretInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r WorkspaceSecretInfo) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceSecretInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceSecretInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 type WorkspaceSecretSpec struct {
-	Value string                  `json:"value"`
-	JSON  workspaceSecretSpecJSON `json:"-"`
+	Value string `json:"value"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Value       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// workspaceSecretSpecJSON contains the JSON metadata for the struct
-// [WorkspaceSecretSpec]
-type workspaceSecretSpecJSON struct {
-	Value       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSecretSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r WorkspaceSecretSpec) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceSecretSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r workspaceSecretSpecJSON) RawJSON() string {
-	return r.raw
+// ToParam converts this WorkspaceSecretSpec to a WorkspaceSecretSpecParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// WorkspaceSecretSpecParam.Overrides()
+func (r WorkspaceSecretSpec) ToParam() WorkspaceSecretSpecParam {
+	return param.Override[WorkspaceSecretSpecParam](json.RawMessage(r.RawJSON()))
 }
 
 type WorkspaceSecretSpecParam struct {
-	Value param.Field[string] `json:"value"`
+	Value param.Opt[string] `json:"value,omitzero"`
+	paramObj
 }
 
 func (r WorkspaceSecretSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow WorkspaceSecretSpecParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkspaceSecretSpecParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceSecretNewParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateResourceMetadataParam] `json:"metadata" api:"required"`
-	Spec     param.Field[WorkspaceSecretSpecParam]           `json:"spec" api:"required"`
+	Metadata shared.CreateResourceMetadataParam `json:"metadata,omitzero" api:"required"`
+	Spec     WorkspaceSecretSpecParam           `json:"spec,omitzero" api:"required"`
+	paramObj
 }
 
 func (r WorkspaceSecretNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow WorkspaceSecretNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkspaceSecretNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WorkspaceSecretGetParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 type WorkspaceSecretUpdateParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	// Fields to update.
+	UpdateMask param.Opt[string] `json:"updateMask,omitzero" format:"field-mask"`
 	// UpdateResourceMetadata contains the user-provided fields for updating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.UpdateResourceMetadataParam] `json:"metadata"`
-	Spec     param.Field[WorkspaceSecretSpecParam]           `json:"spec"`
-	// Fields to update.
-	UpdateMask param.Field[string] `json:"updateMask" format:"field-mask"`
+	Metadata shared.UpdateResourceMetadataParam `json:"metadata,omitzero"`
+	Spec     WorkspaceSecretSpecParam           `json:"spec,omitzero"`
+	paramObj
 }
 
 func (r WorkspaceSecretUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow WorkspaceSecretUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkspaceSecretUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceSecretListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When set to true you may use more of your alloted API rate-limit
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter expression (query param: prefix)
-	Prefix param.Field[string] `query:"prefix"`
+	Prefix param.Opt[string] `query:"prefix,omitzero" json:"-"`
 	// Free-form search query
-	Query param.Field[string] `query:"query"`
+	Query param.Opt[string] `query:"query,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
-	SortOrder param.Field[string] `query:"sortOrder"`
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [WorkspaceSecretListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceSecretListParams) URLQuery() (v url.Values) {
+func (r WorkspaceSecretListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type WorkspaceSecretDeleteParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }

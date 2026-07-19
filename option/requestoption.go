@@ -5,13 +5,13 @@ package option
 import (
 	"bytes"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
 	"github.com/tidwall/sjson"
 )
 
@@ -19,7 +19,7 @@ import (
 // which can be supplied to clients, services, and methods. You can read more about this functional
 // options pattern in our [README].
 //
-// [README]: https://pkg.go.dev/github.com/cadenya/cadenya-go#readme-requestoptions
+// [README]: https://pkg.go.dev/go.cadenya.com/cadenya-go#readme-requestoptions
 type RequestOption = requestconfig.RequestOption
 
 // WithBaseURL returns a RequestOption that sets the BaseURL for the client.
@@ -168,7 +168,7 @@ func WithQueryDel(key string) RequestOption {
 // The key accepts a string as defined by the [sjson format].
 //
 // [sjson format]: https://github.com/tidwall/sjson
-func WithJSONSet(key string, value interface{}) RequestOption {
+func WithJSONSet(key string, value any) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) (err error) {
 		var b []byte
 
@@ -278,6 +278,17 @@ func WithAPIKey(value string) RequestOption {
 func WithWebhookKey(value string) RequestOption {
 	return requestconfig.PreRequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.WebhookKey = value
+		return nil
+	})
+}
+
+// WithWorkspaceID returns a RequestOption that sets the client setting "workspace_id".
+func WithWorkspaceID(value string) RequestOption {
+	return requestconfig.PreRequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		if value == "" {
+			return fmt.Errorf("default param cannot be empty string")
+		}
+		r.WorkspaceID = &value
 		return nil
 	})
 }

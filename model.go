@@ -6,18 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
 	"time"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // Manage LLM models available to a workspace. Models represent provider and family
@@ -31,22 +31,27 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewModelService] method instead.
 type ModelService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewModelService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewModelService(opts ...option.RequestOption) (r *ModelService) {
-	r = &ModelService{}
-	r.Options = opts
+func NewModelService(opts ...option.RequestOption) (r ModelService) {
+	r = ModelService{}
+	r.options = opts
 	return
 }
 
 // Retrieves a model by ID from the workspace
-func (r *ModelService) Get(ctx context.Context, workspaceID string, id string, opts ...option.RequestOption) (res *Model, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ModelService) Get(ctx context.Context, id string, query ModelGetParams, opts ...option.RequestOption) (res *Model, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&query.WorkspaceID, precfg.WorkspaceID)
+	if query.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -54,22 +59,27 @@ func (r *ModelService) Get(ctx context.Context, workspaceID string, id string, o
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models/%s", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s", url.PathEscape(query.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all models in the workspace
-func (r *ModelService) List(ctx context.Context, workspaceID string, query ModelListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Model], err error) {
+func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Model], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models", workspaceID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/models", url.PathEscape(params.WorkspaceID.Value))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,15 +92,20 @@ func (r *ModelService) List(ctx context.Context, workspaceID string, query Model
 }
 
 // Lists all models in the workspace
-func (r *ModelService) ListAutoPaging(ctx context.Context, workspaceID string, query ModelListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Model] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *ModelService) ListAutoPaging(ctx context.Context, params ModelListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[Model] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, params, opts...))
 }
 
 // Transitions a model to STATE_DISABLED. Fails while agent variations are still
 // provisioned on the model; use :swapModelOnVariations to move them first.
-func (r *ModelService) Disable(ctx context.Context, workspaceID string, id string, body ModelDisableParams, opts ...option.RequestOption) (res *Model, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ModelService) Disable(ctx context.Context, id string, body ModelDisableParams, opts ...option.RequestOption) (res *Model, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -98,16 +113,21 @@ func (r *ModelService) Disable(ctx context.Context, workspaceID string, id strin
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models/%s:disable", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s:disable", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Transitions a model to STATE_ENABLED, making it available for agent variations
 // in the workspace
-func (r *ModelService) Enable(ctx context.Context, workspaceID string, id string, body ModelEnableParams, opts ...option.RequestOption) (res *Model, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ModelService) Enable(ctx context.Context, id string, body ModelEnableParams, opts ...option.RequestOption) (res *Model, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -115,21 +135,26 @@ func (r *ModelService) Enable(ctx context.Context, workspaceID string, id string
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models/%s:enable", workspaceID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/models/%s:enable", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Reassigns agent variations from one model to another in bulk. Runs
 // asynchronously and returns immediately.
-func (r *ModelService) Swap(ctx context.Context, workspaceID string, body ModelSwapParams, opts ...option.RequestOption) (res *ModelSwapResponse, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ModelService) Swap(ctx context.Context, params ModelSwapParams, opts ...option.RequestOption) (res *ModelSwapResponse, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/models:swapModelOnVariations", workspaceID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/models:swapModelOnVariations", url.PathEscape(params.WorkspaceID.Value))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
@@ -140,28 +165,26 @@ type Model struct {
 	Spec ModelSpec `json:"spec" api:"required"`
 	// Whether the model is usable in this workspace. Output only. Use the :enable and
 	// :disable actions to transition.
+	//
+	// Any of "STATE_UNSPECIFIED", "STATE_ENABLED", "STATE_DISABLED".
 	State ModelState `json:"state" api:"required"`
 	// ModelInfo carries server-derived, read-only details about a model.
 	Info ModelInfo `json:"info"`
-	JSON modelJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		State       respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// modelJSON contains the JSON metadata for the struct [Model]
-type modelJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	State       apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Model) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Model) RawJSON() string { return r.JSON.raw }
+func (r *Model) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r modelJSON) RawJSON() string {
-	return r.raw
 }
 
 // Whether the model is usable in this workspace. Output only. Use the :enable and
@@ -174,14 +197,6 @@ const (
 	ModelStateStateDisabled    ModelState = "STATE_DISABLED"
 )
 
-func (r ModelState) IsKnown() bool {
-	switch r {
-	case ModelStateStateUnspecified, ModelStateStateEnabled, ModelStateStateDisabled:
-		return true
-	}
-	return false
-}
-
 // ModelInfo carries server-derived, read-only details about a model.
 type ModelInfo struct {
 	// Number of agent variations currently provisioned on this model. Useful for
@@ -193,30 +208,28 @@ type ModelInfo struct {
 	// account administrators. The secret value is never returned in responses.
 	AIProviderKey AIProviderKey `json:"aiProviderKey"`
 	// Represents the last time this model was used in an agent objective
-	LastUsedAt time.Time     `json:"lastUsedAt" format:"date-time"`
-	JSON       modelInfoJSON `json:"-"`
+	LastUsedAt time.Time `json:"lastUsedAt" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AgentVariationCount respjson.Field
+		AIProviderKey       respjson.Field
+		LastUsedAt          respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
 }
 
-// modelInfoJSON contains the JSON metadata for the struct [ModelInfo]
-type modelInfoJSON struct {
-	AgentVariationCount apijson.Field
-	AIProviderKey       apijson.Field
-	LastUsedAt          apijson.Field
-	raw                 string
-	ExtraFields         map[string]apijson.Field
-}
-
-func (r *ModelInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ModelInfo) RawJSON() string { return r.JSON.raw }
+func (r *ModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r modelInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 type ModelSpec struct {
 	// The model family (e.g., "claude-sonnet-4.6", "gpt-5.4", "gemini-2.5-flash")
-	Family string `json:"family"`
+	Family string `json:"family" api:"required"`
+	// The model provider (e.g., "anthropic", "openai", "google")
+	Provider string `json:"provider" api:"required"`
 	// Cost per million input tokens in cents (e.g., 300 = $3.00)
 	InputPricePerMillionTokens string `json:"inputPricePerMillionTokens"`
 	// Maximum number of input tokens the model supports
@@ -225,66 +238,73 @@ type ModelSpec struct {
 	MaxOutputTokens int64 `json:"maxOutputTokens"`
 	// Cost per million output tokens in cents (e.g., 1500 = $15.00)
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
-	// The model provider (e.g., "anthropic", "openai", "google")
-	Provider string        `json:"provider"`
-	JSON     modelSpecJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Family                      respjson.Field
+		Provider                    respjson.Field
+		InputPricePerMillionTokens  respjson.Field
+		MaxInputTokens              respjson.Field
+		MaxOutputTokens             respjson.Field
+		OutputPricePerMillionTokens respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
 }
 
-// modelSpecJSON contains the JSON metadata for the struct [ModelSpec]
-type modelSpecJSON struct {
-	Family                      apijson.Field
-	InputPricePerMillionTokens  apijson.Field
-	MaxInputTokens              apijson.Field
-	MaxOutputTokens             apijson.Field
-	OutputPricePerMillionTokens apijson.Field
-	Provider                    apijson.Field
-	raw                         string
-	ExtraFields                 map[string]apijson.Field
-}
-
-func (r *ModelSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ModelSpec) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r modelSpecJSON) RawJSON() string {
-	return r.raw
+type ModelSwapResponse = any
+
+type ModelGetParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
-type ModelSwapResponse = interface{}
-
 type ModelListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Filter to models provisioned on a specific AI provider key. Accepts the key's id
 	// or an "external_id:"-prefixed slug.
-	AIProviderKeyID param.Field[string] `query:"aiProviderKeyId"`
+	AIProviderKeyID param.Opt[string] `query:"aiProviderKeyId,omitzero" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When true, populate each item's info (e.g. the AI provider), at the cost of
 	// extra lookups.
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filter models to only ones assigned to an active agent variation/agent. Draft
 	// agents count as assigned; archived agents do not. Assignment does not imply
 	// recent traffic — see ModelInfo.last_used_at for that.
-	IsAssigned param.Field[bool] `query:"isAssigned"`
+	IsAssigned param.Opt[bool] `query:"isAssigned,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter by a prefix of the model's display name, external id, or id
 	// (case-insensitive). A model's external id is the form used in
 	// modelConfig.modelId, so a caller holding that can narrow the list by it.
-	Prefix param.Field[string] `query:"prefix"`
+	Prefix param.Opt[string] `query:"prefix,omitzero" json:"-"`
 	// Free-form search query
-	Query param.Field[string] `query:"query"`
+	Query param.Opt[string] `query:"query,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
-	SortOrder param.Field[string] `query:"sortOrder"`
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
 	// Filter by model state
-	State param.Field[ModelListParamsState] `query:"state"`
+	//
+	// Any of "STATE_UNSPECIFIED", "STATE_ENABLED", "STATE_DISABLED".
+	State ModelListParamsState `query:"state,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [ModelListParams]'s query parameters as `url.Values`.
-func (r ModelListParams) URLQuery() (v url.Values) {
+func (r ModelListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -300,46 +320,67 @@ const (
 	ModelListParamsStateStateDisabled    ModelListParamsState = "STATE_DISABLED"
 )
 
-func (r ModelListParamsState) IsKnown() bool {
-	switch r {
-	case ModelListParamsStateStateUnspecified, ModelListParamsStateStateEnabled, ModelListParamsStateStateDisabled:
-		return true
-	}
-	return false
-}
-
 type ModelDisableParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r ModelDisableParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ModelDisableParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ModelDisableParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ModelEnableParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r ModelEnableParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ModelEnableParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ModelEnableParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ModelSwapParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// The swaps to perform.
-	ModelSwaps param.Field[[]ModelSwapParamsModelSwap] `json:"modelSwaps"`
+	ModelSwaps []ModelSwapParamsModelSwap `json:"modelSwaps,omitzero"`
+	paramObj
 }
 
 func (r ModelSwapParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ModelSwapParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ModelSwapParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ModelSwapParamsModelSwap struct {
 	// The model variations are currently on. Accepts an id or "external_id:" slug.
-	CurrentModelID param.Field[string] `json:"currentModelId"`
+	CurrentModelID param.Opt[string] `json:"currentModelId,omitzero"`
 	// Whether to disable the current model after the swap.
-	DisableCurrentAfterSwap param.Field[bool] `json:"disableCurrentAfterSwap"`
+	DisableCurrentAfterSwap param.Opt[bool] `json:"disableCurrentAfterSwap,omitzero"`
 	// The model to move variations to. Accepts an id or "external_id:" slug.
-	NextModelID param.Field[string] `json:"nextModelId"`
+	NextModelID param.Opt[string] `json:"nextModelId,omitzero"`
+	paramObj
 }
 
 func (r ModelSwapParamsModelSwap) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ModelSwapParamsModelSwap
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ModelSwapParamsModelSwap) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

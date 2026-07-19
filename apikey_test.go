@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAPIKeyNewWithOptionalParams(t *testing.T) {
@@ -26,23 +25,20 @@ func TestAPIKeyNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.APIKeyNewParams{
-			Metadata: cadenya.F(cadenya.APIKeyNewParamsMetadata{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.APIKeySpecParam{
-				Description: cadenya.F("description"),
-				Permissions: cadenya.F([]string{"string"}),
-			}),
+	_, err := client.APIKeys.New(context.TODO(), cadenya.APIKeyNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: cadenya.APIKeyNewParamsMetadata{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.APIKeySpecParam{
+			Description: cadenya.String("description"),
+			Permissions: []string{"string"},
+		},
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -67,8 +63,10 @@ func TestAPIKeyGet(t *testing.T) {
 	)
 	_, err := client.APIKeys.Get(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
+		cadenya.APIKeyGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -94,21 +92,21 @@ func TestAPIKeyUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.APIKeys.Update(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
 		cadenya.APIKeyUpdateParams{
-			Metadata: cadenya.F(cadenya.APIKeyUpdateParamsMetadata{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: cadenya.APIKeyUpdateParamsMetadata{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.APIKeySpecParam{
-				Description: cadenya.F("description"),
-				Permissions: cadenya.F([]string{"string"}),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.APIKeySpecParam{
+				Description: cadenya.String("description"),
+				Permissions: []string{"string"},
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -133,19 +131,16 @@ func TestAPIKeyListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.APIKeys.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.APIKeyListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
-		},
-	)
+	_, err := client.APIKeys.List(context.TODO(), cadenya.APIKeyListParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Cursor:      cadenya.String("cursor"),
+		IncludeInfo: cadenya.Bool(true),
+		Labels:      cadenya.String("labels"),
+		Limit:       cadenya.Int(0),
+		Prefix:      cadenya.String("prefix"),
+		Query:       cadenya.String("query"),
+		SortOrder:   cadenya.String("sortOrder"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -170,8 +165,10 @@ func TestAPIKeyDelete(t *testing.T) {
 	)
 	err := client.APIKeys.Delete(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
+		cadenya.APIKeyDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -197,9 +194,10 @@ func TestAPIKeyDisable(t *testing.T) {
 	)
 	_, err := client.APIKeys.Disable(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.APIKeyDisableParams{},
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
+		cadenya.APIKeyDisableParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -225,9 +223,10 @@ func TestAPIKeyEnable(t *testing.T) {
 	)
 	_, err := client.APIKeys.Enable(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.APIKeyEnableParams{},
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
+		cadenya.APIKeyEnableParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -253,9 +252,10 @@ func TestAPIKeyRotate(t *testing.T) {
 	)
 	_, err := client.APIKeys.Rotate(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.APIKeyRotateParams{},
+		"apikey_01HXKD2E5NQM3T9AYWCFCSPNQY",
+		cadenya.APIKeyRotateParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestWorkspaceSecretNewWithOptionalParams(t *testing.T) {
@@ -27,22 +26,19 @@ func TestWorkspaceSecretNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceSecrets.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.WorkspaceSecretNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.WorkspaceSecretSpecParam{
-				Value: cadenya.F("value"),
-			}),
+	_, err := client.WorkspaceSecrets.New(context.TODO(), cadenya.WorkspaceSecretNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: shared.CreateResourceMetadataParam{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.WorkspaceSecretSpecParam{
+			Value: cadenya.String("value"),
+		},
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -67,8 +63,10 @@ func TestWorkspaceSecretGet(t *testing.T) {
 	)
 	_, err := client.WorkspaceSecrets.Get(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
+		cadenya.WorkspaceSecretGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -94,20 +92,20 @@ func TestWorkspaceSecretUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.WorkspaceSecrets.Update(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
 		cadenya.WorkspaceSecretUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.WorkspaceSecretSpecParam{
-				Value: cadenya.F("value"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.WorkspaceSecretSpecParam{
+				Value: cadenya.String("value"),
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -132,19 +130,16 @@ func TestWorkspaceSecretListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceSecrets.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.WorkspaceSecretListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
-		},
-	)
+	_, err := client.WorkspaceSecrets.List(context.TODO(), cadenya.WorkspaceSecretListParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Cursor:      cadenya.String("cursor"),
+		IncludeInfo: cadenya.Bool(true),
+		Labels:      cadenya.String("labels"),
+		Limit:       cadenya.Int(0),
+		Prefix:      cadenya.String("prefix"),
+		Query:       cadenya.String("query"),
+		SortOrder:   cadenya.String("sortOrder"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -169,8 +164,10 @@ func TestWorkspaceSecretDelete(t *testing.T) {
 	)
 	err := client.WorkspaceSecrets.Delete(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
+		cadenya.WorkspaceSecretDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

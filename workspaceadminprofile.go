@@ -4,15 +4,14 @@ package cadenya
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
 )
 
 // Administer workspaces across the account: create and archive workspaces and
@@ -29,15 +28,15 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewWorkspaceAdminProfileService] method instead.
 type WorkspaceAdminProfileService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewWorkspaceAdminProfileService generates a new service that applies the given
 // options to each request. These options are applied after the parent client's
 // options (if there is one), and before any request-specific options.
-func NewWorkspaceAdminProfileService(opts ...option.RequestOption) (r *WorkspaceAdminProfileService) {
-	r = &WorkspaceAdminProfileService{}
-	r.Options = opts
+func NewWorkspaceAdminProfileService(opts ...option.RequestOption) (r WorkspaceAdminProfileService) {
+	r = WorkspaceAdminProfileService{}
+	r.options = opts
 	return
 }
 
@@ -45,7 +44,7 @@ func NewWorkspaceAdminProfileService(opts ...option.RequestOption) (r *Workspace
 // search and an optional type filter. Account-scoped; admin only.
 func (r *WorkspaceAdminProfileService) List(ctx context.Context, query WorkspaceAdminProfileListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Profile], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/account/profiles"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -68,21 +67,22 @@ func (r *WorkspaceAdminProfileService) ListAutoPaging(ctx context.Context, query
 
 type WorkspaceAdminProfileListParams struct {
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Free-form search over profile name and email. Case-insensitive substring match;
 	// empty returns all profiles.
-	Query param.Field[string] `query:"query"`
+	Query param.Opt[string] `query:"query,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [WorkspaceAdminProfileListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceAdminProfileListParams) URLQuery() (v url.Values) {
+func (r WorkspaceAdminProfileListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

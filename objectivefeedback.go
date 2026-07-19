@@ -4,19 +4,20 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // ObjectiveFeedbackService contains methods and other services that help with
@@ -26,23 +27,28 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewObjectiveFeedbackService] method instead.
 type ObjectiveFeedbackService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewObjectiveFeedbackService generates a new service that applies the given
 // options to each request. These options are applied after the parent client's
 // options (if there is one), and before any request-specific options.
-func NewObjectiveFeedbackService(opts ...option.RequestOption) (r *ObjectiveFeedbackService) {
-	r = &ObjectiveFeedbackService{}
-	r.Options = opts
+func NewObjectiveFeedbackService(opts ...option.RequestOption) (r ObjectiveFeedbackService) {
+	r = ObjectiveFeedbackService{}
+	r.options = opts
 	return
 }
 
 // Submits feedback for an objective's execution. Feedback scores are used by the
 // agent variation scoring system to evaluate and rank variation performance.
-func (r *ObjectiveFeedbackService) New(ctx context.Context, workspaceID string, objectiveID string, body ObjectiveFeedbackNewParams, opts ...option.RequestOption) (res *ObjectiveFeedback, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ObjectiveFeedbackService) New(ctx context.Context, objectiveID string, params ObjectiveFeedbackNewParams, opts ...option.RequestOption) (res *ObjectiveFeedback, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -50,17 +56,22 @@ func (r *ObjectiveFeedbackService) New(ctx context.Context, workspaceID string, 
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", workspaceID, objectiveID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Lists all feedback submitted for an objective
-func (r *ObjectiveFeedbackService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
+func (r *ObjectiveFeedbackService) List(ctx context.Context, objectiveID string, params ObjectiveFeedbackListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveFeedback], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -68,8 +79,8 @@ func (r *ObjectiveFeedbackService) List(ctx context.Context, workspaceID string,
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", workspaceID, objectiveID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/feedback", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +93,8 @@ func (r *ObjectiveFeedbackService) List(ctx context.Context, workspaceID string,
 }
 
 // Lists all feedback submitted for an objective
-func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
+func (r *ObjectiveFeedbackService) ListAutoPaging(ctx context.Context, objectiveID string, params ObjectiveFeedbackListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveFeedback] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, params, opts...))
 }
 
 // ObjectiveFeedback represents feedback submitted for an objective's execution.
@@ -95,25 +106,20 @@ type ObjectiveFeedback struct {
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	Info     ObjectiveFeedbackInfo    `json:"info"`
-	JSON     objectiveFeedbackJSON    `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Metadata    respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveFeedbackJSON contains the JSON metadata for the struct
-// [ObjectiveFeedback]
-type objectiveFeedbackJSON struct {
-	Data        apijson.Field
-	Metadata    apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveFeedback) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveFeedback) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveFeedback) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveFeedbackJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveFeedbackData struct {
@@ -122,38 +128,47 @@ type ObjectiveFeedbackData struct {
 	// A score between -1.0 and 1.0 representing the quality of the objective's
 	// execution. -1.0 is the worst possible score, 0.0 is neutral, and 1.0 is the
 	// best.
-	Score float64                   `json:"score"`
-	JSON  objectiveFeedbackDataJSON `json:"-"`
+	Score float64 `json:"score"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Comment     respjson.Field
+		Score       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveFeedbackDataJSON contains the JSON metadata for the struct
-// [ObjectiveFeedbackData]
-type objectiveFeedbackDataJSON struct {
-	Comment     apijson.Field
-	Score       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveFeedbackData) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveFeedbackData) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveFeedbackData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveFeedbackDataJSON) RawJSON() string {
-	return r.raw
+// ToParam converts this ObjectiveFeedbackData to a ObjectiveFeedbackDataParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ObjectiveFeedbackDataParam.Overrides()
+func (r ObjectiveFeedbackData) ToParam() ObjectiveFeedbackDataParam {
+	return param.Override[ObjectiveFeedbackDataParam](json.RawMessage(r.RawJSON()))
 }
 
 type ObjectiveFeedbackDataParam struct {
 	// Optional human-readable comment explaining the feedback
-	Comment param.Field[string] `json:"comment"`
+	Comment param.Opt[string] `json:"comment,omitzero"`
 	// A score between -1.0 and 1.0 representing the quality of the objective's
 	// execution. -1.0 is the worst possible score, 0.0 is neutral, and 1.0 is the
 	// best.
-	Score param.Field[float64] `json:"score"`
+	Score param.Opt[float64] `json:"score,omitzero"`
+	paramObj
 }
 
 func (r ObjectiveFeedbackDataParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ObjectiveFeedbackDataParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ObjectiveFeedbackDataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ObjectiveFeedbackInfo struct {
@@ -174,54 +189,61 @@ type ObjectiveFeedbackInfo struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	SubmittedBy Profile                   `json:"submittedBy"`
-	JSON        objectiveFeedbackInfoJSON `json:"-"`
+	SubmittedBy Profile `json:"submittedBy"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AgentVariation respjson.Field
+		Objective      respjson.Field
+		SubmittedBy    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
 }
 
-// objectiveFeedbackInfoJSON contains the JSON metadata for the struct
-// [ObjectiveFeedbackInfo]
-type objectiveFeedbackInfoJSON struct {
-	AgentVariation apijson.Field
-	Objective      apijson.Field
-	SubmittedBy    apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *ObjectiveFeedbackInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveFeedbackInfo) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveFeedbackInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveFeedbackInfoJSON) RawJSON() string {
-	return r.raw
-}
-
 type ObjectiveFeedbackNewParams struct {
-	Data param.Field[ObjectiveFeedbackDataParam] `json:"data" api:"required"`
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string]          `path:"workspaceId,omitzero" api:"required" json:"-"`
+	Data        ObjectiveFeedbackDataParam `json:"data,omitzero" api:"required"`
 	// CreateOperationMetadata contains the user-provided fields for creating an
 	// operation. Read-only fields (id, account_id, workspace_id, created_at,
 	// profile_id) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateOperationMetadataParam] `json:"metadata" api:"required"`
+	Metadata shared.CreateOperationMetadataParam `json:"metadata,omitzero" api:"required"`
+	paramObj
 }
 
 func (r ObjectiveFeedbackNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ObjectiveFeedbackNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ObjectiveFeedbackNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ObjectiveFeedbackListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [ObjectiveFeedbackListParams]'s query parameters as
 // `url.Values`.
-func (r ObjectiveFeedbackListParams) URLQuery() (v url.Values) {
+func (r ObjectiveFeedbackListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

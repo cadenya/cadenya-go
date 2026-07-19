@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestWorkspaceAdminNewWithOptionalParams(t *testing.T) {
@@ -27,16 +26,16 @@ func TestWorkspaceAdminNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.New(context.TODO(), cadenya.WorkspaceAdminNewParams{
-		Metadata: cadenya.F(cadenya.WorkspaceAdminNewParamsMetadata{
-			Name:       cadenya.F("name"),
-			ExternalID: cadenya.F("externalId"),
-			Labels: cadenya.F(map[string]string{
+		Metadata: cadenya.WorkspaceAdminNewParamsMetadata{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
 				"foo": "string",
-			}),
-		}),
-		Spec: cadenya.F(cadenya.WorkspaceSpecParam{
-			Description: cadenya.F("description"),
-		}),
+			},
+		},
+		Spec: cadenya.WorkspaceSpecParam{
+			Description: cadenya.String("description"),
+		},
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -60,7 +59,9 @@ func TestWorkspaceAdminGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceAdmin.Get(context.TODO(), "workspaceId")
+	_, err := client.WorkspaceAdmin.Get(context.TODO(), cadenya.WorkspaceAdminGetParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -83,23 +84,20 @@ func TestWorkspaceAdminUpdateWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.WorkspaceAdmin.Update(
-		context.TODO(),
-		"workspaceId",
-		cadenya.WorkspaceAdminUpdateParams{
-			Metadata: cadenya.F(cadenya.WorkspaceAdminUpdateParamsMetadata{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.WorkspaceSpecParam{
-				Description: cadenya.F("description"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+	_, err := client.WorkspaceAdmin.Update(context.TODO(), cadenya.WorkspaceAdminUpdateParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: cadenya.WorkspaceAdminUpdateParamsMetadata{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.WorkspaceSpecParam{
+			Description: cadenya.String("description"),
+		},
+		UpdateMask: cadenya.String("updateMask"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -123,10 +121,10 @@ func TestWorkspaceAdminListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.List(context.TODO(), cadenya.WorkspaceAdminListParams{
-		Cursor:          cadenya.F("cursor"),
-		IncludeArchived: cadenya.F(true),
-		Labels:          cadenya.F("labels"),
-		Limit:           cadenya.F(int64(0)),
+		Cursor:          cadenya.String("cursor"),
+		IncludeArchived: cadenya.Bool(true),
+		Labels:          cadenya.String("labels"),
+		Limit:           cadenya.Int(0),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -150,7 +148,9 @@ func TestWorkspaceAdminArchive(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	err := client.WorkspaceAdmin.Archive(context.TODO(), "workspaceId")
+	err := client.WorkspaceAdmin.Archive(context.TODO(), cadenya.WorkspaceAdminArchiveParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {

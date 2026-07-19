@@ -5,15 +5,14 @@ package cadenya_test
 import (
 	"context"
 	"fmt"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal"
+	"go.cadenya.com/cadenya-go/option"
 	"io"
 	"net/http"
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 type closureTransport struct {
@@ -69,11 +68,11 @@ func TestRetryAfter(t *testing.T) {
 	}
 
 	attempts := len(retryCountHeaders)
-	if attempts != 3 {
-		t.Errorf("Expected %d attempts, got %d", 3, attempts)
+	if attempts != 1 {
+		t.Errorf("Expected %d attempts, got %d", 1, attempts)
 	}
 
-	expectedRetryCountHeaders := []string{"0", "1", "2"}
+	expectedRetryCountHeaders := []string{"0"}
 	if !reflect.DeepEqual(retryCountHeaders, expectedRetryCountHeaders) {
 		t.Errorf("Expected %v retry count headers, got %v", expectedRetryCountHeaders, retryCountHeaders)
 	}
@@ -103,7 +102,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		t.Error("Expected there to be a cancel error")
 	}
 
-	expectedRetryCountHeaders := []string{"", "", ""}
+	expectedRetryCountHeaders := []string{""}
 	if !reflect.DeepEqual(retryCountHeaders, expectedRetryCountHeaders) {
 		t.Errorf("Expected %v retry count headers, got %v", expectedRetryCountHeaders, retryCountHeaders)
 	}
@@ -133,7 +132,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		t.Error("Expected there to be a cancel error")
 	}
 
-	expectedRetryCountHeaders := []string{"42", "42", "42"}
+	expectedRetryCountHeaders := []string{"42"}
 	if !reflect.DeepEqual(retryCountHeaders, expectedRetryCountHeaders) {
 		t.Errorf("Expected %v retry count headers, got %v", expectedRetryCountHeaders, retryCountHeaders)
 	}
@@ -161,7 +160,7 @@ func TestRetryAfterMs(t *testing.T) {
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
-	if want := 3; attempts != want {
+	if want := 1; attempts != want {
 		t.Errorf("Expected %d attempts, got %d", want, attempts)
 	}
 }
@@ -273,8 +272,10 @@ func TestContextDeadlineStreaming(t *testing.T) {
 		)
 		stream := client.Objectives.StreamEventsStreaming(
 			deadlineCtx,
-			"workspaceId",
-			"objectiveId",
+			"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+			cadenya.ObjectiveStreamEventsParams{
+				WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			},
 		)
 		for stream.Next() {
 			_ = stream.Current()
@@ -322,8 +323,10 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 		)
 		stream := client.Objectives.StreamEventsStreaming(
 			context.Background(),
-			"workspaceId",
-			"objectiveId",
+			"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+			cadenya.ObjectiveStreamEventsParams{
+				WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)
 		for stream.Next() {

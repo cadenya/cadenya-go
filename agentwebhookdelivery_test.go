@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
@@ -28,14 +27,14 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.WebhookDeliveries.List(
 		context.TODO(),
-		"workspaceId",
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentWebhookDeliveryListParams{
-			Cursor:      cadenya.F("cursor"),
-			EventType:   cadenya.F(cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			ObjectiveID: cadenya.F("objectiveId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			EventType:   cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified,
+			Labels:      cadenya.String("labels"),
+			Limit:       cadenya.Int(0),
+			ObjectiveID: cadenya.String("obj_01HXKD2E5NQM3T9AYWCFQAZGFV"),
 		},
 	)
 	if err != nil {

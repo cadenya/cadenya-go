@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestAIProviderKeyNewWithOptionalParams(t *testing.T) {
@@ -27,44 +26,35 @@ func TestAIProviderKeyNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AIProviderKeys.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.AIProviderKeyNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				Config: cadenya.F(cadenya.AIProviderKeySpecConfigParam{
-					OpenAI: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAIParam{
-						OrganizationID: cadenya.F("organizationId"),
-						ProjectID:      cadenya.F("projectId"),
-					}),
-					OpenAICompatible: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAICompatibleParam{
-						BaseURL: cadenya.F("baseUrl"),
-					}),
-					Openrouter: cadenya.F(cadenya.AIProviderKeySpecConfigOpenrouterParam{
-						Region: cadenya.F("region"),
-					}),
-				}),
-				Credentials: cadenya.F(cadenya.AIProviderKeySpecCredentialsParam{
-					APIKey: cadenya.F(cadenya.AIProviderKeySpecCredentialsAPIKeyParam{
-						APIKey: cadenya.F("apiKey"),
-					}),
-					Headers: cadenya.F(cadenya.AIProviderKeySpecCredentialsHeadersParam{
-						Headers: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}),
-				Provider: cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
-			}),
+	_, err := client.AIProviderKeys.New(context.TODO(), cadenya.AIProviderKeyNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: shared.CreateResourceMetadataParam{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.AIProviderKeySpecParam{
+			Config: cadenya.AIProviderKeySpecConfigUnionParam{
+				OfOpenrouter: &cadenya.AIProviderConfigOpenrouterParam{
+					Openrouter: cadenya.AIProviderConfigOpenrouterOpenrouterParam{
+						Region: cadenya.String("region"),
+					},
+					Type: cadenya.AIProviderConfigOpenrouterTypeOpenrouter,
+				},
+			},
+			Credentials: cadenya.AIProviderKeySpecCredentialsUnionParam{
+				OfAPIKey: &cadenya.AIProviderCredentialAPIKeyParam{
+					APIKey: cadenya.AIProviderCredentialAPIKeyAPIKeyParam{
+						APIKey: cadenya.String("apiKey"),
+					},
+					Type: cadenya.AIProviderCredentialAPIKeyTypeAPIKey,
+				},
+			},
+			Provider: cadenya.AIProviderKeySpecProviderAIProviderUnspecified,
+		},
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -89,8 +79,10 @@ func TestAIProviderKeyGet(t *testing.T) {
 	)
 	_, err := client.AIProviderKeys.Get(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"aipk_01HXKD2E5NQM3T9AYWCFQ41VW3",
+		cadenya.AIProviderKeyGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -116,42 +108,36 @@ func TestAIProviderKeyUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.AIProviderKeys.Update(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"aipk_01HXKD2E5NQM3T9AYWCFQ41VW3",
 		cadenya.AIProviderKeyUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AIProviderKeySpecParam{
-				Config: cadenya.F(cadenya.AIProviderKeySpecConfigParam{
-					OpenAI: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAIParam{
-						OrganizationID: cadenya.F("organizationId"),
-						ProjectID:      cadenya.F("projectId"),
-					}),
-					OpenAICompatible: cadenya.F(cadenya.AIProviderKeySpecConfigOpenAICompatibleParam{
-						BaseURL: cadenya.F("baseUrl"),
-					}),
-					Openrouter: cadenya.F(cadenya.AIProviderKeySpecConfigOpenrouterParam{
-						Region: cadenya.F("region"),
-					}),
-				}),
-				Credentials: cadenya.F(cadenya.AIProviderKeySpecCredentialsParam{
-					APIKey: cadenya.F(cadenya.AIProviderKeySpecCredentialsAPIKeyParam{
-						APIKey: cadenya.F("apiKey"),
-					}),
-					Headers: cadenya.F(cadenya.AIProviderKeySpecCredentialsHeadersParam{
-						Headers: cadenya.F(map[string]string{
-							"foo": "string",
-						}),
-					}),
-				}),
-				Provider: cadenya.F(cadenya.AIProviderKeySpecProviderAIProviderUnspecified),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.AIProviderKeySpecParam{
+				Config: cadenya.AIProviderKeySpecConfigUnionParam{
+					OfOpenrouter: &cadenya.AIProviderConfigOpenrouterParam{
+						Openrouter: cadenya.AIProviderConfigOpenrouterOpenrouterParam{
+							Region: cadenya.String("region"),
+						},
+						Type: cadenya.AIProviderConfigOpenrouterTypeOpenrouter,
+					},
+				},
+				Credentials: cadenya.AIProviderKeySpecCredentialsUnionParam{
+					OfAPIKey: &cadenya.AIProviderCredentialAPIKeyParam{
+						APIKey: cadenya.AIProviderCredentialAPIKeyAPIKeyParam{
+							APIKey: cadenya.String("apiKey"),
+						},
+						Type: cadenya.AIProviderCredentialAPIKeyTypeAPIKey,
+					},
+				},
+				Provider: cadenya.AIProviderKeySpecProviderAIProviderUnspecified,
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -176,20 +162,17 @@ func TestAIProviderKeyListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.AIProviderKeys.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.AIProviderKeyListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Labels:      cadenya.F("labels"),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Promotional: cadenya.F(true),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
-		},
-	)
+	_, err := client.AIProviderKeys.List(context.TODO(), cadenya.AIProviderKeyListParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Cursor:      cadenya.String("cursor"),
+		IncludeInfo: cadenya.Bool(true),
+		Labels:      cadenya.String("labels"),
+		Limit:       cadenya.Int(0),
+		Prefix:      cadenya.String("prefix"),
+		Promotional: cadenya.Bool(true),
+		Query:       cadenya.String("query"),
+		SortOrder:   cadenya.String("sortOrder"),
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -214,8 +197,10 @@ func TestAIProviderKeyDelete(t *testing.T) {
 	)
 	err := client.AIProviderKeys.Delete(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"aipk_01HXKD2E5NQM3T9AYWCFQ41VW3",
+		cadenya.AIProviderKeyDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

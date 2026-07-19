@@ -4,11 +4,10 @@ package cadenya
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
 	"net/http"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 // Manage the account's system-provisioned global API key. The global key is the
@@ -22,22 +21,22 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewGlobalAPIKeyService] method instead.
 type GlobalAPIKeyService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewGlobalAPIKeyService generates a new service that applies the given options to
 // each request. These options are applied after the parent client's options (if
 // there is one), and before any request-specific options.
-func NewGlobalAPIKeyService(opts ...option.RequestOption) (r *GlobalAPIKeyService) {
-	r = &GlobalAPIKeyService{}
-	r.Options = opts
+func NewGlobalAPIKeyService(opts ...option.RequestOption) (r GlobalAPIKeyService) {
+	r = GlobalAPIKeyService{}
+	r.options = opts
 	return
 }
 
 // Retrieves the account's global API key. The token is included only when the
 // caller's scopes dominate the key's.
 func (r *GlobalAPIKeyService) Get(ctx context.Context, opts ...option.RequestOption) (res *APIKey, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account/global_api_key"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -46,7 +45,7 @@ func (r *GlobalAPIKeyService) Get(ctx context.Context, opts ...option.RequestOpt
 // Disables the global API key. While disabled, presenting its token fails
 // authentication on every endpoint; the key is retained. Idempotent.
 func (r *GlobalAPIKeyService) Disable(ctx context.Context, opts ...option.RequestOption) (res *APIKey, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account/global_api_key:disable"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -55,7 +54,7 @@ func (r *GlobalAPIKeyService) Disable(ctx context.Context, opts ...option.Reques
 // Re-enables the disabled global API key so its token authenticates again.
 // Idempotent.
 func (r *GlobalAPIKeyService) Enable(ctx context.Context, opts ...option.RequestOption) (res *APIKey, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account/global_api_key:enable"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -64,7 +63,7 @@ func (r *GlobalAPIKeyService) Enable(ctx context.Context, opts ...option.Request
 // Rotates the global API key and returns a new token. All previous tokens are
 // invalidated.
 func (r *GlobalAPIKeyService) Rotate(ctx context.Context, opts ...option.RequestOption) (res *APIKey, err error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	path := "v1/account/global_api_key:rotate"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

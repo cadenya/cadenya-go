@@ -4,20 +4,21 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
 	"time"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // ObjectiveToolCallService contains methods and other services that help with
@@ -27,23 +28,28 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewObjectiveToolCallService] method instead.
 type ObjectiveToolCallService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewObjectiveToolCallService generates a new service that applies the given
 // options to each request. These options are applied after the parent client's
 // options (if there is one), and before any request-specific options.
-func NewObjectiveToolCallService(opts ...option.RequestOption) (r *ObjectiveToolCallService) {
-	r = &ObjectiveToolCallService{}
-	r.Options = opts
+func NewObjectiveToolCallService(opts ...option.RequestOption) (r ObjectiveToolCallService) {
+	r = ObjectiveToolCallService{}
+	r.options = opts
 	return
 }
 
 // Retrieves a single tool call, including the content the tool returned. Media
 // content (images, audio) is served as short-lived signed URLs.
-func (r *ObjectiveToolCallService) Get(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, opts ...option.RequestOption) (res *ObjectiveToolCallWithResult, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ObjectiveToolCallService) Get(ctx context.Context, objectiveID string, toolCallID string, query ObjectiveToolCallGetParams, opts ...option.RequestOption) (res *ObjectiveToolCallWithResult, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&query.WorkspaceID, precfg.WorkspaceID)
+	if query.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -55,17 +61,22 @@ func (r *ObjectiveToolCallService) Get(ctx context.Context, workspaceID string, 
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s", workspaceID, objectiveID, toolCallID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s", url.PathEscape(query.WorkspaceID.Value), url.PathEscape(objectiveID), url.PathEscape(toolCallID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Lists all tool calls for an objective
-func (r *ObjectiveToolCallService) List(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveToolCall], err error) {
+func (r *ObjectiveToolCallService) List(ctx context.Context, objectiveID string, params ObjectiveToolCallListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ObjectiveToolCall], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -73,8 +84,8 @@ func (r *ObjectiveToolCallService) List(ctx context.Context, workspaceID string,
 		err = errors.New("missing required objectiveId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls", workspaceID, objectiveID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -87,15 +98,20 @@ func (r *ObjectiveToolCallService) List(ctx context.Context, workspaceID string,
 }
 
 // Lists all tool calls for an objective
-func (r *ObjectiveToolCallService) ListAutoPaging(ctx context.Context, workspaceID string, objectiveID string, query ObjectiveToolCallListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveToolCall] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, objectiveID, query, opts...))
+func (r *ObjectiveToolCallService) ListAutoPaging(ctx context.Context, objectiveID string, params ObjectiveToolCallListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ObjectiveToolCall] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, objectiveID, params, opts...))
 }
 
 // When an agent attempts to use a tool that requires approval, use this endpoint
 // to mark it as approved.
-func (r *ObjectiveToolCallService) Approve(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallApproveParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ObjectiveToolCallService) Approve(ctx context.Context, objectiveID string, toolCallID string, body ObjectiveToolCallApproveParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -107,7 +123,7 @@ func (r *ObjectiveToolCallService) Approve(ctx context.Context, workspaceID stri
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:approve", workspaceID, objectiveID, toolCallID)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:approve", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(objectiveID), url.PathEscape(toolCallID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -115,9 +131,14 @@ func (r *ObjectiveToolCallService) Approve(ctx context.Context, workspaceID stri
 // When an agent attempts to use a tool that requires approval, use this endpoint
 // to mark it as denied. Use a memo to steer the LLM to a different decision or
 // usage of the tool.
-func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallDenyParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ObjectiveToolCallService) Deny(ctx context.Context, objectiveID string, toolCallID string, params ObjectiveToolCallDenyParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -129,17 +150,22 @@ func (r *ObjectiveToolCallService) Deny(ctx context.Context, workspaceID string,
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:deny", workspaceID, objectiveID, toolCallID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:deny", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID), url.PathEscape(toolCallID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // For bare tool calls (tool sets with no execution adapter), sets the content an
 // external API consumer supplies for the call — used for human-in-the-loop tools
 // and reverse harnesses that execute tools locally and report results back.
-func (r *ObjectiveToolCallService) SetContent(ctx context.Context, workspaceID string, objectiveID string, toolCallID string, body ObjectiveToolCallSetContentParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *ObjectiveToolCallService) SetContent(ctx context.Context, objectiveID string, toolCallID string, params ObjectiveToolCallSetContentParams, opts ...option.RequestOption) (res *ObjectiveToolCall, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -151,8 +177,8 @@ func (r *ObjectiveToolCallService) SetContent(ctx context.Context, workspaceID s
 		err = errors.New("missing required toolCallId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:setContent", workspaceID, objectiveID, toolCallID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/objectives/%s/tool_calls/%s:setContent", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(objectiveID), url.PathEscape(toolCallID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
@@ -160,35 +186,38 @@ func (r *ObjectiveToolCallService) SetContent(ctx context.Context, workspaceID s
 // execution. Tool calls are mutable — their status changes as they are approved,
 // denied, or executed.
 type ObjectiveToolCall struct {
-	Data            ObjectiveToolCallData            `json:"data" api:"required"`
+	Data ObjectiveToolCallData `json:"data" api:"required"`
+	// Any of "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED",
+	// "TOOL_CALL_EXECUTION_STATUS_PENDING", "TOOL_CALL_EXECUTION_STATUS_RUNNING",
+	// "TOOL_CALL_EXECUTION_STATUS_COMPLETED", "TOOL_CALL_EXECUTION_STATUS_ERRORED",
+	// "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT".
 	ExecutionStatus ObjectiveToolCallExecutionStatus `json:"executionStatus" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	// Current status of the tool call
+	//
+	// Any of "TOOL_CALL_STATUS_UNSPECIFIED", "TOOL_CALL_STATUS_AUTO_APPROVED",
+	// "TOOL_CALL_STATUS_WAITING_FOR_APPROVAL", "TOOL_CALL_STATUS_APPROVED",
+	// "TOOL_CALL_STATUS_DENIED".
 	Status ObjectiveToolCallStatus `json:"status" api:"required"`
 	Info   ObjectiveToolCallInfo   `json:"info"`
-	JSON   objectiveToolCallJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data            respjson.Field
+		ExecutionStatus respjson.Field
+		Metadata        respjson.Field
+		Status          respjson.Field
+		Info            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
 }
 
-// objectiveToolCallJSON contains the JSON metadata for the struct
-// [ObjectiveToolCall]
-type objectiveToolCallJSON struct {
-	Data            apijson.Field
-	ExecutionStatus apijson.Field
-	Metadata        apijson.Field
-	Status          apijson.Field
-	Info            apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCall) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCall) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCall) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveToolCallExecutionStatus string
@@ -202,14 +231,6 @@ const (
 	ObjectiveToolCallExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
 )
 
-func (r ObjectiveToolCallExecutionStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallExecutionStatusToolCallExecutionStatusWaitingForContent:
-		return true
-	}
-	return false
-}
-
 // Current status of the tool call
 type ObjectiveToolCallStatus string
 
@@ -221,22 +242,14 @@ const (
 	ObjectiveToolCallStatusToolCallStatusDenied             ObjectiveToolCallStatus = "TOOL_CALL_STATUS_DENIED"
 )
 
-func (r ObjectiveToolCallStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallStatusToolCallStatusUnspecified, ObjectiveToolCallStatusToolCallStatusAutoApproved, ObjectiveToolCallStatusToolCallStatusWaitingForApproval, ObjectiveToolCallStatusToolCallStatusApproved, ObjectiveToolCallStatusToolCallStatusDenied:
-		return true
-	}
-	return false
-}
-
 type ObjectiveToolCallData struct {
 	// CallableTool is a union that represents a tool that can be called by an agent.
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Callable CallableTool `json:"callable" api:"required"`
+	Callable CallableToolUnion `json:"callable" api:"required"`
 	// The arguments passed to the tool
-	Arguments map[string]interface{} `json:"arguments"`
+	Arguments map[string]any `json:"arguments"`
 	// A memo supplied by the reviewer when denying the tool call
 	Memo string `json:"memo"`
 	// List of resolved secrets used by the tool call
@@ -244,28 +257,23 @@ type ObjectiveToolCallData struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
-	StatusChangedBy Profile                   `json:"statusChangedBy"`
-	JSON            objectiveToolCallDataJSON `json:"-"`
+	StatusChangedBy Profile `json:"statusChangedBy"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Callable        respjson.Field
+		Arguments       respjson.Field
+		Memo            respjson.Field
+		ResolvedSecrets respjson.Field
+		StatusChangedBy respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
 }
 
-// objectiveToolCallDataJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallData]
-type objectiveToolCallDataJSON struct {
-	Callable        apijson.Field
-	Arguments       apijson.Field
-	Memo            apijson.Field
-	ResolvedSecrets apijson.Field
-	StatusChangedBy apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallData) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallData) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallDataJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveToolCallInfo struct {
@@ -289,27 +297,22 @@ type ObjectiveToolCallInfo struct {
 	// e.g., the tool references inside an agent variation spec or the tools assigned
 	// to an objective. Both fields are server-populated; clients provide IDs through
 	// sibling fields rather than by constructing a BareMetadata themselves.
-	ToolSet shared.BareMetadata       `json:"toolSet"`
-	JSON    objectiveToolCallInfoJSON `json:"-"`
+	ToolSet shared.BareMetadata `json:"toolSet"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedBy   respjson.Field
+		Objective   respjson.Field
+		Tool        respjson.Field
+		ToolSet     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolCallInfoJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallInfo]
-type objectiveToolCallInfoJSON struct {
-	CreatedBy   apijson.Field
-	Objective   apijson.Field
-	Tool        apijson.Field
-	ToolSet     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallInfo) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 // ObjectiveToolCallResult is the content a tool returned after execution. Tools
@@ -317,24 +320,19 @@ func (r objectiveToolCallInfoJSON) RawJSON() string {
 // audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
 // rather than inline bytes.
 type ObjectiveToolCallResult struct {
-	Content []ObjectiveToolCallResultContentBlock `json:"content" api:"required"`
-	JSON    objectiveToolCallResultJSON           `json:"-"`
+	Content []ObjectiveToolCallResultContentBlockUnion `json:"content" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolCallResultJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallResult]
-type objectiveToolCallResultJSON struct {
-	Content     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallResult) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResult) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallResultJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveToolCallResultAudioBlock struct {
@@ -345,55 +343,179 @@ type ObjectiveToolCallResultAudioBlock struct {
 	// Size of the stored audio in bytes.
 	SizeBytes string `json:"sizeBytes" api:"required"`
 	// Short-lived signed URL to download the stored audio.
-	URL  string                                `json:"url" api:"required"`
-	JSON objectiveToolCallResultAudioBlockJSON `json:"-"`
+	URL string `json:"url" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExpiresAt   respjson.Field
+		MimeType    respjson.Field
+		SizeBytes   respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolCallResultAudioBlockJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallResultAudioBlock]
-type objectiveToolCallResultAudioBlockJSON struct {
-	ExpiresAt   apijson.Field
-	MimeType    apijson.Field
-	SizeBytes   apijson.Field
-	URL         apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallResultAudioBlock) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultAudioBlock) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultAudioBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveToolCallResultAudioBlockJSON) RawJSON() string {
-	return r.raw
+// ObjectiveToolCallResultContentBlockUnion contains all possible properties and
+// values from [ObjectiveToolCallResultContentBlockText],
+// [ObjectiveToolCallResultContentBlockImage],
+// [ObjectiveToolCallResultContentBlockAudio].
+//
+// Use the [ObjectiveToolCallResultContentBlockUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ObjectiveToolCallResultContentBlockUnion struct {
+	// This field is from variant [ObjectiveToolCallResultContentBlockText].
+	Text ObjectiveToolCallResultTextBlock `json:"text"`
+	// Any of "text", "image", "audio".
+	Type string `json:"type"`
+	// This field is from variant [ObjectiveToolCallResultContentBlockImage].
+	Image ObjectiveToolCallResultImageBlock `json:"image"`
+	// This field is from variant [ObjectiveToolCallResultContentBlockAudio].
+	Audio ObjectiveToolCallResultAudioBlock `json:"audio"`
+	JSON  struct {
+		Text  respjson.Field
+		Type  respjson.Field
+		Image respjson.Field
+		Audio respjson.Field
+		raw   string
+	} `json:"-"`
 }
 
-// ContentBlock is a single block of tool result content. Exactly one of the
-// variants is set.
-type ObjectiveToolCallResultContentBlock struct {
-	Audio ObjectiveToolCallResultAudioBlock       `json:"audio"`
-	Image ObjectiveToolCallResultImageBlock       `json:"image"`
-	Text  ObjectiveToolCallResultTextBlock        `json:"text"`
-	JSON  objectiveToolCallResultContentBlockJSON `json:"-"`
+// anyObjectiveToolCallResultContentBlock is implemented by each variant of
+// [ObjectiveToolCallResultContentBlockUnion] to add type safety for the return
+// type of [ObjectiveToolCallResultContentBlockUnion.AsAny]
+type anyObjectiveToolCallResultContentBlock interface {
+	implObjectiveToolCallResultContentBlockUnion()
 }
 
-// objectiveToolCallResultContentBlockJSON contains the JSON metadata for the
-// struct [ObjectiveToolCallResultContentBlock]
-type objectiveToolCallResultContentBlockJSON struct {
-	Audio       apijson.Field
-	Image       apijson.Field
-	Text        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
+func (ObjectiveToolCallResultContentBlockText) implObjectiveToolCallResultContentBlockUnion()  {}
+func (ObjectiveToolCallResultContentBlockImage) implObjectiveToolCallResultContentBlockUnion() {}
+func (ObjectiveToolCallResultContentBlockAudio) implObjectiveToolCallResultContentBlockUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ObjectiveToolCallResultContentBlockUnion.AsAny().(type) {
+//	case cadenya.ObjectiveToolCallResultContentBlockText:
+//	case cadenya.ObjectiveToolCallResultContentBlockImage:
+//	case cadenya.ObjectiveToolCallResultContentBlockAudio:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ObjectiveToolCallResultContentBlockUnion) AsAny() anyObjectiveToolCallResultContentBlock {
+	switch u.Type {
+	case "text":
+		return u.AsText()
+	case "image":
+		return u.AsImage()
+	case "audio":
+		return u.AsAudio()
+	}
+	return nil
 }
 
-func (r *ObjectiveToolCallResultContentBlock) UnmarshalJSON(data []byte) (err error) {
+func (u ObjectiveToolCallResultContentBlockUnion) AsText() (v ObjectiveToolCallResultContentBlockText) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveToolCallResultContentBlockUnion) AsImage() (v ObjectiveToolCallResultContentBlockImage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveToolCallResultContentBlockUnion) AsAudio() (v ObjectiveToolCallResultContentBlockAudio) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ObjectiveToolCallResultContentBlockUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ObjectiveToolCallResultContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r objectiveToolCallResultContentBlockJSON) RawJSON() string {
-	return r.raw
+type ObjectiveToolCallResultContentBlockAudio struct {
+	Audio ObjectiveToolCallResultAudioBlock `json:"audio" api:"required"`
+	// Any of "audio".
+	Type ObjectiveToolCallResultContentBlockAudioType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Audio       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultContentBlockAudio) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultContentBlockAudio) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveToolCallResultContentBlockAudioType string
+
+const (
+	ObjectiveToolCallResultContentBlockAudioTypeAudio ObjectiveToolCallResultContentBlockAudioType = "audio"
+)
+
+type ObjectiveToolCallResultContentBlockImage struct {
+	Image ObjectiveToolCallResultImageBlock `json:"image" api:"required"`
+	// Any of "image".
+	Type ObjectiveToolCallResultContentBlockImageType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Image       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultContentBlockImage) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultContentBlockImage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveToolCallResultContentBlockImageType string
+
+const (
+	ObjectiveToolCallResultContentBlockImageTypeImage ObjectiveToolCallResultContentBlockImageType = "image"
+)
+
+type ObjectiveToolCallResultContentBlockText struct {
+	Text ObjectiveToolCallResultTextBlock `json:"text" api:"required"`
+	// Any of "text".
+	Type ObjectiveToolCallResultContentBlockTextType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultContentBlockText) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultContentBlockText) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveToolCallResultContentBlockTextType string
+
+const (
+	ObjectiveToolCallResultContentBlockTextTypeText ObjectiveToolCallResultContentBlockTextType = "text"
+)
 
 type ObjectiveToolCallResultImageBlock struct {
 	// When the signed URL expires.
@@ -403,60 +525,58 @@ type ObjectiveToolCallResultImageBlock struct {
 	// Size of the stored image in bytes.
 	SizeBytes string `json:"sizeBytes" api:"required"`
 	// Short-lived signed URL to download the stored image.
-	URL  string                                `json:"url" api:"required"`
-	JSON objectiveToolCallResultImageBlockJSON `json:"-"`
+	URL string `json:"url" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExpiresAt   respjson.Field
+		MimeType    respjson.Field
+		SizeBytes   respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolCallResultImageBlockJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallResultImageBlock]
-type objectiveToolCallResultImageBlockJSON struct {
-	ExpiresAt   apijson.Field
-	MimeType    apijson.Field
-	SizeBytes   apijson.Field
-	URL         apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallResultImageBlock) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultImageBlock) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultImageBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallResultImageBlockJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveToolCallResultTextBlock struct {
-	Text string                               `json:"text" api:"required"`
-	JSON objectiveToolCallResultTextBlockJSON `json:"-"`
+	Text string `json:"text" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Text        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// objectiveToolCallResultTextBlockJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallResultTextBlock]
-type objectiveToolCallResultTextBlockJSON struct {
-	Text        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallResultTextBlock) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallResultTextBlock) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultTextBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallResultTextBlockJSON) RawJSON() string {
-	return r.raw
 }
 
 // ObjectiveToolCallWithResult is an ObjectiveToolCall plus the content the tool
 // returned. Returned by GetObjectiveToolCall.
 type ObjectiveToolCallWithResult struct {
-	Data            ObjectiveToolCallData                      `json:"data" api:"required"`
+	Data ObjectiveToolCallData `json:"data" api:"required"`
+	// Any of "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED",
+	// "TOOL_CALL_EXECUTION_STATUS_PENDING", "TOOL_CALL_EXECUTION_STATUS_RUNNING",
+	// "TOOL_CALL_EXECUTION_STATUS_COMPLETED", "TOOL_CALL_EXECUTION_STATUS_ERRORED",
+	// "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT".
 	ExecutionStatus ObjectiveToolCallWithResultExecutionStatus `json:"executionStatus" api:"required"`
 	Info            ObjectiveToolCallInfo                      `json:"info" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	// Current status of the tool call
+	//
+	// Any of "TOOL_CALL_STATUS_UNSPECIFIED", "TOOL_CALL_STATUS_AUTO_APPROVED",
+	// "TOOL_CALL_STATUS_WAITING_FOR_APPROVAL", "TOOL_CALL_STATUS_APPROVED",
+	// "TOOL_CALL_STATUS_DENIED".
 	Status ObjectiveToolCallWithResultStatus `json:"status" api:"required"`
 	// List of resolved secrets used by the tool call
 	ResolvedSecrets []ResolvedSecret `json:"resolvedSecrets"`
@@ -464,30 +584,25 @@ type ObjectiveToolCallWithResult struct {
 	// can return multiple content blocks, and blocks can be multi-modal (text, image,
 	// audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
 	// rather than inline bytes.
-	Result ObjectiveToolCallResult         `json:"result"`
-	JSON   objectiveToolCallWithResultJSON `json:"-"`
+	Result ObjectiveToolCallResult `json:"result"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data            respjson.Field
+		ExecutionStatus respjson.Field
+		Info            respjson.Field
+		Metadata        respjson.Field
+		Status          respjson.Field
+		ResolvedSecrets respjson.Field
+		Result          respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
 }
 
-// objectiveToolCallWithResultJSON contains the JSON metadata for the struct
-// [ObjectiveToolCallWithResult]
-type objectiveToolCallWithResultJSON struct {
-	Data            apijson.Field
-	ExecutionStatus apijson.Field
-	Info            apijson.Field
-	Metadata        apijson.Field
-	Status          apijson.Field
-	ResolvedSecrets apijson.Field
-	Result          apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ObjectiveToolCallWithResult) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ObjectiveToolCallWithResult) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallWithResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r objectiveToolCallWithResultJSON) RawJSON() string {
-	return r.raw
 }
 
 type ObjectiveToolCallWithResultExecutionStatus string
@@ -501,14 +616,6 @@ const (
 	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
 )
 
-func (r ObjectiveToolCallWithResultExecutionStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusWaitingForContent:
-		return true
-	}
-	return false
-}
-
 // Current status of the tool call
 type ObjectiveToolCallWithResultStatus string
 
@@ -520,14 +627,6 @@ const (
 	ObjectiveToolCallWithResultStatusToolCallStatusDenied             ObjectiveToolCallWithResultStatus = "TOOL_CALL_STATUS_DENIED"
 )
 
-func (r ObjectiveToolCallWithResultStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallWithResultStatusToolCallStatusUnspecified, ObjectiveToolCallWithResultStatusToolCallStatusAutoApproved, ObjectiveToolCallWithResultStatusToolCallStatusWaitingForApproval, ObjectiveToolCallWithResultStatusToolCallStatusApproved, ObjectiveToolCallWithResultStatusToolCallStatusDenied:
-		return true
-	}
-	return false
-}
-
 // ResolvedSecret is a resolved secret value from the workspace, toolset, or
 // objective. When a tool is called, it will rely on secrets in the order of:
 //
@@ -535,25 +634,23 @@ func (r ObjectiveToolCallWithResultStatus) IsKnown() bool {
 // - Toolset
 // - Workspace
 type ResolvedSecret struct {
-	Key    string               `json:"key"`
+	Key string `json:"key"`
+	// Any of "RESOLVED_SECRET_SOURCE_UNSPECIFIED", "RESOLVED_SECRET_SOURCE_WORKSPACE",
+	// "RESOLVED_SECRET_SOURCE_TOOLSET", "RESOLVED_SECRET_SOURCE_OBJECTIVE".
 	Source ResolvedSecretSource `json:"source"`
-	JSON   resolvedSecretJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Key         respjson.Field
+		Source      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// resolvedSecretJSON contains the JSON metadata for the struct [ResolvedSecret]
-type resolvedSecretJSON struct {
-	Key         apijson.Field
-	Source      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ResolvedSecret) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ResolvedSecret) RawJSON() string { return r.JSON.raw }
+func (r *ResolvedSecret) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r resolvedSecretJSON) RawJSON() string {
-	return r.raw
 }
 
 type ResolvedSecretSource string
@@ -565,78 +662,206 @@ const (
 	ResolvedSecretSourceResolvedSecretSourceObjective   ResolvedSecretSource = "RESOLVED_SECRET_SOURCE_OBJECTIVE"
 )
 
-func (r ResolvedSecretSource) IsKnown() bool {
-	switch r {
-	case ResolvedSecretSourceResolvedSecretSourceUnspecified, ResolvedSecretSourceResolvedSecretSourceWorkspace, ResolvedSecretSourceResolvedSecretSourceToolset, ResolvedSecretSourceResolvedSecretSourceObjective:
-		return true
-	}
-	return false
-}
-
+// The properties Data, MimeType are required.
 type SetToolCallContentRequestAudioBlockParam struct {
 	// Base64-encoded audio bytes.
-	Data param.Field[string] `json:"data" api:"required"`
+	Data string `json:"data" api:"required"`
 	// IANA media type of the audio, e.g. audio/wav.
-	MimeType param.Field[string] `json:"mimeType" api:"required"`
+	MimeType string `json:"mimeType" api:"required"`
+	paramObj
 }
 
 func (r SetToolCallContentRequestAudioBlockParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow SetToolCallContentRequestAudioBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestAudioBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-// ContentBlock is a single block of tool call content supplied on input. Exactly
-// one of the variants is set.
-type SetToolCallContentRequestContentBlockParam struct {
-	Audio param.Field[SetToolCallContentRequestAudioBlockParam] `json:"audio"`
-	Image param.Field[SetToolCallContentRequestImageBlockParam] `json:"image"`
-	Text  param.Field[SetToolCallContentRequestTextBlockParam]  `json:"text"`
+func SetToolCallContentRequestContentBlockParamOfText(text SetToolCallContentRequestTextBlockParam) SetToolCallContentRequestContentBlockUnionParam {
+	var variant SetToolCallContentRequestContentBlockTextParam
+	variant.Text = text
+	return SetToolCallContentRequestContentBlockUnionParam{OfText: &variant}
 }
 
-func (r SetToolCallContentRequestContentBlockParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+func SetToolCallContentRequestContentBlockParamOfImage(image SetToolCallContentRequestImageBlockParam) SetToolCallContentRequestContentBlockUnionParam {
+	var variant SetToolCallContentRequestContentBlockImageParam
+	variant.Image = image
+	return SetToolCallContentRequestContentBlockUnionParam{OfImage: &variant}
 }
 
+func SetToolCallContentRequestContentBlockParamOfAudio(audio SetToolCallContentRequestAudioBlockParam) SetToolCallContentRequestContentBlockUnionParam {
+	var variant SetToolCallContentRequestContentBlockAudioParam
+	variant.Audio = audio
+	return SetToolCallContentRequestContentBlockUnionParam{OfAudio: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type SetToolCallContentRequestContentBlockUnionParam struct {
+	OfText  *SetToolCallContentRequestContentBlockTextParam  `json:",omitzero,inline"`
+	OfImage *SetToolCallContentRequestContentBlockImageParam `json:",omitzero,inline"`
+	OfAudio *SetToolCallContentRequestContentBlockAudioParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u SetToolCallContentRequestContentBlockUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfAudio)
+}
+func (u *SetToolCallContentRequestContentBlockUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[SetToolCallContentRequestContentBlockUnionParam](
+		"type",
+		apijson.Discriminator[SetToolCallContentRequestContentBlockTextParam]("text"),
+		apijson.Discriminator[SetToolCallContentRequestContentBlockImageParam]("image"),
+		apijson.Discriminator[SetToolCallContentRequestContentBlockAudioParam]("audio"),
+	)
+}
+
+// The properties Audio, Type are required.
+type SetToolCallContentRequestContentBlockAudioParam struct {
+	Audio SetToolCallContentRequestAudioBlockParam `json:"audio,omitzero" api:"required"`
+	// Any of "audio".
+	Type SetToolCallContentRequestContentBlockAudioType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r SetToolCallContentRequestContentBlockAudioParam) MarshalJSON() (data []byte, err error) {
+	type shadow SetToolCallContentRequestContentBlockAudioParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestContentBlockAudioParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SetToolCallContentRequestContentBlockAudioType string
+
+const (
+	SetToolCallContentRequestContentBlockAudioTypeAudio SetToolCallContentRequestContentBlockAudioType = "audio"
+)
+
+// The properties Image, Type are required.
+type SetToolCallContentRequestContentBlockImageParam struct {
+	Image SetToolCallContentRequestImageBlockParam `json:"image,omitzero" api:"required"`
+	// Any of "image".
+	Type SetToolCallContentRequestContentBlockImageType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r SetToolCallContentRequestContentBlockImageParam) MarshalJSON() (data []byte, err error) {
+	type shadow SetToolCallContentRequestContentBlockImageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestContentBlockImageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SetToolCallContentRequestContentBlockImageType string
+
+const (
+	SetToolCallContentRequestContentBlockImageTypeImage SetToolCallContentRequestContentBlockImageType = "image"
+)
+
+// The properties Text, Type are required.
+type SetToolCallContentRequestContentBlockTextParam struct {
+	Text SetToolCallContentRequestTextBlockParam `json:"text,omitzero" api:"required"`
+	// Any of "text".
+	Type SetToolCallContentRequestContentBlockTextType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r SetToolCallContentRequestContentBlockTextParam) MarshalJSON() (data []byte, err error) {
+	type shadow SetToolCallContentRequestContentBlockTextParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestContentBlockTextParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type SetToolCallContentRequestContentBlockTextType string
+
+const (
+	SetToolCallContentRequestContentBlockTextTypeText SetToolCallContentRequestContentBlockTextType = "text"
+)
+
+// The properties Data, MimeType are required.
 type SetToolCallContentRequestImageBlockParam struct {
 	// Base64-encoded image bytes.
-	Data param.Field[string] `json:"data" api:"required"`
+	Data string `json:"data" api:"required"`
 	// IANA media type of the image, e.g. image/png.
-	MimeType param.Field[string] `json:"mimeType" api:"required"`
+	MimeType string `json:"mimeType" api:"required"`
+	paramObj
 }
 
 func (r SetToolCallContentRequestImageBlockParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow SetToolCallContentRequestImageBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestImageBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
+// The property Text is required.
 type SetToolCallContentRequestTextBlockParam struct {
-	Text param.Field[string] `json:"text" api:"required"`
+	Text string `json:"text" api:"required"`
+	paramObj
 }
 
 func (r SetToolCallContentRequestTextBlockParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow SetToolCallContentRequestTextBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SetToolCallContentRequestTextBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveToolCallGetParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 type ObjectiveToolCallListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
-	// Filter by tool call execution status. Useful for reverse-harness polling of bare
-	// tool calls waiting for externally supplied content
-	// (TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT).
-	ExecutionStatus param.Field[ObjectiveToolCallListParamsExecutionStatus] `query:"executionStatus"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When set to true you may use more of your alloted API rate-limit
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Filter by tool call execution status. Useful for reverse-harness polling of bare
+	// tool calls waiting for externally supplied content
+	// (TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT).
+	//
+	// Any of "TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED",
+	// "TOOL_CALL_EXECUTION_STATUS_PENDING", "TOOL_CALL_EXECUTION_STATUS_RUNNING",
+	// "TOOL_CALL_EXECUTION_STATUS_COMPLETED", "TOOL_CALL_EXECUTION_STATUS_ERRORED",
+	// "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT".
+	ExecutionStatus ObjectiveToolCallListParamsExecutionStatus `query:"executionStatus,omitzero" json:"-"`
 	// Filter by tool call status
-	Status param.Field[ObjectiveToolCallListParamsStatus] `query:"status"`
+	//
+	// Any of "TOOL_CALL_STATUS_UNSPECIFIED", "TOOL_CALL_STATUS_AUTO_APPROVED",
+	// "TOOL_CALL_STATUS_WAITING_FOR_APPROVAL", "TOOL_CALL_STATUS_APPROVED",
+	// "TOOL_CALL_STATUS_DENIED".
+	Status ObjectiveToolCallListParamsStatus `query:"status,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [ObjectiveToolCallListParams]'s query parameters as
 // `url.Values`.
-func (r ObjectiveToolCallListParams) URLQuery() (v url.Values) {
+func (r ObjectiveToolCallListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -657,14 +882,6 @@ const (
 	ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallListParamsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
 )
 
-func (r ObjectiveToolCallListParamsExecutionStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusPending, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusRunning, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusCompleted, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusErrored, ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusWaitingForContent:
-		return true
-	}
-	return false
-}
-
 // Filter by tool call status
 type ObjectiveToolCallListParamsStatus string
 
@@ -676,38 +893,54 @@ const (
 	ObjectiveToolCallListParamsStatusToolCallStatusDenied             ObjectiveToolCallListParamsStatus = "TOOL_CALL_STATUS_DENIED"
 )
 
-func (r ObjectiveToolCallListParamsStatus) IsKnown() bool {
-	switch r {
-	case ObjectiveToolCallListParamsStatusToolCallStatusUnspecified, ObjectiveToolCallListParamsStatusToolCallStatusAutoApproved, ObjectiveToolCallListParamsStatusToolCallStatusWaitingForApproval, ObjectiveToolCallListParamsStatusToolCallStatusApproved, ObjectiveToolCallListParamsStatusToolCallStatusDenied:
-		return true
-	}
-	return false
-}
-
 type ObjectiveToolCallApproveParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 func (r ObjectiveToolCallApproveParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ObjectiveToolCallApproveParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ObjectiveToolCallApproveParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ObjectiveToolCallDenyParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// A memo to associate to the tool call denial. Use a memo to steer the LLM to a
 	// different decision or usage of the tool.
-	Memo param.Field[string] `json:"memo"`
+	Memo param.Opt[string] `json:"memo,omitzero"`
+	paramObj
 }
 
 func (r ObjectiveToolCallDenyParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ObjectiveToolCallDenyParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ObjectiveToolCallDenyParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ObjectiveToolCallSetContentParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// The content to set on the tool call. Mirrors
 	// ObjectiveToolCallResult.ContentBlock but writable: media blocks carry raw data
 	// on input where the result-side carries a signed url on output.
-	Content param.Field[[]SetToolCallContentRequestContentBlockParam] `json:"content" api:"required"`
+	Content []SetToolCallContentRequestContentBlockUnionParam `json:"content,omitzero" api:"required"`
+	paramObj
 }
 
 func (r ObjectiveToolCallSetContentParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ObjectiveToolCallSetContentParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ObjectiveToolCallSetContentParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
