@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.66.0 (2026-07-19)
+
+Full Changelog: [v0.65.0...v0.66.0](https://github.com/cadenya/cadenya-go/compare/v0.65.0...v0.66.0)
+
+### Features
+
+* **api:** api update ([7231bd7](https://github.com/cadenya/cadenya-go/commit/7231bd795cdd9ed5e1555ed64ea845322d7fb838))
+
 ## 0.65.0 (2026-07-18)
 
 Full Changelog: [v0.64.0...v0.65.0](https://github.com/cadenya/cadenya-go/compare/v0.64.0...v0.65.0)
