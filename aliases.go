@@ -3,9 +3,16 @@
 package cadenya
 
 import (
-	"github.com/cadenya/cadenya-go/internal/apierror"
-	"github.com/cadenya/cadenya-go/shared"
+	"go.cadenya.com/cadenya-go/internal/apierror"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/shared"
 )
+
+// aliased to make [param.APIUnion] private when embedding
+type paramUnion = param.APIUnion
+
+// aliased to make [param.APIObject] private when embedding
+type paramObj = param.APIObject
 
 type Error = apierror.Error
 

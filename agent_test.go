@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestAgentNewWithOptionalParams(t *testing.T) {
@@ -27,68 +26,65 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.New(
-		context.TODO(),
-		"workspaceId",
-		cadenya.AgentNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
-					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AgentSpecParam{
-				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-				Description:            cadenya.F("description"),
-				EnableEpisodicMemory:   cadenya.F(true),
-				EpisodicMemoryTtl:      cadenya.F(int64(0)),
-				OutputDefinition: cadenya.F(map[string]interface{}{
-					"foo": "bar",
-				}),
-				SystemPromptDataSchema: cadenya.F(map[string]interface{}{
-					"foo": "bar",
-				}),
-				WebhookEventsURL: cadenya.F("webhookEventsUrl"),
-			}),
-			DefaultVariation: cadenya.F(cadenya.AgentNewParamsDefaultVariation{
-				Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-					Name:       cadenya.F("name"),
-					ExternalID: cadenya.F("externalId"),
-					Labels: cadenya.F(map[string]string{
-						"foo": "string",
-					}),
-				}),
-				Spec: cadenya.F(cadenya.AgentVariationSpecParam{
-					CompactionConfig: cadenya.F(cadenya.AgentVariationSpecCompactionConfigParam{
-						Summarization: cadenya.F(cadenya.CompactionConfigSummarizationStrategyParam{
-							Instructions: cadenya.F("instructions"),
-						}),
-						ToolResultClearing: cadenya.F(cadenya.CompactionConfigToolResultClearingStrategyParam{
-							PreserveRecentResults: cadenya.F(int64(0)),
-						}),
-						TriggerThreshold: cadenya.F(0.000000),
-					}),
-					Constraints: cadenya.F(cadenya.AgentVariationSpecConstraintsParam{
-						InactivityTimeout: cadenya.F("-160513s"),
-						MaxSubObjectives:  cadenya.F(int64(0)),
-						MaxToolCalls:      cadenya.F(int64(0)),
-					}),
-					Description:              cadenya.F("description"),
-					FirstUserMessageTemplate: cadenya.F("firstUserMessageTemplate"),
-					ModelConfig: cadenya.F(cadenya.AgentVariationSpecModelConfigParam{
-						ModelID:     cadenya.F("modelId"),
-						Temperature: cadenya.F(0.000000),
-					}),
-					ProgressiveDiscovery: cadenya.F(cadenya.AgentVariationSpecProgressiveDiscoveryParam{
-						Hints:    cadenya.F([]string{"string"}),
-						MaxTools: cadenya.F(int64(0)),
-					}),
-					SystemPromptTemplate: cadenya.F("systemPromptTemplate"),
-				}),
-			}),
+	_, err := client.Agents.New(context.TODO(), cadenya.AgentNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Metadata: shared.CreateResourceMetadataParam{
+			Name:       "name",
+			ExternalID: cadenya.String("externalId"),
+			Labels: map[string]string{
+				"foo": "string",
+			},
 		},
-	)
+		Spec: cadenya.AgentSpecParam{
+			VariationSelectionMode: cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified,
+			Description:            cadenya.String("description"),
+			EnableEpisodicMemory:   cadenya.Bool(true),
+			EpisodicMemoryTtl:      cadenya.Int(0),
+			OutputDefinition: map[string]any{
+				"foo": "bar",
+			},
+			SystemPromptDataSchema: map[string]any{
+				"foo": "bar",
+			},
+			WebhookEventsURL: cadenya.String("webhookEventsUrl"),
+		},
+		DefaultVariation: cadenya.AgentNewParamsDefaultVariation{
+			Metadata: shared.CreateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
+					"foo": "string",
+				},
+			},
+			Spec: cadenya.AgentVariationSpecParam{
+				CompactionConfig: cadenya.AgentVariationSpecCompactionConfigParam{
+					Summarization: cadenya.CompactionConfigSummarizationStrategyParam{
+						Instructions: cadenya.String("instructions"),
+					},
+					ToolResultClearing: cadenya.CompactionConfigToolResultClearingStrategyParam{
+						PreserveRecentResults: cadenya.Int(0),
+					},
+					TriggerThreshold: cadenya.Float(0),
+				},
+				Constraints: cadenya.AgentVariationSpecConstraintsParam{
+					InactivityTimeout: cadenya.String("-160513s"),
+					MaxSubObjectives:  cadenya.Int(0),
+					MaxToolCalls:      cadenya.Int(0),
+				},
+				Description:              cadenya.String("description"),
+				FirstUserMessageTemplate: cadenya.String("firstUserMessageTemplate"),
+				ModelConfig: cadenya.AgentVariationSpecModelConfigParam{
+					ModelID:     cadenya.String("claude/opus-4.6"),
+					Temperature: cadenya.Float(0),
+				},
+				ProgressiveDiscovery: cadenya.AgentVariationSpecProgressiveDiscoveryParam{
+					Hints:    []string{"string"},
+					MaxTools: cadenya.Int(0),
+				},
+				SystemPromptTemplate: cadenya.String("systemPromptTemplate"),
+			},
+		},
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -113,8 +109,10 @@ func TestAgentGet(t *testing.T) {
 	)
 	_, err := client.Agents.Get(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -140,30 +138,30 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Update(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.AgentSpecParam{
-				VariationSelectionMode: cadenya.F(cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified),
-				Description:            cadenya.F("description"),
-				EnableEpisodicMemory:   cadenya.F(true),
-				EpisodicMemoryTtl:      cadenya.F(int64(0)),
-				OutputDefinition: cadenya.F(map[string]interface{}{
+				},
+			},
+			Spec: cadenya.AgentSpecParam{
+				VariationSelectionMode: cadenya.AgentSpecVariationSelectionModeVariationSelectionModeUnspecified,
+				Description:            cadenya.String("description"),
+				EnableEpisodicMemory:   cadenya.Bool(true),
+				EpisodicMemoryTtl:      cadenya.Int(0),
+				OutputDefinition: map[string]any{
 					"foo": "bar",
-				}),
-				SystemPromptDataSchema: cadenya.F(map[string]interface{}{
+				},
+				SystemPromptDataSchema: map[string]any{
 					"foo": "bar",
-				}),
-				WebhookEventsURL: cadenya.F("webhookEventsUrl"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+				WebhookEventsURL: cadenya.String("webhookEventsUrl"),
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -188,21 +186,18 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Agents.List(
-		context.TODO(),
-		"workspaceId",
-		cadenya.AgentListParams{
-			Cursor:                 cadenya.F("cursor"),
-			IncludeInfo:            cadenya.F(true),
-			Labels:                 cadenya.F("labels"),
-			Limit:                  cadenya.F(int64(0)),
-			Prefix:                 cadenya.F("prefix"),
-			Query:                  cadenya.F("query"),
-			SortOrder:              cadenya.F("sortOrder"),
-			State:                  cadenya.F(cadenya.AgentListParamsStateStateUnspecified),
-			VariationSelectionMode: cadenya.F(cadenya.AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified),
-		},
-	)
+	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
+		WorkspaceID:            cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Cursor:                 cadenya.String("cursor"),
+		IncludeInfo:            cadenya.Bool(true),
+		Labels:                 cadenya.String("labels"),
+		Limit:                  cadenya.Int(0),
+		Prefix:                 cadenya.String("prefix"),
+		Query:                  cadenya.String("query"),
+		SortOrder:              cadenya.String("sortOrder"),
+		State:                  cadenya.AgentListParamsStateStateUnspecified,
+		VariationSelectionMode: cadenya.AgentListParamsVariationSelectionModeVariationSelectionModeUnspecified,
+	})
 	if err != nil {
 		var apierr *cadenya.Error
 		if errors.As(err, &apierr) {
@@ -227,8 +222,10 @@ func TestAgentDelete(t *testing.T) {
 	)
 	err := client.Agents.Delete(
 		context.TODO(),
-		"workspaceId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -254,9 +251,10 @@ func TestAgentArchive(t *testing.T) {
 	)
 	_, err := client.Agents.Archive(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.AgentArchiveParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentArchiveParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -282,9 +280,10 @@ func TestAgentPublish(t *testing.T) {
 	)
 	_, err := client.Agents.Publish(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.AgentPublishParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentPublishParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -310,9 +309,10 @@ func TestAgentUnarchive(t *testing.T) {
 	)
 	_, err := client.Agents.Unarchive(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.AgentUnarchiveParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentUnarchiveParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -338,9 +338,10 @@ func TestAgentUnpublish(t *testing.T) {
 	)
 	_, err := client.Agents.Unpublish(
 		context.TODO(),
-		"workspaceId",
-		"id",
-		cadenya.AgentUnpublishParams{},
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		cadenya.AgentUnpublishParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

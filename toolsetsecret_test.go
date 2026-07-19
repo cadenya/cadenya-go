@@ -5,13 +5,12 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 func TestToolSetSecretNewWithOptionalParams(t *testing.T) {
@@ -29,19 +28,19 @@ func TestToolSetSecretNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.New(
 		context.TODO(),
-		"workspaceId",
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetSecretNewParams{
-			Metadata: cadenya.F(shared.CreateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.CreateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.ToolSetSecretSpecParam{
-				Value: cadenya.F("value"),
-			}),
+				},
+			},
+			Spec: cadenya.ToolSetSecretSpecParam{
+				Value: cadenya.String("value"),
+			},
 		},
 	)
 	if err != nil {
@@ -68,9 +67,11 @@ func TestToolSetSecretGet(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.Get(
 		context.TODO(),
-		"workspaceId",
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
+		cadenya.ToolSetSecretGetParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error
@@ -96,21 +97,21 @@ func TestToolSetSecretUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.Update(
 		context.TODO(),
-		"workspaceId",
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
 		cadenya.ToolSetSecretUpdateParams{
-			Metadata: cadenya.F(shared.UpdateResourceMetadataParam{
-				Name:       cadenya.F("name"),
-				ExternalID: cadenya.F("externalId"),
-				Labels: cadenya.F(map[string]string{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Metadata: shared.UpdateResourceMetadataParam{
+				Name:       "name",
+				ExternalID: cadenya.String("externalId"),
+				Labels: map[string]string{
 					"foo": "string",
-				}),
-			}),
-			Spec: cadenya.F(cadenya.ToolSetSecretSpecParam{
-				Value: cadenya.F("value"),
-			}),
-			UpdateMask: cadenya.F("updateMask"),
+				},
+			},
+			Spec: cadenya.ToolSetSecretSpecParam{
+				Value: cadenya.String("value"),
+			},
+			UpdateMask: cadenya.String("updateMask"),
 		},
 	)
 	if err != nil {
@@ -137,15 +138,15 @@ func TestToolSetSecretListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.List(
 		context.TODO(),
-		"workspaceId",
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetSecretListParams{
-			Cursor:      cadenya.F("cursor"),
-			IncludeInfo: cadenya.F(true),
-			Limit:       cadenya.F(int64(0)),
-			Prefix:      cadenya.F("prefix"),
-			Query:       cadenya.F("query"),
-			SortOrder:   cadenya.F("sortOrder"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			IncludeInfo: cadenya.Bool(true),
+			Limit:       cadenya.Int(0),
+			Prefix:      cadenya.String("prefix"),
+			Query:       cadenya.String("query"),
+			SortOrder:   cadenya.String("sortOrder"),
 		},
 	)
 	if err != nil {
@@ -172,9 +173,11 @@ func TestToolSetSecretDelete(t *testing.T) {
 	)
 	err := client.ToolSets.Secrets.Delete(
 		context.TODO(),
-		"workspaceId",
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
+		cadenya.ToolSetSecretDeleteParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		},
 	)
 	if err != nil {
 		var apierr *cadenya.Error

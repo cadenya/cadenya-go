@@ -6,17 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // Manage memory layers and their entries. Layers are named containers that can be
@@ -31,23 +31,28 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewMemoryLayerEntryService] method instead.
 type MemoryLayerEntryService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewMemoryLayerEntryService generates a new service that applies the given
 // options to each request. These options are applied after the parent client's
 // options (if there is one), and before any request-specific options.
-func NewMemoryLayerEntryService(opts ...option.RequestOption) (r *MemoryLayerEntryService) {
-	r = &MemoryLayerEntryService{}
-	r.Options = opts
+func NewMemoryLayerEntryService(opts ...option.RequestOption) (r MemoryLayerEntryService) {
+	r = MemoryLayerEntryService{}
+	r.options = opts
 	return
 }
 
 // Creates a new entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) New(ctx context.Context, workspaceID string, memoryLayerID string, body MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *MemoryLayerEntryService) New(ctx context.Context, memoryLayerID string, params MemoryLayerEntryNewParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -55,16 +60,21 @@ func (r *MemoryLayerEntryService) New(ctx context.Context, workspaceID string, m
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(memoryLayerID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Retrieves a memory entry by ID from a memory layer. Returns the detail view,
 // including the content body.
-func (r *MemoryLayerEntryService) Get(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *MemoryLayerEntryService) Get(ctx context.Context, memoryLayerID string, id string, query MemoryLayerEntryGetParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&query.WorkspaceID, precfg.WorkspaceID)
+	if query.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -76,16 +86,21 @@ func (r *MemoryLayerEntryService) Get(ctx context.Context, workspaceID string, m
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", url.PathEscape(query.WorkspaceID.Value), url.PathEscape(memoryLayerID), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Updates a memory entry in a memory layer. Returns the detail view, including the
 // resolved content body.
-func (r *MemoryLayerEntryService) Update(ctx context.Context, workspaceID string, memoryLayerID string, id string, body MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
+func (r *MemoryLayerEntryService) Update(ctx context.Context, memoryLayerID string, id string, params MemoryLayerEntryUpdateParams, opts ...option.RequestOption) (res *MemoryEntryDetail, err error) {
+	opts = slices.Concat(r.options, opts)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -97,17 +112,22 @@ func (r *MemoryLayerEntryService) Update(ctx context.Context, workspaceID string
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(memoryLayerID), url.PathEscape(id))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
 	return res, err
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) List(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
+func (r *MemoryLayerEntryService) List(ctx context.Context, memoryLayerID string, params MemoryLayerEntryListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[MemoryEntry], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return nil, err
 	}
@@ -115,8 +135,8 @@ func (r *MemoryLayerEntryService) List(ctx context.Context, workspaceID string, 
 		err = errors.New("missing required memoryLayerId parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", workspaceID, memoryLayerID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(memoryLayerID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -129,15 +149,20 @@ func (r *MemoryLayerEntryService) List(ctx context.Context, workspaceID string, 
 }
 
 // Lists all entries in a memory layer
-func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, workspaceID string, memoryLayerID string, query MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
-	return pagination.NewCursorPaginationAutoPager(r.List(ctx, workspaceID, memoryLayerID, query, opts...))
+func (r *MemoryLayerEntryService) ListAutoPaging(ctx context.Context, memoryLayerID string, params MemoryLayerEntryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[MemoryEntry] {
+	return pagination.NewCursorPaginationAutoPager(r.List(ctx, memoryLayerID, params, opts...))
 }
 
 // Deletes a memory entry from a memory layer
-func (r *MemoryLayerEntryService) Delete(ctx context.Context, workspaceID string, memoryLayerID string, id string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.Options, opts)
+func (r *MemoryLayerEntryService) Delete(ctx context.Context, memoryLayerID string, id string, body MemoryLayerEntryDeleteParams, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
-	if workspaceID == "" {
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return err
+	}
+	requestconfig.UseDefaultParam(&body.WorkspaceID, precfg.WorkspaceID)
+	if body.WorkspaceID.Value == "" {
 		err = errors.New("missing required workspaceId parameter")
 		return err
 	}
@@ -149,7 +174,7 @@ func (r *MemoryLayerEntryService) Delete(ctx context.Context, workspaceID string
 		err = errors.New("missing required id parameter")
 		return err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", workspaceID, memoryLayerID, id)
+	path := fmt.Sprintf("v1/workspaces/%s/memory_layers/%s/entries/%s", url.PathEscape(body.WorkspaceID.Value), url.PathEscape(memoryLayerID), url.PathEscape(id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
 }
@@ -171,43 +196,110 @@ type MemoryEntry struct {
 	// and detail (MemoryEntryDetail) views.
 	Spec MemoryEntrySpec `json:"spec" api:"required"`
 	Info MemoryEntryInfo `json:"info"`
-	JSON memoryEntryJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// memoryEntryJSON contains the JSON metadata for the struct [MemoryEntry]
-type memoryEntryJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MemoryEntry) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MemoryEntry) RawJSON() string { return r.JSON.raw }
+func (r *MemoryEntry) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r memoryEntryJSON) RawJSON() string {
-	return r.raw
+func MemoryEntryCreateSpecParamOfContent(content string) MemoryEntryCreateSpecUnionParam {
+	var variant MemoryEntryCreateSpecContentParam
+	variant.Content = content
+	return MemoryEntryCreateSpecUnionParam{OfContent: &variant}
 }
 
-// MemoryEntryCreateSpec is the input shape for CreateMemoryEntry. It accepts
-// either inline content or a reference to a completed Upload; exactly one of the
-// two must be set.
-type MemoryEntryCreateSpecParam struct {
-	// See MemoryEntrySpec.key for the full rule set. Same constraints apply here.
-	Key param.Field[string] `json:"key" api:"required"`
+func MemoryEntryCreateSpecParamOfUploadID(uploadID string) MemoryEntryCreateSpecUnionParam {
+	var variant MemoryEntryCreateSpecUploadIDParam
+	variant.UploadID = uploadID
+	return MemoryEntryCreateSpecUnionParam{OfUploadID: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type MemoryEntryCreateSpecUnionParam struct {
+	OfContent  *MemoryEntryCreateSpecContentParam  `json:",omitzero,inline"`
+	OfUploadID *MemoryEntryCreateSpecUploadIDParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u MemoryEntryCreateSpecUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfContent, u.OfUploadID)
+}
+func (u *MemoryEntryCreateSpecUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[MemoryEntryCreateSpecUnionParam](
+		"type",
+		apijson.Discriminator[MemoryEntryCreateSpecContentParam]("content"),
+		apijson.Discriminator[MemoryEntryCreateSpecUploadIDParam]("uploadId"),
+	)
+}
+
+// The properties Content, Type are required.
+type MemoryEntryCreateSpecContentParam struct {
 	// Inline content, written directly into the entry.
-	Content     param.Field[string] `json:"content"`
-	Description param.Field[string] `json:"description"`
+	Content string `json:"content" api:"required"`
+	// Any of "content".
+	Type        MemoryEntryCreateSpecContentType `json:"type,omitzero" api:"required"`
+	Description param.Opt[string]                `json:"description,omitzero"`
+	// See MemoryEntrySpec.key for the full rule set. Same constraints apply here.
+	Key param.Opt[string] `json:"key,omitzero"`
+	paramObj
+}
+
+func (r MemoryEntryCreateSpecContentParam) MarshalJSON() (data []byte, err error) {
+	type shadow MemoryEntryCreateSpecContentParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MemoryEntryCreateSpecContentParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MemoryEntryCreateSpecContentType string
+
+const (
+	MemoryEntryCreateSpecContentTypeContent MemoryEntryCreateSpecContentType = "content"
+)
+
+// The properties Type, UploadID are required.
+type MemoryEntryCreateSpecUploadIDParam struct {
+	// Any of "uploadId".
+	Type MemoryEntryCreateSpecUploadIDType `json:"type,omitzero" api:"required"`
 	// ID of a COMPLETE Upload. The server reads the object from storage, copies its
 	// bytes into the entry, and marks the upload consumed.
-	UploadID param.Field[string] `json:"uploadId"`
+	UploadID    string            `json:"uploadId" api:"required"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	// See MemoryEntrySpec.key for the full rule set. Same constraints apply here.
+	Key param.Opt[string] `json:"key,omitzero"`
+	paramObj
 }
 
-func (r MemoryEntryCreateSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+func (r MemoryEntryCreateSpecUploadIDParam) MarshalJSON() (data []byte, err error) {
+	type shadow MemoryEntryCreateSpecUploadIDParam
+	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *MemoryEntryCreateSpecUploadIDParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MemoryEntryCreateSpecUploadIDType string
+
+const (
+	MemoryEntryCreateSpecUploadIDTypeUploadID MemoryEntryCreateSpecUploadIDType = "uploadId"
+)
 
 // MemoryEntryDetail is the full representation of an entry, including the resolved
 // content body. Returned by GetMemoryEntry, CreateMemoryEntry, and
@@ -223,28 +315,23 @@ type MemoryEntryDetail struct {
 	// MemoryEntrySpec is the metadata portion of an entry — the fields that identify
 	// and describe it, without the body. It appears on both the summary (MemoryEntry)
 	// and detail (MemoryEntryDetail) views.
-	Spec MemoryEntrySpec       `json:"spec" api:"required"`
-	Info MemoryEntryInfo       `json:"info"`
-	JSON memoryEntryDetailJSON `json:"-"`
+	Spec MemoryEntrySpec `json:"spec" api:"required"`
+	Info MemoryEntryInfo `json:"info"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content     respjson.Field
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		Info        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// memoryEntryDetailJSON contains the JSON metadata for the struct
-// [MemoryEntryDetail]
-type memoryEntryDetailJSON struct {
-	Content     apijson.Field
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	Info        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MemoryEntryDetail) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MemoryEntryDetail) RawJSON() string { return r.JSON.raw }
+func (r *MemoryEntryDetail) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r memoryEntryDetailJSON) RawJSON() string {
-	return r.raw
 }
 
 type MemoryEntryInfo struct {
@@ -254,23 +341,19 @@ type MemoryEntryInfo struct {
 	CreatedBy Profile `json:"createdBy"`
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	MemoryLayer shared.ResourceMetadata `json:"memoryLayer"`
-	JSON        memoryEntryInfoJSON     `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedBy   respjson.Field
+		MemoryLayer respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// memoryEntryInfoJSON contains the JSON metadata for the struct [MemoryEntryInfo]
-type memoryEntryInfoJSON struct {
-	CreatedBy   apijson.Field
-	MemoryLayer apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MemoryEntryInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MemoryEntryInfo) RawJSON() string { return r.JSON.raw }
+func (r *MemoryEntryInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r memoryEntryInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 // MemoryEntrySpec is the metadata portion of an entry — the fields that identify
@@ -298,24 +381,20 @@ type MemoryEntrySpec struct {
 	// entries. The model uses this to decide whether to load the body, so it should be
 	// written for the model as the audience. Ignored for layer types that do not
 	// advertise frontmatter.
-	Description string              `json:"description"`
-	JSON        memoryEntrySpecJSON `json:"-"`
+	Description string `json:"description"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Key         respjson.Field
+		Description respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// memoryEntrySpecJSON contains the JSON metadata for the struct [MemoryEntrySpec]
-type memoryEntrySpecJSON struct {
-	Key         apijson.Field
-	Description apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MemoryEntrySpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MemoryEntrySpec) RawJSON() string { return r.JSON.raw }
+func (r *MemoryEntrySpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r memoryEntrySpecJSON) RawJSON() string {
-	return r.raw
 }
 
 // MemoryEntryUpdateSpec is the input shape for UpdateMemoryEntry. Fields present
@@ -323,73 +402,112 @@ func (r memoryEntrySpecJSON) RawJSON() string {
 // source oneof is optional for updates — omit it to leave the body untouched, or
 // set exactly one branch to replace it.
 type MemoryEntryUpdateSpecParam struct {
-	Content     param.Field[string] `json:"content"`
-	Description param.Field[string] `json:"description"`
-	Key         param.Field[string] `json:"key"`
-	UploadID    param.Field[string] `json:"uploadId"`
+	Content     param.Opt[string] `json:"content,omitzero"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	Key         param.Opt[string] `json:"key,omitzero"`
+	UploadID    param.Opt[string] `json:"uploadId,omitzero"`
+	paramObj
 }
 
 func (r MemoryEntryUpdateSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow MemoryEntryUpdateSpecParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MemoryEntryUpdateSpecParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MemoryLayerEntryNewParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// CreateResourceMetadata contains the user-provided fields for creating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.CreateResourceMetadataParam] `json:"metadata" api:"required"`
+	Metadata shared.CreateResourceMetadataParam `json:"metadata,omitzero" api:"required"`
 	// MemoryEntryCreateSpec is the input shape for CreateMemoryEntry. It accepts
 	// either inline content or a reference to a completed Upload; exactly one of the
 	// two must be set.
-	Spec param.Field[MemoryEntryCreateSpecParam] `json:"spec" api:"required"`
+	Spec MemoryEntryCreateSpecUnionParam `json:"spec,omitzero" api:"required"`
+	paramObj
 }
 
 func (r MemoryLayerEntryNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow MemoryLayerEntryNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MemoryLayerEntryNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MemoryLayerEntryGetParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }
 
 type MemoryLayerEntryUpdateParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	UpdateMask  param.Opt[string] `json:"updateMask,omitzero" format:"field-mask"`
 	// UpdateResourceMetadata contains the user-provided fields for updating a
 	// workspace-scoped resource. Read-only fields (id, account_id, workspace_id,
 	// profile_id, created_at) are excluded since they are set by the server.
-	Metadata param.Field[shared.UpdateResourceMetadataParam] `json:"metadata"`
+	Metadata shared.UpdateResourceMetadataParam `json:"metadata,omitzero"`
 	// MemoryEntryUpdateSpec is the input shape for UpdateMemoryEntry. Fields present
 	// in the request's update_mask are applied; unset fields are left alone. The
 	// source oneof is optional for updates — omit it to leave the body untouched, or
 	// set exactly one branch to replace it.
-	Spec       param.Field[MemoryEntryUpdateSpecParam] `json:"spec"`
-	UpdateMask param.Field[string]                     `json:"updateMask" format:"field-mask"`
+	Spec MemoryEntryUpdateSpecParam `json:"spec,omitzero"`
+	paramObj
 }
 
 func (r MemoryLayerEntryUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow MemoryLayerEntryUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MemoryLayerEntryUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MemoryLayerEntryListParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When set to true you may use more of your alloted API rate-limit
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter by key prefix (e.g., "skills/postmortem/" to list all entries under that
 	// hierarchy). Matches against the entry's key, not its name.
-	Prefix param.Field[string] `query:"prefix"`
+	Prefix param.Opt[string] `query:"prefix,omitzero" json:"-"`
 	// Free-form search query
-	Query param.Field[string] `query:"query"`
+	Query param.Opt[string] `query:"query,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
-	SortOrder param.Field[string] `query:"sortOrder"`
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MemoryLayerEntryListParams]'s query parameters as
 // `url.Values`.
-func (r MemoryLayerEntryListParams) URLQuery() (v url.Values) {
+func (r MemoryLayerEntryListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type MemoryLayerEntryDeleteParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	paramObj
 }

@@ -4,14 +4,15 @@ package cadenya
 
 import (
 	"errors"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"slices"
 	"time"
 
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/shared"
 	standardwebhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
@@ -22,15 +23,15 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewWebhookService] method instead.
 type WebhookService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewWebhookService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewWebhookService(opts ...option.RequestOption) (r *WebhookService) {
-	r = &WebhookService{}
-	r.Options = opts
+func NewWebhookService(opts ...option.RequestOption) (r WebhookService) {
+	r = WebhookService{}
+	r.options = opts
 	return
 }
 
@@ -44,7 +45,7 @@ func (r *WebhookService) UnsafeUnwrap(payload []byte, opts ...option.RequestOpti
 }
 
 func (r *WebhookService) Unwrap(payload []byte, headers http.Header, opts ...option.RequestOption) (*UnwrapWebhookEvent, error) {
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	cfg, err := requestconfig.PreRequestOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -78,26 +79,21 @@ type UnsafeUnwrapWebhookEvent struct {
 	Timestamp time.Time                    `json:"timestamp" api:"required" format:"date-time"`
 	// The event type, prefixed with objective_event. (e.g.,
 	// objective_event.tool_result)
-	Type string                       `json:"type" api:"required"`
-	JSON unsafeUnwrapWebhookEventJSON `json:"-"`
+	Type string `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Timestamp   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// unsafeUnwrapWebhookEventJSON contains the JSON metadata for the struct
-// [UnsafeUnwrapWebhookEvent]
-type unsafeUnwrapWebhookEventJSON struct {
-	Data        apijson.Field
-	Timestamp   apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *UnsafeUnwrapWebhookEvent) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r UnsafeUnwrapWebhookEvent) RawJSON() string { return r.JSON.raw }
+func (r *UnsafeUnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unsafeUnwrapWebhookEventJSON) RawJSON() string {
-	return r.raw
 }
 
 // The webhook data payload with flat top-level keys for agent, variation,
@@ -109,28 +105,23 @@ type UnsafeUnwrapWebhookEventData struct {
 	AgentVariation shared.ResourceMetadata `json:"agentVariation" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Objective      shared.OperationMetadata         `json:"objective" api:"required"`
-	ObjectiveEvent ObjectiveEvent                   `json:"objectiveEvent" api:"required"`
-	JSON           unsafeUnwrapWebhookEventDataJSON `json:"-"`
+	Objective      shared.OperationMetadata `json:"objective" api:"required"`
+	ObjectiveEvent ObjectiveEvent           `json:"objectiveEvent" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agent          respjson.Field
+		AgentVariation respjson.Field
+		Objective      respjson.Field
+		ObjectiveEvent respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
 }
 
-// unsafeUnwrapWebhookEventDataJSON contains the JSON metadata for the struct
-// [UnsafeUnwrapWebhookEventData]
-type unsafeUnwrapWebhookEventDataJSON struct {
-	Agent          apijson.Field
-	AgentVariation apijson.Field
-	Objective      apijson.Field
-	ObjectiveEvent apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *UnsafeUnwrapWebhookEventData) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r UnsafeUnwrapWebhookEventData) RawJSON() string { return r.JSON.raw }
+func (r *UnsafeUnwrapWebhookEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unsafeUnwrapWebhookEventDataJSON) RawJSON() string {
-	return r.raw
 }
 
 // The envelope for an objective event webhook delivery. Contains timestamp, event
@@ -142,26 +133,21 @@ type UnwrapWebhookEvent struct {
 	Timestamp time.Time              `json:"timestamp" api:"required" format:"date-time"`
 	// The event type, prefixed with objective_event. (e.g.,
 	// objective_event.tool_result)
-	Type string                 `json:"type" api:"required"`
-	JSON unwrapWebhookEventJSON `json:"-"`
+	Type string `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data        respjson.Field
+		Timestamp   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// unwrapWebhookEventJSON contains the JSON metadata for the struct
-// [UnwrapWebhookEvent]
-type unwrapWebhookEventJSON struct {
-	Data        apijson.Field
-	Timestamp   apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r UnwrapWebhookEvent) RawJSON() string { return r.JSON.raw }
+func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unwrapWebhookEventJSON) RawJSON() string {
-	return r.raw
 }
 
 // The webhook data payload with flat top-level keys for agent, variation,
@@ -173,26 +159,21 @@ type UnwrapWebhookEventData struct {
 	AgentVariation shared.ResourceMetadata `json:"agentVariation" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
-	Objective      shared.OperationMetadata   `json:"objective" api:"required"`
-	ObjectiveEvent ObjectiveEvent             `json:"objectiveEvent" api:"required"`
-	JSON           unwrapWebhookEventDataJSON `json:"-"`
+	Objective      shared.OperationMetadata `json:"objective" api:"required"`
+	ObjectiveEvent ObjectiveEvent           `json:"objectiveEvent" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agent          respjson.Field
+		AgentVariation respjson.Field
+		Objective      respjson.Field
+		ObjectiveEvent respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
 }
 
-// unwrapWebhookEventDataJSON contains the JSON metadata for the struct
-// [UnwrapWebhookEventData]
-type unwrapWebhookEventDataJSON struct {
-	Agent          apijson.Field
-	AgentVariation apijson.Field
-	Objective      apijson.Field
-	ObjectiveEvent apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *UnwrapWebhookEventData) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r UnwrapWebhookEventData) RawJSON() string { return r.JSON.raw }
+func (r *UnwrapWebhookEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r unwrapWebhookEventDataJSON) RawJSON() string {
-	return r.raw
 }

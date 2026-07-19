@@ -4,17 +4,18 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
+	"go.cadenya.com/cadenya-go/internal/apijson"
+	"go.cadenya.com/cadenya-go/internal/apiquery"
+	"go.cadenya.com/cadenya-go/internal/requestconfig"
+	"go.cadenya.com/cadenya-go/option"
+	"go.cadenya.com/cadenya-go/packages/pagination"
+	"go.cadenya.com/cadenya-go/packages/param"
+	"go.cadenya.com/cadenya-go/packages/respjson"
+	"go.cadenya.com/cadenya-go/shared"
 	"net/http"
 	"net/url"
 	"slices"
-
-	"github.com/cadenya/cadenya-go/internal/apijson"
-	"github.com/cadenya/cadenya-go/internal/apiquery"
-	"github.com/cadenya/cadenya-go/internal/param"
-	"github.com/cadenya/cadenya-go/internal/requestconfig"
-	"github.com/cadenya/cadenya-go/option"
-	"github.com/cadenya/cadenya-go/packages/pagination"
-	"github.com/cadenya/cadenya-go/shared"
 )
 
 // Manage workspaces within an account. Workspaces provide organizational grouping
@@ -31,22 +32,22 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewWorkspaceService] method instead.
 type WorkspaceService struct {
-	Options []option.RequestOption
+	options []option.RequestOption
 }
 
 // NewWorkspaceService generates a new service that applies the given options to
 // each request. These options are applied after the parent client's options (if
 // there is one), and before any request-specific options.
-func NewWorkspaceService(opts ...option.RequestOption) (r *WorkspaceService) {
-	r = &WorkspaceService{}
-	r.Options = opts
+func NewWorkspaceService(opts ...option.RequestOption) (r WorkspaceService) {
+	r = WorkspaceService{}
+	r.options = opts
 	return
 }
 
 // Lists all workspaces for the current account
 func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) (res *pagination.CursorPagination[Workspace], err error) {
 	var raw *http.Response
-	opts = slices.Concat(r.Options, opts)
+	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/workspaces"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -75,53 +76,47 @@ type Workspace struct {
 	Info WorkspaceInfo `json:"info"`
 	// Lifecycle status of the workspace. Archived workspaces reject all requests
 	// scoped to them. Server-populated.
+	//
+	// Any of "STATUS_ENABLED", "STATUS_DISABLED", "STATUS_ARCHIVED".
 	Status WorkspaceStatus `json:"status"`
-	JSON   workspaceJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Metadata    respjson.Field
+		Spec        respjson.Field
+		Info        respjson.Field
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// workspaceJSON contains the JSON metadata for the struct [Workspace]
-type workspaceJSON struct {
-	Metadata    apijson.Field
-	Spec        apijson.Field
-	Info        apijson.Field
-	Status      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Workspace) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Workspace) RawJSON() string { return r.JSON.raw }
+func (r *Workspace) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceJSON) RawJSON() string {
-	return r.raw
 }
 
 // WorkspaceInfo returns counts
 type WorkspaceInfo struct {
-	TotalAgents          int64             `json:"totalAgents"`
-	TotalAgentVariations int64             `json:"totalAgentVariations"`
-	TotalAvailableTools  int64             `json:"totalAvailableTools"`
-	TotalMemoryEntries   int64             `json:"totalMemoryEntries"`
-	JSON                 workspaceInfoJSON `json:"-"`
+	TotalAgents          int64 `json:"totalAgents"`
+	TotalAgentVariations int64 `json:"totalAgentVariations"`
+	TotalAvailableTools  int64 `json:"totalAvailableTools"`
+	TotalMemoryEntries   int64 `json:"totalMemoryEntries"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		TotalAgents          respjson.Field
+		TotalAgentVariations respjson.Field
+		TotalAvailableTools  respjson.Field
+		TotalMemoryEntries   respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
 }
 
-// workspaceInfoJSON contains the JSON metadata for the struct [WorkspaceInfo]
-type workspaceInfoJSON struct {
-	TotalAgents          apijson.Field
-	TotalAgentVariations apijson.Field
-	TotalAvailableTools  apijson.Field
-	TotalMemoryEntries   apijson.Field
-	raw                  string
-	ExtraFields          map[string]apijson.Field
-}
-
-func (r *WorkspaceInfo) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r WorkspaceInfo) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r workspaceInfoJSON) RawJSON() string {
-	return r.raw
 }
 
 // Lifecycle status of the workspace. Archived workspaces reject all requests
@@ -134,59 +129,62 @@ const (
 	WorkspaceStatusStatusArchived WorkspaceStatus = "STATUS_ARCHIVED"
 )
 
-func (r WorkspaceStatus) IsKnown() bool {
-	switch r {
-	case WorkspaceStatusStatusEnabled, WorkspaceStatusStatusDisabled, WorkspaceStatusStatusArchived:
-		return true
-	}
-	return false
-}
-
 type WorkspaceSpec struct {
-	Description string            `json:"description"`
-	JSON        workspaceSpecJSON `json:"-"`
+	Description string `json:"description"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Description respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// workspaceSpecJSON contains the JSON metadata for the struct [WorkspaceSpec]
-type workspaceSpecJSON struct {
-	Description apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *WorkspaceSpec) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r WorkspaceSpec) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r workspaceSpecJSON) RawJSON() string {
-	return r.raw
+// ToParam converts this WorkspaceSpec to a WorkspaceSpecParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// WorkspaceSpecParam.Overrides()
+func (r WorkspaceSpec) ToParam() WorkspaceSpecParam {
+	return param.Override[WorkspaceSpecParam](json.RawMessage(r.RawJSON()))
 }
 
 type WorkspaceSpecParam struct {
-	Description param.Field[string] `json:"description"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	paramObj
 }
 
 func (r WorkspaceSpecParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow WorkspaceSpecParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkspaceSpecParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceListParams struct {
 	// Pagination cursor from previous response
-	Cursor param.Field[string] `query:"cursor"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	// When set to true you may use more of your alloted API rate-limit
-	IncludeInfo param.Field[bool] `query:"includeInfo"`
+	IncludeInfo param.Opt[bool] `query:"includeInfo,omitzero" json:"-"`
 	// Filters by metadata labels. Comma-separated key=value pairs, e.g.
 	// "env=prod,team=ai". A resource matches only if every pair matches exactly (AND
 	// semantics).
-	Labels param.Field[string] `query:"labels"`
+	Labels param.Opt[string] `query:"labels,omitzero" json:"-"`
 	// Maximum number of results to return
-	Limit param.Field[int64] `query:"limit"`
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
-	SortOrder param.Field[string] `query:"sortOrder"`
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [WorkspaceListParams]'s query parameters as `url.Values`.
-func (r WorkspaceListParams) URLQuery() (v url.Values) {
+func (r WorkspaceListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

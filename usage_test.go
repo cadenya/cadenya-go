@@ -4,12 +4,11 @@ package cadenya_test
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestUsage(t *testing.T) {
@@ -25,10 +24,16 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	account, err := client.Account.Get(context.TODO())
+	objective, err := client.Objectives.New(context.TODO(), cadenya.ObjectiveNewParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQXAMPLE0000000"),
+		AgentID:     "agent_01HXKD2E5NQXAMPLE0000000",
+		SystemPromptData: map[string]any{
+			"customer_name": "Ada",
+		},
+		FirstUserMessage: cadenya.String("Summarize the open support tickets from yesterday."),
+	})
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", account.Info)
+	t.Logf("%+v\n", objective.ConfigSnapshot)
 }

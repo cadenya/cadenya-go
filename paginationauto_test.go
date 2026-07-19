@@ -4,12 +4,11 @@ package cadenya_test
 
 import (
 	"context"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestAutoPagination(t *testing.T) {
@@ -25,11 +24,9 @@ func TestAutoPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	iter := client.AIProviderKeys.ListAutoPaging(
-		context.TODO(),
-		"workspaceId",
-		cadenya.AIProviderKeyListParams{},
-	)
+	iter := client.AIProviderKeys.ListAutoPaging(context.TODO(), cadenya.AIProviderKeyListParams{
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+	})
 	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
 		aiProviderKey := iter.Current()

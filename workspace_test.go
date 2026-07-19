@@ -5,12 +5,11 @@ package cadenya_test
 import (
 	"context"
 	"errors"
+	"go.cadenya.com/cadenya-go"
+	"go.cadenya.com/cadenya-go/internal/testutil"
+	"go.cadenya.com/cadenya-go/option"
 	"os"
 	"testing"
-
-	"github.com/cadenya/cadenya-go"
-	"github.com/cadenya/cadenya-go/internal/testutil"
-	"github.com/cadenya/cadenya-go/option"
 )
 
 func TestWorkspaceListWithOptionalParams(t *testing.T) {
@@ -27,11 +26,11 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Workspaces.List(context.TODO(), cadenya.WorkspaceListParams{
-		Cursor:      cadenya.F("cursor"),
-		IncludeInfo: cadenya.F(true),
-		Labels:      cadenya.F("labels"),
-		Limit:       cadenya.F(int64(0)),
-		SortOrder:   cadenya.F("sortOrder"),
+		Cursor:      cadenya.String("cursor"),
+		IncludeInfo: cadenya.Bool(true),
+		Labels:      cadenya.String("labels"),
+		Limit:       cadenya.Int(0),
+		SortOrder:   cadenya.String("sortOrder"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
