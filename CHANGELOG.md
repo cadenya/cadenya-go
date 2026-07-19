@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.67.0 (2026-07-19)
+
+Full Changelog: [v0.66.0...v0.67.0](https://github.com/cadenya/cadenya-go/compare/v0.66.0...v0.67.0)
+
+### Features
+
+* Add oneof discriminator field extension and OpenAPI discriminated unions (ENG-467) ([6304d47](https://github.com/cadenya/cadenya-go/commit/6304d47c8e74aae804eed8e60e8615bad1c0a21a))
+* **api:** api update ([6553d4a](https://github.com/cadenya/cadenya-go/commit/6553d4a65a686f848c5a7e8e687740a7dd48997a))
+
 ## 0.66.0 (2026-07-19)
 
 Full Changelog: [v0.65.0...v0.66.0](https://github.com/cadenya/cadenya-go/compare/v0.65.0...v0.66.0)
