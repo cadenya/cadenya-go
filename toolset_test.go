@@ -365,6 +365,39 @@ func TestToolSetListEventsWithOptionalParams(t *testing.T) {
 	}
 }
 
+func TestToolSetListUsageWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.ToolSets.ListUsage(
+		context.TODO(),
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		cadenya.ToolSetListUsageParams{
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			Cursor:      cadenya.String("cursor"),
+			Limit:       cadenya.Int(0),
+			SortOrder:   cadenya.String("sortOrder"),
+			ToolID:      cadenya.String("tool_01HXKD2E5NQM3T9AYWCFWVYY9K"),
+		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestToolSetUnarchive(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
