@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"time"
 )
 
 // ObjectiveService contains methods and other services that help with interacting
@@ -961,9 +962,14 @@ type ObjectiveEvent struct {
 	// Elapsed time of the work this event records, when it is known at write time
 	// (e.g. assistant message generation, tool execution for result/error events).
 	// Unset means the event is instantaneous or the duration is not measurable.
-	// Serialized as a canonical duration string (e.g. "4.1s").
+	// Serialized as a canonical duration string (e.g. "4.1s"). Always set together
+	// with started_at.
 	Duration string             `json:"duration"`
 	Info     ObjectiveEventInfo `json:"info"`
+	// When the work this event records began. Set together with duration, so the work
+	// interval is [started_at, started_at + duration]. The event's created_at remains
+	// the time the event was persisted.
+	StartedAt time.Time `json:"startedAt" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data            respjson.Field
@@ -971,6 +977,7 @@ type ObjectiveEvent struct {
 		ContextWindowID respjson.Field
 		Duration        respjson.Field
 		Info            respjson.Field
+		StartedAt       respjson.Field
 		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
