@@ -958,12 +958,18 @@ type ObjectiveEvent struct {
 	// runs)
 	Metadata        shared.OperationMetadata `json:"metadata" api:"required"`
 	ContextWindowID string                   `json:"contextWindowId"`
-	Info            ObjectiveEventInfo       `json:"info"`
+	// Elapsed time of the work this event records, when it is known at write time
+	// (e.g. assistant message generation, tool execution for result/error events).
+	// Unset means the event is instantaneous or the duration is not measurable.
+	// Serialized as a canonical duration string (e.g. "4.1s").
+	Duration string             `json:"duration"`
+	Info     ObjectiveEventInfo `json:"info"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data            respjson.Field
 		Metadata        respjson.Field
 		ContextWindowID respjson.Field
+		Duration        respjson.Field
 		Info            respjson.Field
 		ExtraFields     map[string]respjson.Field
 		raw             string
