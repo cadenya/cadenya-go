@@ -256,6 +256,48 @@ func (r *ToolSetService) ListEventsAutoPaging(ctx context.Context, toolSetID str
 	return pagination.NewCursorPaginationAutoPager(r.ListEvents(ctx, toolSetID, params, opts...))
 }
 
+// Lists the agent variations (with their parent agent) that have the tool set
+// assigned. Pass tool_id to instead list variations with a direct assignment of
+// that individual tool; variations that receive the tool implicitly through a
+// whole-set assignment are not included in that filtered view.
+func (r *ToolSetService) ListUsage(ctx context.Context, toolSetID string, params ToolSetListUsageParams, opts ...option.RequestOption) (res *pagination.CursorPagination[ToolSetUsage], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	precfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+	requestconfig.UseDefaultParam(&params.WorkspaceID, precfg.WorkspaceID)
+	if params.WorkspaceID.Value == "" {
+		err = errors.New("missing required workspaceId parameter")
+		return nil, err
+	}
+	if toolSetID == "" {
+		err = errors.New("missing required toolSetId parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/tool_sets/%s/usage", url.PathEscape(params.WorkspaceID.Value), url.PathEscape(toolSetID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// Lists the agent variations (with their parent agent) that have the tool set
+// assigned. Pass tool_id to instead list variations with a direct assignment of
+// that individual tool; variations that receive the tool implicitly through a
+// whole-set assignment are not included in that filtered view.
+func (r *ToolSetService) ListUsageAutoPaging(ctx context.Context, toolSetID string, params ToolSetListUsageParams, opts ...option.RequestOption) *pagination.CursorPaginationAutoPager[ToolSetUsage] {
+	return pagination.NewCursorPaginationAutoPager(r.ListUsage(ctx, toolSetID, params, opts...))
+}
+
 // Transitions an archived tool set back to STATE_ACTIVE. Managed tool sets resume
 // syncing on their next cycle and their tools become available to objectives
 // again.
@@ -2309,6 +2351,34 @@ func (r *ToolSetSpecParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// ToolSetUsage describes one agent variation that uses the tool set (or, when
+// filtering by tool, an individual tool within it).
+type ToolSetUsage struct {
+	// When the assignment was created.
+	AssignedAt time.Time `json:"assignedAt" api:"required" format:"date-time"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	AgentVariation shared.ResourceMetadata `json:"agentVariation"`
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Model shared.ResourceMetadata `json:"model"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AssignedAt     respjson.Field
+		Agent          respjson.Field
+		AgentVariation respjson.Field
+		Model          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetUsage) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ToolSetGetOpenAPISpecResponse struct {
 	// The consumed OpenAPI specification as a JSON string.
 	Spec string `json:"spec"`
@@ -2471,6 +2541,31 @@ type ToolSetListEventsParams struct {
 // URLQuery serializes [ToolSetListEventsParams]'s query parameters as
 // `url.Values`.
 func (r ToolSetListEventsParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}
+
+type ToolSetListUsageParams struct {
+	// Use [option.WithWorkspaceID] on the client to set a global default for this
+	// field.
+	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
+	// Pagination cursor from previous response
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	// Maximum number of results to return
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Sort order for results (asc or desc by assignment creation time)
+	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
+	// When set, lists only variations with a direct assignment of this individual
+	// tool. When unset, lists variations assigned the whole tool set. The tool must
+	// belong to the tool set.
+	ToolID param.Opt[string] `query:"toolId,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [ToolSetListUsageParams]'s query parameters as `url.Values`.
+func (r ToolSetListUsageParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
