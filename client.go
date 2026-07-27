@@ -71,6 +71,15 @@ type Client struct {
 	// themselves a member of.
 	WorkspaceAdmin WorkspaceAdminService
 	Webhooks       WebhookService
+	// Manage embeddable chat widgets. A widget binds an agent to a globally unique
+	// hostname with a per-widget origin allowlist; browsers reach it with session
+	// tokens minted via WidgetSessionService.
+	Widgets WidgetService
+	// Mint and manage widget sessions. Session creation is server-to-server only: the
+	// customer's backend authenticates its visitor, asserts tenant/subject context,
+	// attaches any per-visitor secrets, and receives a short-lived bearer token the
+	// browser uses against the widget host.
+	WidgetSessions WidgetSessionService
 }
 
 // DefaultClientOptions read from the environment (CADENYA_API_KEY,
@@ -127,6 +136,8 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Workspaces = NewWorkspaceService(opts...)
 	r.WorkspaceAdmin = NewWorkspaceAdminService(opts...)
 	r.Webhooks = NewWebhookService(opts...)
+	r.Widgets = NewWidgetService(opts...)
+	r.WidgetSessions = NewWidgetSessionService(opts...)
 
 	return
 }
