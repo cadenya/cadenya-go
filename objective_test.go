@@ -131,6 +131,8 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 		State:             cadenya.ObjectiveListParamsStateStateUnspecified,
 		SubjectID:         cadenya.String("subjectId"),
 		TenantID:          cadenya.String("tenantId"),
+		WidgetID:          cadenya.String("widgetId"),
+		WidgetSessionID:   cadenya.String("widgetSessionId"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
