@@ -721,6 +721,9 @@ type Objective struct {
 	// A parent objective means the objective was spawned off using a separate agent to
 	// complete an objective
 	ParentObjectiveID string `json:"parentObjectiveId"`
+	// Parameters forced onto this objective's tool calls, as provided at creation. See
+	// CreateObjectiveRequest.pinned_parameters for semantics.
+	PinnedParameters map[string]string `json:"pinnedParameters"`
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets []ObjectiveSecret `json:"secrets"`
@@ -741,6 +744,7 @@ type Objective struct {
 		MemoryCascade        respjson.Field
 		Output               respjson.Field
 		ParentObjectiveID    respjson.Field
+		PinnedParameters     respjson.Field
 		Secrets              respjson.Field
 		StateMessage         respjson.Field
 		SystemPromptData     respjson.Field
@@ -1846,6 +1850,12 @@ type ObjectiveInfo struct {
 	TotalOutputTokens int64 `json:"totalOutputTokens" api:"required"`
 	// Total number of tool calls made during execution
 	TotalToolCalls int64 `json:"totalToolCalls" api:"required"`
+	// SubjectReference is the read-only echo of a resource's subject association,
+	// carrying both Cadenya's canonical id and the customer's own key.
+	Subject SubjectReference `json:"subject"`
+	// TenantReference is the read-only echo of a resource's tenant association,
+	// carrying both Cadenya's canonical id and the customer's own key.
+	Tenant TenantReference `json:"tenant"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Agent                  respjson.Field
@@ -1859,6 +1869,8 @@ type ObjectiveInfo struct {
 		TotalIterations        respjson.Field
 		TotalOutputTokens      respjson.Field
 		TotalToolCalls         respjson.Field
+		Subject                respjson.Field
+		Tenant                 respjson.Field
 		ExtraFields            map[string]respjson.Field
 		raw                    string
 	} `json:"-"`
@@ -2183,9 +2195,25 @@ type ObjectiveNewParams struct {
 	// operation. Read-only fields (id, account_id, workspace_id, created_at,
 	// profile_id) are excluded since they are set by the server.
 	Metadata shared.CreateOperationMetadataParam `json:"metadata,omitzero"`
+	// Parameters forced onto this objective's tool calls. A pinned parameter is an
+	// overlay on a tool's JSON schema: the parameter is removed from what the LLM
+	// sees, and its value is always overwritten server-side with the pinned value —
+	// the model cannot choose a different value for it.
+	PinnedParameters map[string]string `json:"pinnedParameters,omitzero"`
 	// Secrets that can be used in the headers for tool calls using the secret
 	// interpolation format.
 	Secrets []ObjectiveNewParamsSecret `json:"secrets,omitzero"`
+	// SubjectAssertion identifies a person within a tenant in the customer's own
+	// namespace — typically their user id. Asserting a subject upserts the subject
+	// record under the asserted tenant and associates the created resource with it. A
+	// subject assertion is only valid alongside a tenant assertion: subject
+	// identifiers are scoped to their tenant.
+	Subject SubjectAssertionParam `json:"subject,omitzero"`
+	// TenantAssertion identifies a tenant in the customer's own namespace — their org,
+	// company, or team identifier for an end user. Asserting a tenant upserts the
+	// tenant record in the workspace (keyed on `id` as the tenant's external_id) and
+	// associates the created resource with it.
+	Tenant TenantAssertionParam `json:"tenant,omitzero"`
 	paramObj
 }
 
@@ -2260,6 +2288,13 @@ type ObjectiveListParams struct {
 	ProfileID         param.Opt[string] `query:"profileId,omitzero" json:"-"`
 	// Sort order for results (asc or desc by creation time)
 	SortOrder param.Opt[string] `query:"sortOrder,omitzero" json:"-"`
+	// Filter to objectives associated with a subject. Accepts the canonical `subj_…`
+	// form or the `external_id:<value>` form; the external_id form is scoped within a
+	// tenant and requires `tenant_id` to also be set.
+	SubjectID param.Opt[string] `query:"subjectId,omitzero" json:"-"`
+	// Filter to objectives associated with a tenant. Accepts the canonical `tenant_…`
+	// form or the `external_id:<value>` form.
+	TenantID param.Opt[string] `query:"tenantId,omitzero" json:"-"`
 	// Filter by state
 	//
 	// Any of "STATE_UNSPECIFIED", "STATE_PENDING", "STATE_RUNNING", "STATE_WAITING",

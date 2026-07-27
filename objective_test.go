@@ -49,10 +49,21 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 		},
+		PinnedParameters: map[string]string{
+			"foo": "string",
+		},
 		Secrets: []cadenya.ObjectiveNewParamsSecret{{
 			Name:  cadenya.String("name"),
 			Value: cadenya.String("value"),
 		}},
+		Subject: cadenya.SubjectAssertionParam{
+			ID:   "customer-user-42",
+			Name: cadenya.String("Jane Doe"),
+		},
+		Tenant: cadenya.TenantAssertionParam{
+			ID:   "acme-corp",
+			Name: cadenya.String("Acme Corp"),
+		},
 		VariationID: cadenya.String("agentvar_01HXKD2E5NQM3T9AYWCF32BSPP"),
 	})
 	if err != nil {
@@ -118,6 +129,8 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 		ProfileID:         cadenya.String("profile_01HXKD2E5NQM3T9AYWCFS0AP08"),
 		SortOrder:         cadenya.String("sortOrder"),
 		State:             cadenya.ObjectiveListParamsStateStateUnspecified,
+		SubjectID:         cadenya.String("subjectId"),
+		TenantID:          cadenya.String("tenantId"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
