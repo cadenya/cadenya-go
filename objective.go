@@ -1856,6 +1856,13 @@ type ObjectiveInfo struct {
 	// TenantReference is the read-only echo of a resource's tenant association,
 	// carrying both Cadenya's canonical id and the customer's own key.
 	Tenant TenantReference `json:"tenant"`
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Widget shared.BareMetadata `json:"widget"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Agent                  respjson.Field
@@ -1871,6 +1878,7 @@ type ObjectiveInfo struct {
 		TotalToolCalls         respjson.Field
 		Subject                respjson.Field
 		Tenant                 respjson.Field
+		Widget                 respjson.Field
 		ExtraFields            map[string]respjson.Field
 		raw                    string
 	} `json:"-"`
@@ -2295,6 +2303,11 @@ type ObjectiveListParams struct {
 	// Filter to objectives associated with a tenant. Accepts the canonical `tenant_…`
 	// form or the `external_id:<value>` form.
 	TenantID param.Opt[string] `query:"tenantId,omitzero" json:"-"`
+	// Filter to objectives whose conversation ran through a widget. Accepts the
+	// canonical `wgt_…` form or the `external_id:<value>` form.
+	WidgetID param.Opt[string] `query:"widgetId,omitzero" json:"-"`
+	// Filter to objectives created by a specific widget session.
+	WidgetSessionID param.Opt[string] `query:"widgetSessionId,omitzero" json:"-"`
 	// Filter by state
 	//
 	// Any of "STATE_UNSPECIFIED", "STATE_PENDING", "STATE_RUNNING", "STATE_WAITING",
