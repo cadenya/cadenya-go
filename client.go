@@ -75,6 +75,11 @@ type Client struct {
 	// hostname with a per-widget origin allowlist; browsers reach it with session
 	// tokens minted via WidgetSessionService.
 	Widgets WidgetService
+	// Read and erase tenants and the subjects under them. Tenants and subjects are
+	// created by assertion — on objective creation or widget session mint — never
+	// directly, so this service has no create or update: it exists to enumerate what
+	// assertions have produced, and to destroy it on request.
+	Tenants TenantService
 	// Mint and manage widget sessions. Session creation is server-to-server only: the
 	// customer's backend authenticates its visitor, asserts tenant/subject context,
 	// attaches any per-visitor secrets, and receives a short-lived bearer token the
@@ -137,6 +142,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.WorkspaceAdmin = NewWorkspaceAdminService(opts...)
 	r.Webhooks = NewWebhookService(opts...)
 	r.Widgets = NewWidgetService(opts...)
+	r.Tenants = NewTenantService(opts...)
 	r.WidgetSessions = NewWidgetSessionService(opts...)
 
 	return
