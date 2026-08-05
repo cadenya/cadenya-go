@@ -215,6 +215,7 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataFinalized">ObjectiveEventDataFinalized</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataMemoryRead">ObjectiveEventDataMemoryRead</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataNotice">ObjectiveEventDataNotice</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataReasoning">ObjectiveEventDataReasoning</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataSubAgentSpawned">ObjectiveEventDataSubAgentSpawned</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataSubAgentUpdated">ObjectiveEventDataSubAgentUpdated</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataTimedOut">ObjectiveEventDataTimedOut</a>
@@ -228,6 +229,7 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventInfo">ObjectiveEventInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveInfo">ObjectiveInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveSecret">ObjectiveSecret</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#Reasoning">Reasoning</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SubAgentSpawned">SubAgentSpawned</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SubAgentUpdated">SubAgentUpdated</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolApprovalRequested">ToolApprovalRequested</a>
