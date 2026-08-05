@@ -238,6 +238,12 @@ type ModelSpec struct {
 	MaxOutputTokens int64 `json:"maxOutputTokens"`
 	// Cost per million output tokens in cents (e.g., 1500 = $15.00)
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
+	// The model's reasoning capability. Catalog data used to decide whether thinking
+	// is requested for objective iterations on this model.
+	//
+	// Any of "REASONING_UNSPECIFIED", "REASONING_NONE", "REASONING_ADAPTIVE",
+	// "REASONING_BUDGET".
+	Reasoning ModelSpecReasoning `json:"reasoning"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Family                      respjson.Field
@@ -246,6 +252,7 @@ type ModelSpec struct {
 		MaxInputTokens              respjson.Field
 		MaxOutputTokens             respjson.Field
 		OutputPricePerMillionTokens respjson.Field
+		Reasoning                   respjson.Field
 		ExtraFields                 map[string]respjson.Field
 		raw                         string
 	} `json:"-"`
@@ -256,6 +263,17 @@ func (r ModelSpec) RawJSON() string { return r.JSON.raw }
 func (r *ModelSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// The model's reasoning capability. Catalog data used to decide whether thinking
+// is requested for objective iterations on this model.
+type ModelSpecReasoning string
+
+const (
+	ModelSpecReasoningReasoningUnspecified ModelSpecReasoning = "REASONING_UNSPECIFIED"
+	ModelSpecReasoningReasoningNone        ModelSpecReasoning = "REASONING_NONE"
+	ModelSpecReasoningReasoningAdaptive    ModelSpecReasoning = "REASONING_ADAPTIVE"
+	ModelSpecReasoningReasoningBudget      ModelSpecReasoning = "REASONING_BUDGET"
+)
 
 type ModelSwapResponse = any
 
