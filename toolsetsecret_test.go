@@ -28,9 +28,9 @@ func TestToolSetSecretNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.New(
 		context.TODO(),
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetSecretNewParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.CreateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -67,10 +67,10 @@ func TestToolSetSecretGet(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.Get(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
 		cadenya.ToolSetSecretGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -97,10 +97,10 @@ func TestToolSetSecretUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.Update(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
 		cadenya.ToolSetSecretUpdateParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -138,9 +138,9 @@ func TestToolSetSecretListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Secrets.List(
 		context.TODO(),
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetSecretListParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:      cadenya.String("cursor"),
 			IncludeInfo: cadenya.Bool(true),
 			Limit:       cadenya.Int(0),
@@ -173,10 +173,10 @@ func TestToolSetSecretDelete(t *testing.T) {
 	)
 	err := client.ToolSets.Secrets.Delete(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"toolsecret_01HXKD2E5NQM3T9AYWCF8PWC4R",
 		cadenya.ToolSetSecretDeleteParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {

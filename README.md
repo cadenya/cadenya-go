@@ -292,7 +292,7 @@ You can use `.ListAutoPaging()` methods to iterate through items across all page
 
 ```go
 iter := client.AIProviderKeys.ListAutoPaging(context.TODO(), cadenya.AIProviderKeyListParams{
-	WorkspaceID: cadenya.String("workspaceId"),
+	WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 })
 // Automatically fetches more pages as needed.
 for iter.Next() {
@@ -309,7 +309,7 @@ with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
 page, err := client.AIProviderKeys.List(context.TODO(), cadenya.AIProviderKeyListParams{
-	WorkspaceID: cadenya.String("workspaceId"),
+	WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 })
 for page != nil {
 	for _, aiProviderKey := range page.Items {

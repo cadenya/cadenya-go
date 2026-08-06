@@ -321,19 +321,176 @@ func (r *ToolSetService) Unarchive(ctx context.Context, id string, body ToolSetU
 	return res, err
 }
 
-// Approval filters that will automatically set the approval requirement on tools
-// synced from an external source
-type ApprovalRequirementFilter struct {
+// ApprovalRequirementFilterUnion contains all possible properties and values from
+// [ApprovalRequirementFilterAlways], [ApprovalRequirementFilterOnly].
+//
+// Use the [ApprovalRequirementFilterUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ApprovalRequirementFilterUnion struct {
+	// This field is from variant [ApprovalRequirementFilterAlways].
 	Always bool `json:"always"`
-	// Top-level filter with simple boolean logic (no nesting)
-	Only ToolFilter `json:"only"`
-	// The JSON name of the variant set in `requirement` (e.g. "always"). Required from
-	// clients on writes, filled by the server on reads; drives the discriminated union
-	// in the generated OpenAPI.
+	// Any of "always", "only".
 	Type string `json:"type"`
+	// This field is from variant [ApprovalRequirementFilterOnly].
+	Only ToolFilter `json:"only"`
+	JSON struct {
+		Always respjson.Field
+		Type   respjson.Field
+		Only   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+// anyApprovalRequirementFilter is implemented by each variant of
+// [ApprovalRequirementFilterUnion] to add type safety for the return type of
+// [ApprovalRequirementFilterUnion.AsAny]
+type anyApprovalRequirementFilter interface {
+	implApprovalRequirementFilterUnion()
+}
+
+func (ApprovalRequirementFilterAlways) implApprovalRequirementFilterUnion() {}
+func (ApprovalRequirementFilterOnly) implApprovalRequirementFilterUnion()   {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ApprovalRequirementFilterUnion.AsAny().(type) {
+//	case cadenya.ApprovalRequirementFilterAlways:
+//	case cadenya.ApprovalRequirementFilterOnly:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ApprovalRequirementFilterUnion) AsAny() anyApprovalRequirementFilter {
+	switch u.Type {
+	case "always":
+		return u.AsAlways()
+	case "only":
+		return u.AsOnly()
+	}
+	return nil
+}
+
+func (u ApprovalRequirementFilterUnion) AsAlways() (v ApprovalRequirementFilterAlways) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ApprovalRequirementFilterUnion) AsOnly() (v ApprovalRequirementFilterOnly) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ApprovalRequirementFilterUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ApprovalRequirementFilterUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ApprovalRequirementFilterUnion to a
+// ApprovalRequirementFilterUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ApprovalRequirementFilterUnionParam.Overrides()
+func (r ApprovalRequirementFilterUnion) ToParam() ApprovalRequirementFilterUnionParam {
+	return param.Override[ApprovalRequirementFilterUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+func ApprovalRequirementFilterParamOfAlways(always bool) ApprovalRequirementFilterUnionParam {
+	var variant ApprovalRequirementFilterAlwaysParam
+	variant.Always = always
+	return ApprovalRequirementFilterUnionParam{OfAlways: &variant}
+}
+
+func ApprovalRequirementFilterParamOfOnly(only ToolFilterParam) ApprovalRequirementFilterUnionParam {
+	var variant ApprovalRequirementFilterOnlyParam
+	variant.Only = only
+	return ApprovalRequirementFilterUnionParam{OfOnly: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ApprovalRequirementFilterUnionParam struct {
+	OfAlways *ApprovalRequirementFilterAlwaysParam `json:",omitzero,inline"`
+	OfOnly   *ApprovalRequirementFilterOnlyParam   `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ApprovalRequirementFilterUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAlways, u.OfOnly)
+}
+func (u *ApprovalRequirementFilterUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[ApprovalRequirementFilterUnionParam](
+		"type",
+		apijson.Discriminator[ApprovalRequirementFilterAlwaysParam]("always"),
+		apijson.Discriminator[ApprovalRequirementFilterOnlyParam]("only"),
+	)
+}
+
+type ApprovalRequirementFilterAlways struct {
+	Always bool `json:"always" api:"required"`
+	// Any of "always".
+	Type ApprovalRequirementFilterAlwaysType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Always      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ApprovalRequirementFilterAlways) RawJSON() string { return r.JSON.raw }
+func (r *ApprovalRequirementFilterAlways) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ApprovalRequirementFilterAlways to a
+// ApprovalRequirementFilterAlwaysParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ApprovalRequirementFilterAlwaysParam.Overrides()
+func (r ApprovalRequirementFilterAlways) ToParam() ApprovalRequirementFilterAlwaysParam {
+	return param.Override[ApprovalRequirementFilterAlwaysParam](json.RawMessage(r.RawJSON()))
+}
+
+type ApprovalRequirementFilterAlwaysType string
+
+const (
+	ApprovalRequirementFilterAlwaysTypeAlways ApprovalRequirementFilterAlwaysType = "always"
+)
+
+// The properties Always, Type are required.
+type ApprovalRequirementFilterAlwaysParam struct {
+	Always bool `json:"always" api:"required"`
+	// Any of "always".
+	Type ApprovalRequirementFilterAlwaysType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ApprovalRequirementFilterAlwaysParam) MarshalJSON() (data []byte, err error) {
+	type shadow ApprovalRequirementFilterAlwaysParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ApprovalRequirementFilterAlwaysParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ApprovalRequirementFilterOnly struct {
+	// Top-level filter with simple boolean logic (no nesting)
+	Only ToolFilter `json:"only" api:"required"`
+	// Any of "only".
+	Type ApprovalRequirementFilterOnlyType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
 		Only        respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -342,39 +499,41 @@ type ApprovalRequirementFilter struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ApprovalRequirementFilter) RawJSON() string { return r.JSON.raw }
-func (r *ApprovalRequirementFilter) UnmarshalJSON(data []byte) error {
+func (r ApprovalRequirementFilterOnly) RawJSON() string { return r.JSON.raw }
+func (r *ApprovalRequirementFilterOnly) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToParam converts this ApprovalRequirementFilter to a
-// ApprovalRequirementFilterParam.
+// ToParam converts this ApprovalRequirementFilterOnly to a
+// ApprovalRequirementFilterOnlyParam.
 //
 // Warning: the fields of the param type will not be present. ToParam should only
 // be used at the last possible moment before sending a request. Test for this with
-// ApprovalRequirementFilterParam.Overrides()
-func (r ApprovalRequirementFilter) ToParam() ApprovalRequirementFilterParam {
-	return param.Override[ApprovalRequirementFilterParam](json.RawMessage(r.RawJSON()))
+// ApprovalRequirementFilterOnlyParam.Overrides()
+func (r ApprovalRequirementFilterOnly) ToParam() ApprovalRequirementFilterOnlyParam {
+	return param.Override[ApprovalRequirementFilterOnlyParam](json.RawMessage(r.RawJSON()))
 }
 
-// Approval filters that will automatically set the approval requirement on tools
-// synced from an external source
-type ApprovalRequirementFilterParam struct {
-	Always param.Opt[bool] `json:"always,omitzero"`
-	// The JSON name of the variant set in `requirement` (e.g. "always"). Required from
-	// clients on writes, filled by the server on reads; drives the discriminated union
-	// in the generated OpenAPI.
-	Type param.Opt[string] `json:"type,omitzero"`
+type ApprovalRequirementFilterOnlyType string
+
+const (
+	ApprovalRequirementFilterOnlyTypeOnly ApprovalRequirementFilterOnlyType = "only"
+)
+
+// The properties Only, Type are required.
+type ApprovalRequirementFilterOnlyParam struct {
 	// Top-level filter with simple boolean logic (no nesting)
-	Only ToolFilterParam `json:"only,omitzero"`
+	Only ToolFilterParam `json:"only,omitzero" api:"required"`
+	// Any of "only".
+	Type ApprovalRequirementFilterOnlyType `json:"type,omitzero" api:"required"`
 	paramObj
 }
 
-func (r ApprovalRequirementFilterParam) MarshalJSON() (data []byte, err error) {
-	type shadow ApprovalRequirementFilterParam
+func (r ApprovalRequirementFilterOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow ApprovalRequirementFilterOnlyParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ApprovalRequirementFilterParam) UnmarshalJSON(data []byte) error {
+func (r *ApprovalRequirementFilterOnlyParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -384,7 +543,7 @@ type AttributeFilter struct {
 	// "ATTRIBUTE_DESCRIPTION".
 	Attribute AttributeFilterAttribute `json:"attribute" api:"required"`
 	// String matching operations
-	Matcher StringMatcher `json:"matcher"`
+	Matcher StringMatcherUnion `json:"matcher"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Attribute   respjson.Field
@@ -426,7 +585,7 @@ type AttributeFilterParam struct {
 	// "ATTRIBUTE_DESCRIPTION".
 	Attribute AttributeFilterAttribute `json:"attribute,omitzero" api:"required"`
 	// String matching operations
-	Matcher StringMatcherParam `json:"matcher,omitzero"`
+	Matcher StringMatcherUnionParam `json:"matcher,omitzero"`
 	paramObj
 }
 
@@ -438,67 +597,445 @@ func (r *AttributeFilterParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// String matching operations
-type StringMatcher struct {
+// StringMatcherUnion contains all possible properties and values from
+// [StringMatcherExact], [StringMatcherStartsWith], [StringMatcherEndsWith],
+// [StringMatcherContains], [StringMatcherRegex].
+//
+// Use the [StringMatcherUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type StringMatcherUnion struct {
+	// This field is from variant [StringMatcherExact].
+	Exact string `json:"exact"`
+	// Any of "exact", "startsWith", "endsWith", "contains", "regex".
+	Type          string `json:"type"`
 	CaseSensitive bool   `json:"caseSensitive"`
-	Contains      string `json:"contains"`
-	EndsWith      string `json:"endsWith"`
-	Exact         string `json:"exact"`
-	Regex         string `json:"regex"`
-	StartsWith    string `json:"startsWith"`
-	// The JSON name of the variant set in `match_type` (e.g. "startsWith"). Required
-	// from clients on writes, filled by the server on reads; drives the discriminated
-	// union in the generated OpenAPI.
-	Type string `json:"type"`
+	// This field is from variant [StringMatcherStartsWith].
+	StartsWith string `json:"startsWith"`
+	// This field is from variant [StringMatcherEndsWith].
+	EndsWith string `json:"endsWith"`
+	// This field is from variant [StringMatcherContains].
+	Contains string `json:"contains"`
+	// This field is from variant [StringMatcherRegex].
+	Regex string `json:"regex"`
+	JSON  struct {
+		Exact         respjson.Field
+		Type          respjson.Field
+		CaseSensitive respjson.Field
+		StartsWith    respjson.Field
+		EndsWith      respjson.Field
+		Contains      respjson.Field
+		Regex         respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// anyStringMatcher is implemented by each variant of [StringMatcherUnion] to add
+// type safety for the return type of [StringMatcherUnion.AsAny]
+type anyStringMatcher interface {
+	implStringMatcherUnion()
+}
+
+func (StringMatcherExact) implStringMatcherUnion()      {}
+func (StringMatcherStartsWith) implStringMatcherUnion() {}
+func (StringMatcherEndsWith) implStringMatcherUnion()   {}
+func (StringMatcherContains) implStringMatcherUnion()   {}
+func (StringMatcherRegex) implStringMatcherUnion()      {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := StringMatcherUnion.AsAny().(type) {
+//	case cadenya.StringMatcherExact:
+//	case cadenya.StringMatcherStartsWith:
+//	case cadenya.StringMatcherEndsWith:
+//	case cadenya.StringMatcherContains:
+//	case cadenya.StringMatcherRegex:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u StringMatcherUnion) AsAny() anyStringMatcher {
+	switch u.Type {
+	case "exact":
+		return u.AsExact()
+	case "startsWith":
+		return u.AsStartsWith()
+	case "endsWith":
+		return u.AsEndsWith()
+	case "contains":
+		return u.AsContains()
+	case "regex":
+		return u.AsRegex()
+	}
+	return nil
+}
+
+func (u StringMatcherUnion) AsExact() (v StringMatcherExact) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u StringMatcherUnion) AsStartsWith() (v StringMatcherStartsWith) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u StringMatcherUnion) AsEndsWith() (v StringMatcherEndsWith) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u StringMatcherUnion) AsContains() (v StringMatcherContains) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u StringMatcherUnion) AsRegex() (v StringMatcherRegex) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u StringMatcherUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *StringMatcherUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this StringMatcherUnion to a StringMatcherUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// StringMatcherUnionParam.Overrides()
+func (r StringMatcherUnion) ToParam() StringMatcherUnionParam {
+	return param.Override[StringMatcherUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+func StringMatcherParamOfExact(exact string) StringMatcherUnionParam {
+	var variant StringMatcherExactParam
+	variant.Exact = exact
+	return StringMatcherUnionParam{OfExact: &variant}
+}
+
+func StringMatcherParamOfStartsWith(startsWith string) StringMatcherUnionParam {
+	var variant StringMatcherStartsWithParam
+	variant.StartsWith = startsWith
+	return StringMatcherUnionParam{OfStartsWith: &variant}
+}
+
+func StringMatcherParamOfEndsWith(endsWith string) StringMatcherUnionParam {
+	var variant StringMatcherEndsWithParam
+	variant.EndsWith = endsWith
+	return StringMatcherUnionParam{OfEndsWith: &variant}
+}
+
+func StringMatcherParamOfContains(contains string) StringMatcherUnionParam {
+	var variant StringMatcherContainsParam
+	variant.Contains = contains
+	return StringMatcherUnionParam{OfContains: &variant}
+}
+
+func StringMatcherParamOfRegex(regex string) StringMatcherUnionParam {
+	var variant StringMatcherRegexParam
+	variant.Regex = regex
+	return StringMatcherUnionParam{OfRegex: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type StringMatcherUnionParam struct {
+	OfExact      *StringMatcherExactParam      `json:",omitzero,inline"`
+	OfStartsWith *StringMatcherStartsWithParam `json:",omitzero,inline"`
+	OfEndsWith   *StringMatcherEndsWithParam   `json:",omitzero,inline"`
+	OfContains   *StringMatcherContainsParam   `json:",omitzero,inline"`
+	OfRegex      *StringMatcherRegexParam      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u StringMatcherUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfExact,
+		u.OfStartsWith,
+		u.OfEndsWith,
+		u.OfContains,
+		u.OfRegex)
+}
+func (u *StringMatcherUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[StringMatcherUnionParam](
+		"type",
+		apijson.Discriminator[StringMatcherExactParam]("exact"),
+		apijson.Discriminator[StringMatcherStartsWithParam]("startsWith"),
+		apijson.Discriminator[StringMatcherEndsWithParam]("endsWith"),
+		apijson.Discriminator[StringMatcherContainsParam]("contains"),
+		apijson.Discriminator[StringMatcherRegexParam]("regex"),
+	)
+}
+
+type StringMatcherContains struct {
+	Contains string `json:"contains" api:"required"`
+	// Any of "contains".
+	Type          StringMatcherContainsType `json:"type" api:"required"`
+	CaseSensitive bool                      `json:"caseSensitive"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CaseSensitive respjson.Field
 		Contains      respjson.Field
-		EndsWith      respjson.Field
-		Exact         respjson.Field
-		Regex         respjson.Field
-		StartsWith    respjson.Field
 		Type          respjson.Field
+		CaseSensitive respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r StringMatcher) RawJSON() string { return r.JSON.raw }
-func (r *StringMatcher) UnmarshalJSON(data []byte) error {
+func (r StringMatcherContains) RawJSON() string { return r.JSON.raw }
+func (r *StringMatcherContains) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToParam converts this StringMatcher to a StringMatcherParam.
+// ToParam converts this StringMatcherContains to a StringMatcherContainsParam.
 //
 // Warning: the fields of the param type will not be present. ToParam should only
 // be used at the last possible moment before sending a request. Test for this with
-// StringMatcherParam.Overrides()
-func (r StringMatcher) ToParam() StringMatcherParam {
-	return param.Override[StringMatcherParam](json.RawMessage(r.RawJSON()))
+// StringMatcherContainsParam.Overrides()
+func (r StringMatcherContains) ToParam() StringMatcherContainsParam {
+	return param.Override[StringMatcherContainsParam](json.RawMessage(r.RawJSON()))
 }
 
-// String matching operations
-type StringMatcherParam struct {
-	CaseSensitive param.Opt[bool]   `json:"caseSensitive,omitzero"`
-	Contains      param.Opt[string] `json:"contains,omitzero"`
-	EndsWith      param.Opt[string] `json:"endsWith,omitzero"`
-	Exact         param.Opt[string] `json:"exact,omitzero"`
-	Regex         param.Opt[string] `json:"regex,omitzero"`
-	StartsWith    param.Opt[string] `json:"startsWith,omitzero"`
-	// The JSON name of the variant set in `match_type` (e.g. "startsWith"). Required
-	// from clients on writes, filled by the server on reads; drives the discriminated
-	// union in the generated OpenAPI.
-	Type param.Opt[string] `json:"type,omitzero"`
+type StringMatcherContainsType string
+
+const (
+	StringMatcherContainsTypeContains StringMatcherContainsType = "contains"
+)
+
+// The properties Contains, Type are required.
+type StringMatcherContainsParam struct {
+	Contains string `json:"contains" api:"required"`
+	// Any of "contains".
+	Type          StringMatcherContainsType `json:"type,omitzero" api:"required"`
+	CaseSensitive param.Opt[bool]           `json:"caseSensitive,omitzero"`
 	paramObj
 }
 
-func (r StringMatcherParam) MarshalJSON() (data []byte, err error) {
-	type shadow StringMatcherParam
+func (r StringMatcherContainsParam) MarshalJSON() (data []byte, err error) {
+	type shadow StringMatcherContainsParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *StringMatcherParam) UnmarshalJSON(data []byte) error {
+func (r *StringMatcherContainsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type StringMatcherEndsWith struct {
+	EndsWith string `json:"endsWith" api:"required"`
+	// Any of "endsWith".
+	Type          StringMatcherEndsWithType `json:"type" api:"required"`
+	CaseSensitive bool                      `json:"caseSensitive"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		EndsWith      respjson.Field
+		Type          respjson.Field
+		CaseSensitive respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StringMatcherEndsWith) RawJSON() string { return r.JSON.raw }
+func (r *StringMatcherEndsWith) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this StringMatcherEndsWith to a StringMatcherEndsWithParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// StringMatcherEndsWithParam.Overrides()
+func (r StringMatcherEndsWith) ToParam() StringMatcherEndsWithParam {
+	return param.Override[StringMatcherEndsWithParam](json.RawMessage(r.RawJSON()))
+}
+
+type StringMatcherEndsWithType string
+
+const (
+	StringMatcherEndsWithTypeEndsWith StringMatcherEndsWithType = "endsWith"
+)
+
+// The properties EndsWith, Type are required.
+type StringMatcherEndsWithParam struct {
+	EndsWith string `json:"endsWith" api:"required"`
+	// Any of "endsWith".
+	Type          StringMatcherEndsWithType `json:"type,omitzero" api:"required"`
+	CaseSensitive param.Opt[bool]           `json:"caseSensitive,omitzero"`
+	paramObj
+}
+
+func (r StringMatcherEndsWithParam) MarshalJSON() (data []byte, err error) {
+	type shadow StringMatcherEndsWithParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *StringMatcherEndsWithParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type StringMatcherExact struct {
+	Exact string `json:"exact" api:"required"`
+	// Any of "exact".
+	Type          StringMatcherExactType `json:"type" api:"required"`
+	CaseSensitive bool                   `json:"caseSensitive"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Exact         respjson.Field
+		Type          respjson.Field
+		CaseSensitive respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StringMatcherExact) RawJSON() string { return r.JSON.raw }
+func (r *StringMatcherExact) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this StringMatcherExact to a StringMatcherExactParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// StringMatcherExactParam.Overrides()
+func (r StringMatcherExact) ToParam() StringMatcherExactParam {
+	return param.Override[StringMatcherExactParam](json.RawMessage(r.RawJSON()))
+}
+
+type StringMatcherExactType string
+
+const (
+	StringMatcherExactTypeExact StringMatcherExactType = "exact"
+)
+
+// The properties Exact, Type are required.
+type StringMatcherExactParam struct {
+	Exact string `json:"exact" api:"required"`
+	// Any of "exact".
+	Type          StringMatcherExactType `json:"type,omitzero" api:"required"`
+	CaseSensitive param.Opt[bool]        `json:"caseSensitive,omitzero"`
+	paramObj
+}
+
+func (r StringMatcherExactParam) MarshalJSON() (data []byte, err error) {
+	type shadow StringMatcherExactParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *StringMatcherExactParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type StringMatcherRegex struct {
+	Regex string `json:"regex" api:"required"`
+	// Any of "regex".
+	Type          StringMatcherRegexType `json:"type" api:"required"`
+	CaseSensitive bool                   `json:"caseSensitive"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Regex         respjson.Field
+		Type          respjson.Field
+		CaseSensitive respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StringMatcherRegex) RawJSON() string { return r.JSON.raw }
+func (r *StringMatcherRegex) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this StringMatcherRegex to a StringMatcherRegexParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// StringMatcherRegexParam.Overrides()
+func (r StringMatcherRegex) ToParam() StringMatcherRegexParam {
+	return param.Override[StringMatcherRegexParam](json.RawMessage(r.RawJSON()))
+}
+
+type StringMatcherRegexType string
+
+const (
+	StringMatcherRegexTypeRegex StringMatcherRegexType = "regex"
+)
+
+// The properties Regex, Type are required.
+type StringMatcherRegexParam struct {
+	Regex string `json:"regex" api:"required"`
+	// Any of "regex".
+	Type          StringMatcherRegexType `json:"type,omitzero" api:"required"`
+	CaseSensitive param.Opt[bool]        `json:"caseSensitive,omitzero"`
+	paramObj
+}
+
+func (r StringMatcherRegexParam) MarshalJSON() (data []byte, err error) {
+	type shadow StringMatcherRegexParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *StringMatcherRegexParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type StringMatcherStartsWith struct {
+	StartsWith string `json:"startsWith" api:"required"`
+	// Any of "startsWith".
+	Type          StringMatcherStartsWithType `json:"type" api:"required"`
+	CaseSensitive bool                        `json:"caseSensitive"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		StartsWith    respjson.Field
+		Type          respjson.Field
+		CaseSensitive respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StringMatcherStartsWith) RawJSON() string { return r.JSON.raw }
+func (r *StringMatcherStartsWith) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this StringMatcherStartsWith to a StringMatcherStartsWithParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// StringMatcherStartsWithParam.Overrides()
+func (r StringMatcherStartsWith) ToParam() StringMatcherStartsWithParam {
+	return param.Override[StringMatcherStartsWithParam](json.RawMessage(r.RawJSON()))
+}
+
+type StringMatcherStartsWithType string
+
+const (
+	StringMatcherStartsWithTypeStartsWith StringMatcherStartsWithType = "startsWith"
+)
+
+// The properties StartsWith, Type are required.
+type StringMatcherStartsWithParam struct {
+	StartsWith string `json:"startsWith" api:"required"`
+	// Any of "startsWith".
+	Type          StringMatcherStartsWithType `json:"type,omitzero" api:"required"`
+	CaseSensitive param.Opt[bool]             `json:"caseSensitive,omitzero"`
+	paramObj
+}
+
+func (r StringMatcherStartsWithParam) MarshalJSON() (data []byte, err error) {
+	type shadow StringMatcherStartsWithParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *StringMatcherStartsWithParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -660,70 +1197,162 @@ const (
 	ToolSetStateStateArchived    ToolSetState = "STATE_ARCHIVED"
 )
 
-type ToolSetAdapter struct {
-	// Bare tool sets define tools without an execution adapter. A bare tool call
-	// doesn't fire anything: the objective's workflow pauses and waits for an external
-	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
-	// reverse harness that polls for pending tool calls, executes locally, and reports
-	// results back via SetToolCallContent).
-	Bare    ToolSetAdapterBare    `json:"bare"`
-	HTTP    ToolSetAdapterHTTP    `json:"http"`
-	MCP     ToolSetAdapterMCP     `json:"mcp"`
-	OpenAPI ToolSetAdapterOpenAPI `json:"openapi"`
-	// The JSON name of the variant set in `adapter` (e.g. "mcp"). Required from
-	// clients on writes, filled by the server on reads; drives the discriminated union
-	// in the generated OpenAPI.
+// ToolSetAdapterUnion contains all possible properties and values from
+// [ToolSetAdapterMCPVariant], [ToolSetAdapterHTTPVariant],
+// [ToolSetAdapterOpenAPIVariant], [ToolSetAdapterBareVariant].
+//
+// Use the [ToolSetAdapterUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ToolSetAdapterUnion struct {
+	// This field is from variant [ToolSetAdapterMCPVariant].
+	MCP ToolSetAdapterMCP `json:"mcp"`
+	// Any of "mcp", "http", "openapi", "bare".
 	Type string `json:"type"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	// This field is from variant [ToolSetAdapterHTTPVariant].
+	HTTP ToolSetAdapterHTTP `json:"http"`
+	// This field is from variant [ToolSetAdapterOpenAPIVariant].
+	OpenAPI ToolSetAdapterOpenAPIUnion `json:"openapi"`
+	// This field is from variant [ToolSetAdapterBareVariant].
+	Bare ToolSetAdapterBare `json:"bare"`
 	JSON struct {
-		Bare        respjson.Field
-		HTTP        respjson.Field
-		MCP         respjson.Field
-		OpenAPI     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		MCP     respjson.Field
+		Type    respjson.Field
+		HTTP    respjson.Field
+		OpenAPI respjson.Field
+		Bare    respjson.Field
+		raw     string
 	} `json:"-"`
 }
 
+// anyToolSetAdapter is implemented by each variant of [ToolSetAdapterUnion] to add
+// type safety for the return type of [ToolSetAdapterUnion.AsAny]
+type anyToolSetAdapter interface {
+	implToolSetAdapterUnion()
+}
+
+func (ToolSetAdapterMCPVariant) implToolSetAdapterUnion()     {}
+func (ToolSetAdapterHTTPVariant) implToolSetAdapterUnion()    {}
+func (ToolSetAdapterOpenAPIVariant) implToolSetAdapterUnion() {}
+func (ToolSetAdapterBareVariant) implToolSetAdapterUnion()    {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ToolSetAdapterUnion.AsAny().(type) {
+//	case cadenya.ToolSetAdapterMCPVariant:
+//	case cadenya.ToolSetAdapterHTTPVariant:
+//	case cadenya.ToolSetAdapterOpenAPIVariant:
+//	case cadenya.ToolSetAdapterBareVariant:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ToolSetAdapterUnion) AsAny() anyToolSetAdapter {
+	switch u.Type {
+	case "mcp":
+		return u.AsMCP()
+	case "http":
+		return u.AsHTTP()
+	case "openapi":
+		return u.AsOpenAPI()
+	case "bare":
+		return u.AsBare()
+	}
+	return nil
+}
+
+func (u ToolSetAdapterUnion) AsMCP() (v ToolSetAdapterMCPVariant) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetAdapterUnion) AsHTTP() (v ToolSetAdapterHTTPVariant) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetAdapterUnion) AsOpenAPI() (v ToolSetAdapterOpenAPIVariant) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetAdapterUnion) AsBare() (v ToolSetAdapterBareVariant) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
-func (r ToolSetAdapter) RawJSON() string { return r.JSON.raw }
-func (r *ToolSetAdapter) UnmarshalJSON(data []byte) error {
+func (u ToolSetAdapterUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ToolSetAdapterUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToParam converts this ToolSetAdapter to a ToolSetAdapterParam.
+// ToParam converts this ToolSetAdapterUnion to a ToolSetAdapterUnionParam.
 //
 // Warning: the fields of the param type will not be present. ToParam should only
 // be used at the last possible moment before sending a request. Test for this with
-// ToolSetAdapterParam.Overrides()
-func (r ToolSetAdapter) ToParam() ToolSetAdapterParam {
-	return param.Override[ToolSetAdapterParam](json.RawMessage(r.RawJSON()))
+// ToolSetAdapterUnionParam.Overrides()
+func (r ToolSetAdapterUnion) ToParam() ToolSetAdapterUnionParam {
+	return param.Override[ToolSetAdapterUnionParam](json.RawMessage(r.RawJSON()))
 }
 
-type ToolSetAdapterParam struct {
-	// The JSON name of the variant set in `adapter` (e.g. "mcp"). Required from
-	// clients on writes, filled by the server on reads; drives the discriminated union
-	// in the generated OpenAPI.
-	Type param.Opt[string] `json:"type,omitzero"`
-	// Bare tool sets define tools without an execution adapter. A bare tool call
-	// doesn't fire anything: the objective's workflow pauses and waits for an external
-	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
-	// reverse harness that polls for pending tool calls, executes locally, and reports
-	// results back via SetToolCallContent).
-	Bare    ToolSetAdapterBareParam    `json:"bare,omitzero"`
-	HTTP    ToolSetAdapterHTTPParam    `json:"http,omitzero"`
-	MCP     ToolSetAdapterMCPParam     `json:"mcp,omitzero"`
-	OpenAPI ToolSetAdapterOpenAPIParam `json:"openapi,omitzero"`
-	paramObj
+func ToolSetAdapterParamOfMCP(mcp ToolSetAdapterMCPParam) ToolSetAdapterUnionParam {
+	var variant ToolSetAdapterMCPVariantParam
+	variant.MCP = mcp
+	return ToolSetAdapterUnionParam{OfMCP: &variant}
 }
 
-func (r ToolSetAdapterParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSetAdapterParam
-	return param.MarshalObject(r, (*shadow)(&r))
+func ToolSetAdapterParamOfHTTP(http ToolSetAdapterHTTPParam) ToolSetAdapterUnionParam {
+	var variant ToolSetAdapterHTTPVariantParam
+	variant.HTTP = http
+	return ToolSetAdapterUnionParam{OfHTTP: &variant}
 }
-func (r *ToolSetAdapterParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+
+func ToolSetAdapterParamOfOpenAPI[
+	T ToolSetAdapterOpenAPIURLParam | ToolSetAdapterOpenAPIUploadIDParam,
+](openAPI T) ToolSetAdapterUnionParam {
+	var variant ToolSetAdapterOpenAPIVariantParam
+	switch v := any(openAPI).(type) {
+	case ToolSetAdapterOpenAPIURLParam:
+		variant.OpenAPI.OfURL = &v
+	case ToolSetAdapterOpenAPIUploadIDParam:
+		variant.OpenAPI.OfUploadID = &v
+	}
+	return ToolSetAdapterUnionParam{OfOpenAPI: &variant}
+}
+
+func ToolSetAdapterParamOfBare(bare ToolSetAdapterBareParam) ToolSetAdapterUnionParam {
+	var variant ToolSetAdapterBareVariantParam
+	variant.Bare = bare
+	return ToolSetAdapterUnionParam{OfBare: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ToolSetAdapterUnionParam struct {
+	OfMCP     *ToolSetAdapterMCPVariantParam     `json:",omitzero,inline"`
+	OfHTTP    *ToolSetAdapterHTTPVariantParam    `json:",omitzero,inline"`
+	OfOpenAPI *ToolSetAdapterOpenAPIVariantParam `json:",omitzero,inline"`
+	OfBare    *ToolSetAdapterBareVariantParam    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ToolSetAdapterUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfMCP, u.OfHTTP, u.OfOpenAPI, u.OfBare)
+}
+func (u *ToolSetAdapterUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolSetAdapterUnionParam](
+		"type",
+		apijson.Discriminator[ToolSetAdapterMCPVariantParam]("mcp"),
+		apijson.Discriminator[ToolSetAdapterHTTPVariantParam]("http"),
+		apijson.Discriminator[ToolSetAdapterOpenAPIVariantParam]("openapi"),
+		apijson.Discriminator[ToolSetAdapterBareVariantParam]("bare"),
+	)
 }
 
 // Bare tool sets define tools without an execution adapter. A bare tool call
@@ -778,6 +1407,67 @@ func (r *ToolSetAdapterBareParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type ToolSetAdapterBareVariant struct {
+	// Bare tool sets define tools without an execution adapter. A bare tool call
+	// doesn't fire anything: the objective's workflow pauses and waits for an external
+	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+	// reverse harness that polls for pending tool calls, executes locally, and reports
+	// results back via SetToolCallContent).
+	Bare ToolSetAdapterBare `json:"bare" api:"required"`
+	// Any of "bare".
+	Type ToolSetAdapterBareVariantType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Bare        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetAdapterBareVariant) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterBareVariant) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterBareVariant to a
+// ToolSetAdapterBareVariantParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterBareVariantParam.Overrides()
+func (r ToolSetAdapterBareVariant) ToParam() ToolSetAdapterBareVariantParam {
+	return param.Override[ToolSetAdapterBareVariantParam](json.RawMessage(r.RawJSON()))
+}
+
+type ToolSetAdapterBareVariantType string
+
+const (
+	ToolSetAdapterBareVariantTypeBare ToolSetAdapterBareVariantType = "bare"
+)
+
+// The properties Bare, Type are required.
+type ToolSetAdapterBareVariantParam struct {
+	// Bare tool sets define tools without an execution adapter. A bare tool call
+	// doesn't fire anything: the objective's workflow pauses and waits for an external
+	// API consumer to set the tool call's content (e.g. human-in-the-loop tools, or a
+	// reverse harness that polls for pending tool calls, executes locally, and reports
+	// results back via SetToolCallContent).
+	Bare ToolSetAdapterBareParam `json:"bare,omitzero" api:"required"`
+	// Any of "bare".
+	Type ToolSetAdapterBareVariantType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ToolSetAdapterBareVariantParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterBareVariantParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolSetAdapterBareVariantParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ToolSetAdapterHTTP struct {
 	BaseURL string            `json:"baseUrl"`
 	Headers map[string]string `json:"headers"`
@@ -819,6 +1509,57 @@ func (r *ToolSetAdapterHTTPParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type ToolSetAdapterHTTPVariant struct {
+	HTTP ToolSetAdapterHTTP `json:"http" api:"required"`
+	// Any of "http".
+	Type ToolSetAdapterHTTPVariantType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		HTTP        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetAdapterHTTPVariant) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterHTTPVariant) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterHTTPVariant to a
+// ToolSetAdapterHTTPVariantParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterHTTPVariantParam.Overrides()
+func (r ToolSetAdapterHTTPVariant) ToParam() ToolSetAdapterHTTPVariantParam {
+	return param.Override[ToolSetAdapterHTTPVariantParam](json.RawMessage(r.RawJSON()))
+}
+
+type ToolSetAdapterHTTPVariantType string
+
+const (
+	ToolSetAdapterHTTPVariantTypeHTTP ToolSetAdapterHTTPVariantType = "http"
+)
+
+// The properties HTTP, Type are required.
+type ToolSetAdapterHTTPVariantParam struct {
+	HTTP ToolSetAdapterHTTPParam `json:"http,omitzero" api:"required"`
+	// Any of "http".
+	Type ToolSetAdapterHTTPVariantType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ToolSetAdapterHTTPVariantParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterHTTPVariantParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolSetAdapterHTTPVariantParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ToolSetAdapterMCP struct {
 	// Top-level filter with simple boolean logic (no nesting)
 	ExcludeTools ToolFilter        `json:"excludeTools"`
@@ -829,8 +1570,8 @@ type ToolSetAdapterMCP struct {
 	JustInTime ToolSetAdapterMCPJustInTime `json:"justInTime"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
-	ToolApprovals ApprovalRequirementFilter `json:"toolApprovals"`
-	URL           string                    `json:"url"`
+	ToolApprovals ApprovalRequirementFilterUnion `json:"toolApprovals"`
+	URL           string                         `json:"url"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ExcludeTools  respjson.Field
@@ -893,7 +1634,7 @@ type ToolSetAdapterMCPParam struct {
 	JustInTime ToolSetAdapterMCPJustInTimeParam `json:"justInTime,omitzero"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
-	ToolApprovals ApprovalRequirementFilterParam `json:"toolApprovals,omitzero"`
+	ToolApprovals ApprovalRequirementFilterUnionParam `json:"toolApprovals,omitzero"`
 	paramObj
 }
 
@@ -924,7 +1665,189 @@ func (r *ToolSetAdapterMCPJustInTimeParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type ToolSetAdapterOpenAPI struct {
+type ToolSetAdapterMCPVariant struct {
+	MCP ToolSetAdapterMCP `json:"mcp" api:"required"`
+	// Any of "mcp".
+	Type ToolSetAdapterMCPVariantType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MCP         respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetAdapterMCPVariant) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterMCPVariant) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterMCPVariant to a
+// ToolSetAdapterMCPVariantParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterMCPVariantParam.Overrides()
+func (r ToolSetAdapterMCPVariant) ToParam() ToolSetAdapterMCPVariantParam {
+	return param.Override[ToolSetAdapterMCPVariantParam](json.RawMessage(r.RawJSON()))
+}
+
+type ToolSetAdapterMCPVariantType string
+
+const (
+	ToolSetAdapterMCPVariantTypeMCP ToolSetAdapterMCPVariantType = "mcp"
+)
+
+// The properties MCP, Type are required.
+type ToolSetAdapterMCPVariantParam struct {
+	MCP ToolSetAdapterMCPParam `json:"mcp,omitzero" api:"required"`
+	// Any of "mcp".
+	Type ToolSetAdapterMCPVariantType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ToolSetAdapterMCPVariantParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterMCPVariantParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolSetAdapterMCPVariantParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToolSetAdapterOpenAPIUnion contains all possible properties and values from
+// [ToolSetAdapterOpenAPIURL], [ToolSetAdapterOpenAPIUploadID].
+//
+// Use the [ToolSetAdapterOpenAPIUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ToolSetAdapterOpenAPIUnion struct {
+	// Any of "url", "uploadId".
+	Type string `json:"type"`
+	// This field is from variant [ToolSetAdapterOpenAPIURL].
+	URL     string `json:"url"`
+	BaseURL string `json:"baseUrl"`
+	// This field is from variant [ToolSetAdapterOpenAPIURL].
+	ExcludeTools ToolFilter `json:"excludeTools"`
+	Headers      string     `json:"headers"`
+	// This field is from variant [ToolSetAdapterOpenAPIURL].
+	IncludeTools ToolFilter `json:"includeTools"`
+	ServerName   string     `json:"serverName"`
+	// This field is from variant [ToolSetAdapterOpenAPIURL].
+	ToolApprovals ApprovalRequirementFilterUnion `json:"toolApprovals"`
+	// This field is from variant [ToolSetAdapterOpenAPIUploadID].
+	UploadID string `json:"uploadId"`
+	JSON     struct {
+		Type          respjson.Field
+		URL           respjson.Field
+		BaseURL       respjson.Field
+		ExcludeTools  respjson.Field
+		Headers       respjson.Field
+		IncludeTools  respjson.Field
+		ServerName    respjson.Field
+		ToolApprovals respjson.Field
+		UploadID      respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// anyToolSetAdapterOpenAPI is implemented by each variant of
+// [ToolSetAdapterOpenAPIUnion] to add type safety for the return type of
+// [ToolSetAdapterOpenAPIUnion.AsAny]
+type anyToolSetAdapterOpenAPI interface {
+	implToolSetAdapterOpenAPIUnion()
+}
+
+func (ToolSetAdapterOpenAPIURL) implToolSetAdapterOpenAPIUnion()      {}
+func (ToolSetAdapterOpenAPIUploadID) implToolSetAdapterOpenAPIUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ToolSetAdapterOpenAPIUnion.AsAny().(type) {
+//	case cadenya.ToolSetAdapterOpenAPIURL:
+//	case cadenya.ToolSetAdapterOpenAPIUploadID:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ToolSetAdapterOpenAPIUnion) AsAny() anyToolSetAdapterOpenAPI {
+	switch u.Type {
+	case "url":
+		return u.AsURL()
+	case "uploadId":
+		return u.AsUploadID()
+	}
+	return nil
+}
+
+func (u ToolSetAdapterOpenAPIUnion) AsURL() (v ToolSetAdapterOpenAPIURL) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetAdapterOpenAPIUnion) AsUploadID() (v ToolSetAdapterOpenAPIUploadID) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ToolSetAdapterOpenAPIUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ToolSetAdapterOpenAPIUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterOpenAPIUnion to a
+// ToolSetAdapterOpenAPIUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterOpenAPIUnionParam.Overrides()
+func (r ToolSetAdapterOpenAPIUnion) ToParam() ToolSetAdapterOpenAPIUnionParam {
+	return param.Override[ToolSetAdapterOpenAPIUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+func ToolSetAdapterOpenAPIParamOfURL(url string) ToolSetAdapterOpenAPIUnionParam {
+	var variant ToolSetAdapterOpenAPIURLParam
+	variant.URL = url
+	return ToolSetAdapterOpenAPIUnionParam{OfURL: &variant}
+}
+
+func ToolSetAdapterOpenAPIParamOfUploadID(uploadID string) ToolSetAdapterOpenAPIUnionParam {
+	var variant ToolSetAdapterOpenAPIUploadIDParam
+	variant.UploadID = uploadID
+	return ToolSetAdapterOpenAPIUnionParam{OfUploadID: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ToolSetAdapterOpenAPIUnionParam struct {
+	OfURL      *ToolSetAdapterOpenAPIURLParam      `json:",omitzero,inline"`
+	OfUploadID *ToolSetAdapterOpenAPIUploadIDParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ToolSetAdapterOpenAPIUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfURL, u.OfUploadID)
+}
+func (u *ToolSetAdapterOpenAPIUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolSetAdapterOpenAPIUnionParam](
+		"type",
+		apijson.Discriminator[ToolSetAdapterOpenAPIURLParam]("url"),
+		apijson.Discriminator[ToolSetAdapterOpenAPIUploadIDParam]("uploadId"),
+	)
+}
+
+type ToolSetAdapterOpenAPIUploadID struct {
+	// Any of "uploadId".
+	Type ToolSetAdapterOpenAPIUploadIDType `json:"type" api:"required"`
+	// ID of a COMPLETE Upload containing the OpenAPI spec document.
+	UploadID string `json:"uploadId" api:"required"`
 	// Base URL for dispatching tool calls. If set, overrides the server resolved from
 	// the spec's servers array.
 	BaseURL string `json:"baseUrl"`
@@ -940,47 +1863,50 @@ type ToolSetAdapterOpenAPI struct {
 	ServerName string `json:"serverName"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
-	ToolApprovals ApprovalRequirementFilter `json:"toolApprovals"`
-	// The JSON name of the variant set in `source` (e.g. "url"). Required from clients
-	// on writes, filled by the server on reads; drives the discriminated union in the
-	// generated OpenAPI.
-	Type string `json:"type"`
-	// ID of a COMPLETE Upload containing the OpenAPI spec document.
-	UploadID string `json:"uploadId"`
-	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
-	URL string `json:"url"`
+	ToolApprovals ApprovalRequirementFilterUnion `json:"toolApprovals"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		Type          respjson.Field
+		UploadID      respjson.Field
 		BaseURL       respjson.Field
 		ExcludeTools  respjson.Field
 		Headers       respjson.Field
 		IncludeTools  respjson.Field
 		ServerName    respjson.Field
 		ToolApprovals respjson.Field
-		Type          respjson.Field
-		UploadID      respjson.Field
-		URL           respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r ToolSetAdapterOpenAPI) RawJSON() string { return r.JSON.raw }
-func (r *ToolSetAdapterOpenAPI) UnmarshalJSON(data []byte) error {
+func (r ToolSetAdapterOpenAPIUploadID) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterOpenAPIUploadID) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToParam converts this ToolSetAdapterOpenAPI to a ToolSetAdapterOpenAPIParam.
+// ToParam converts this ToolSetAdapterOpenAPIUploadID to a
+// ToolSetAdapterOpenAPIUploadIDParam.
 //
 // Warning: the fields of the param type will not be present. ToParam should only
 // be used at the last possible moment before sending a request. Test for this with
-// ToolSetAdapterOpenAPIParam.Overrides()
-func (r ToolSetAdapterOpenAPI) ToParam() ToolSetAdapterOpenAPIParam {
-	return param.Override[ToolSetAdapterOpenAPIParam](json.RawMessage(r.RawJSON()))
+// ToolSetAdapterOpenAPIUploadIDParam.Overrides()
+func (r ToolSetAdapterOpenAPIUploadID) ToParam() ToolSetAdapterOpenAPIUploadIDParam {
+	return param.Override[ToolSetAdapterOpenAPIUploadIDParam](json.RawMessage(r.RawJSON()))
 }
 
-type ToolSetAdapterOpenAPIParam struct {
+type ToolSetAdapterOpenAPIUploadIDType string
+
+const (
+	ToolSetAdapterOpenAPIUploadIDTypeUploadID ToolSetAdapterOpenAPIUploadIDType = "uploadId"
+)
+
+// The properties Type, UploadID are required.
+type ToolSetAdapterOpenAPIUploadIDParam struct {
+	// Any of "uploadId".
+	Type ToolSetAdapterOpenAPIUploadIDType `json:"type,omitzero" api:"required"`
+	// ID of a COMPLETE Upload containing the OpenAPI spec document.
+	UploadID string `json:"uploadId" api:"required"`
 	// Base URL for dispatching tool calls. If set, overrides the server resolved from
 	// the spec's servers array.
 	BaseURL param.Opt[string] `json:"baseUrl,omitzero"`
@@ -988,14 +1914,6 @@ type ToolSetAdapterOpenAPIParam struct {
 	// field). Used to select which server URL to dispatch to when base_url is not set.
 	// If unset, the first server is used. Ignored when base_url is set.
 	ServerName param.Opt[string] `json:"serverName,omitzero"`
-	// The JSON name of the variant set in `source` (e.g. "url"). Required from clients
-	// on writes, filled by the server on reads; drives the discriminated union in the
-	// generated OpenAPI.
-	Type param.Opt[string] `json:"type,omitzero"`
-	// ID of a COMPLETE Upload containing the OpenAPI spec document.
-	UploadID param.Opt[string] `json:"uploadId,omitzero"`
-	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
-	URL param.Opt[string] `json:"url,omitzero"`
 	// Top-level filter with simple boolean logic (no nesting)
 	ExcludeTools ToolFilterParam `json:"excludeTools,omitzero"`
 	// Headers sent when fetching the spec from a URL and when dispatching tool calls.
@@ -1004,15 +1922,157 @@ type ToolSetAdapterOpenAPIParam struct {
 	IncludeTools ToolFilterParam `json:"includeTools,omitzero"`
 	// Approval filters that will automatically set the approval requirement on tools
 	// synced from an external source
-	ToolApprovals ApprovalRequirementFilterParam `json:"toolApprovals,omitzero"`
+	ToolApprovals ApprovalRequirementFilterUnionParam `json:"toolApprovals,omitzero"`
 	paramObj
 }
 
-func (r ToolSetAdapterOpenAPIParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSetAdapterOpenAPIParam
+func (r ToolSetAdapterOpenAPIUploadIDParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterOpenAPIUploadIDParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ToolSetAdapterOpenAPIParam) UnmarshalJSON(data []byte) error {
+func (r *ToolSetAdapterOpenAPIUploadIDParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolSetAdapterOpenAPIURL struct {
+	// Any of "url".
+	Type ToolSetAdapterOpenAPIURLType `json:"type" api:"required"`
+	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
+	URL string `json:"url" api:"required"`
+	// Base URL for dispatching tool calls. If set, overrides the server resolved from
+	// the spec's servers array.
+	BaseURL string `json:"baseUrl"`
+	// Top-level filter with simple boolean logic (no nesting)
+	ExcludeTools ToolFilter `json:"excludeTools"`
+	// Headers sent when fetching the spec from a URL and when dispatching tool calls.
+	Headers map[string]string `json:"headers"`
+	// Top-level filter with simple boolean logic (no nesting)
+	IncludeTools ToolFilter `json:"includeTools"`
+	// Name of the server entry in the spec's servers array (OpenAPI 3.2 server.name
+	// field). Used to select which server URL to dispatch to when base_url is not set.
+	// If unset, the first server is used. Ignored when base_url is set.
+	ServerName string `json:"serverName"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals ApprovalRequirementFilterUnion `json:"toolApprovals"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type          respjson.Field
+		URL           respjson.Field
+		BaseURL       respjson.Field
+		ExcludeTools  respjson.Field
+		Headers       respjson.Field
+		IncludeTools  respjson.Field
+		ServerName    respjson.Field
+		ToolApprovals respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetAdapterOpenAPIURL) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterOpenAPIURL) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterOpenAPIURL to a
+// ToolSetAdapterOpenAPIURLParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterOpenAPIURLParam.Overrides()
+func (r ToolSetAdapterOpenAPIURL) ToParam() ToolSetAdapterOpenAPIURLParam {
+	return param.Override[ToolSetAdapterOpenAPIURLParam](json.RawMessage(r.RawJSON()))
+}
+
+type ToolSetAdapterOpenAPIURLType string
+
+const (
+	ToolSetAdapterOpenAPIURLTypeURL ToolSetAdapterOpenAPIURLType = "url"
+)
+
+// The properties Type, URL are required.
+type ToolSetAdapterOpenAPIURLParam struct {
+	// Any of "url".
+	Type ToolSetAdapterOpenAPIURLType `json:"type,omitzero" api:"required"`
+	// URL to fetch the OpenAPI spec from. Synced automatically every hour.
+	URL string `json:"url" api:"required"`
+	// Base URL for dispatching tool calls. If set, overrides the server resolved from
+	// the spec's servers array.
+	BaseURL param.Opt[string] `json:"baseUrl,omitzero"`
+	// Name of the server entry in the spec's servers array (OpenAPI 3.2 server.name
+	// field). Used to select which server URL to dispatch to when base_url is not set.
+	// If unset, the first server is used. Ignored when base_url is set.
+	ServerName param.Opt[string] `json:"serverName,omitzero"`
+	// Top-level filter with simple boolean logic (no nesting)
+	ExcludeTools ToolFilterParam `json:"excludeTools,omitzero"`
+	// Headers sent when fetching the spec from a URL and when dispatching tool calls.
+	Headers map[string]string `json:"headers,omitzero"`
+	// Top-level filter with simple boolean logic (no nesting)
+	IncludeTools ToolFilterParam `json:"includeTools,omitzero"`
+	// Approval filters that will automatically set the approval requirement on tools
+	// synced from an external source
+	ToolApprovals ApprovalRequirementFilterUnionParam `json:"toolApprovals,omitzero"`
+	paramObj
+}
+
+func (r ToolSetAdapterOpenAPIURLParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterOpenAPIURLParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolSetAdapterOpenAPIURLParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolSetAdapterOpenAPIVariant struct {
+	OpenAPI ToolSetAdapterOpenAPIUnion `json:"openapi" api:"required"`
+	// Any of "openapi".
+	Type ToolSetAdapterOpenAPIVariantType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		OpenAPI     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetAdapterOpenAPIVariant) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetAdapterOpenAPIVariant) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ToolSetAdapterOpenAPIVariant to a
+// ToolSetAdapterOpenAPIVariantParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ToolSetAdapterOpenAPIVariantParam.Overrides()
+func (r ToolSetAdapterOpenAPIVariant) ToParam() ToolSetAdapterOpenAPIVariantParam {
+	return param.Override[ToolSetAdapterOpenAPIVariantParam](json.RawMessage(r.RawJSON()))
+}
+
+type ToolSetAdapterOpenAPIVariantType string
+
+const (
+	ToolSetAdapterOpenAPIVariantTypeOpenAPI ToolSetAdapterOpenAPIVariantType = "openapi"
+)
+
+// The properties OpenAPI, Type are required.
+type ToolSetAdapterOpenAPIVariantParam struct {
+	OpenAPI ToolSetAdapterOpenAPIUnionParam `json:"openapi,omitzero" api:"required"`
+	// Any of "openapi".
+	Type ToolSetAdapterOpenAPIVariantType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r ToolSetAdapterOpenAPIVariantParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSetAdapterOpenAPIVariantParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolSetAdapterOpenAPIVariantParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1022,8 +2082,8 @@ type ToolSetEvent struct {
 	// runs)
 	Metadata shared.OperationMetadata `json:"metadata" api:"required"`
 	// Event payload for a tool set operation.
-	Event ToolSetEventData `json:"event"`
-	Info  ToolSetEventInfo `json:"info"`
+	Event ToolSetEventDataUnion `json:"event"`
+	Info  ToolSetEventInfo      `json:"info"`
 	// The tool set this event is associated with.
 	ToolSetID string `json:"toolSetId"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1065,22 +2125,92 @@ func (r *ToolSetEventInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Event payload for a tool set operation.
-type ToolSetEventData struct {
-	// Emitted when a tool set sync operation completes successfully.
-	SyncCompleted SyncCompleted `json:"syncCompleted"`
-	// Emitted when a tool set sync operation fails.
-	SyncFailed SyncFailed `json:"syncFailed"`
-	// Emitted when a tool set sync operation begins.
+// ToolSetEventDataUnion contains all possible properties and values from
+// [ToolSetEventDataSyncStarted], [ToolSetEventDataSyncCompleted],
+// [ToolSetEventDataSyncFailed].
+//
+// Use the [ToolSetEventDataUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ToolSetEventDataUnion struct {
+	// This field is from variant [ToolSetEventDataSyncStarted].
 	SyncStarted SyncStarted `json:"syncStarted"`
-	// The JSON name of the variant set in `data` (e.g. "syncStarted"). Filled by the
-	// server; drives the discriminated union in the generated OpenAPI.
+	// Any of "syncStarted", "syncCompleted", "syncFailed".
 	Type string `json:"type"`
+	// This field is from variant [ToolSetEventDataSyncCompleted].
+	SyncCompleted SyncCompleted `json:"syncCompleted"`
+	// This field is from variant [ToolSetEventDataSyncFailed].
+	SyncFailed SyncFailed `json:"syncFailed"`
+	JSON       struct {
+		SyncStarted   respjson.Field
+		Type          respjson.Field
+		SyncCompleted respjson.Field
+		SyncFailed    respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// anyToolSetEventData is implemented by each variant of [ToolSetEventDataUnion] to
+// add type safety for the return type of [ToolSetEventDataUnion.AsAny]
+type anyToolSetEventData interface {
+	implToolSetEventDataUnion()
+}
+
+func (ToolSetEventDataSyncStarted) implToolSetEventDataUnion()   {}
+func (ToolSetEventDataSyncCompleted) implToolSetEventDataUnion() {}
+func (ToolSetEventDataSyncFailed) implToolSetEventDataUnion()    {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ToolSetEventDataUnion.AsAny().(type) {
+//	case cadenya.ToolSetEventDataSyncStarted:
+//	case cadenya.ToolSetEventDataSyncCompleted:
+//	case cadenya.ToolSetEventDataSyncFailed:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ToolSetEventDataUnion) AsAny() anyToolSetEventData {
+	switch u.Type {
+	case "syncStarted":
+		return u.AsSyncStarted()
+	case "syncCompleted":
+		return u.AsSyncCompleted()
+	case "syncFailed":
+		return u.AsSyncFailed()
+	}
+	return nil
+}
+
+func (u ToolSetEventDataUnion) AsSyncStarted() (v ToolSetEventDataSyncStarted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetEventDataUnion) AsSyncCompleted() (v ToolSetEventDataSyncCompleted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ToolSetEventDataUnion) AsSyncFailed() (v ToolSetEventDataSyncFailed) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ToolSetEventDataUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ToolSetEventDataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolSetEventDataSyncCompleted struct {
+	// Emitted when a tool set sync operation completes successfully.
+	SyncCompleted SyncCompleted `json:"syncCompleted" api:"required"`
+	// Any of "syncCompleted".
+	Type ToolSetEventDataSyncCompletedType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		SyncCompleted respjson.Field
-		SyncFailed    respjson.Field
-		SyncStarted   respjson.Field
 		Type          respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
@@ -1088,10 +2218,68 @@ type ToolSetEventData struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ToolSetEventData) RawJSON() string { return r.JSON.raw }
-func (r *ToolSetEventData) UnmarshalJSON(data []byte) error {
+func (r ToolSetEventDataSyncCompleted) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetEventDataSyncCompleted) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type ToolSetEventDataSyncCompletedType string
+
+const (
+	ToolSetEventDataSyncCompletedTypeSyncCompleted ToolSetEventDataSyncCompletedType = "syncCompleted"
+)
+
+type ToolSetEventDataSyncFailed struct {
+	// Emitted when a tool set sync operation fails.
+	SyncFailed SyncFailed `json:"syncFailed" api:"required"`
+	// Any of "syncFailed".
+	Type ToolSetEventDataSyncFailedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SyncFailed  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetEventDataSyncFailed) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetEventDataSyncFailed) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolSetEventDataSyncFailedType string
+
+const (
+	ToolSetEventDataSyncFailedTypeSyncFailed ToolSetEventDataSyncFailedType = "syncFailed"
+)
+
+type ToolSetEventDataSyncStarted struct {
+	// Emitted when a tool set sync operation begins.
+	SyncStarted SyncStarted `json:"syncStarted" api:"required"`
+	// Any of "syncStarted".
+	Type ToolSetEventDataSyncStartedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SyncStarted respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolSetEventDataSyncStarted) RawJSON() string { return r.JSON.raw }
+func (r *ToolSetEventDataSyncStarted) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolSetEventDataSyncStartedType string
+
+const (
+	ToolSetEventDataSyncStartedTypeSyncStarted ToolSetEventDataSyncStartedType = "syncStarted"
+)
 
 type ToolSetInfo struct {
 	AgentCount     int64 `json:"agentCount"`
@@ -1123,8 +2311,8 @@ func (r *ToolSetInfo) UnmarshalJSON(data []byte) error {
 }
 
 type ToolSetSpec struct {
-	Adapter     ToolSetAdapter `json:"adapter"`
-	Description string         `json:"description"`
+	Adapter     ToolSetAdapterUnion `json:"adapter"`
+	Description string              `json:"description"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Adapter     respjson.Field
@@ -1150,8 +2338,8 @@ func (r ToolSetSpec) ToParam() ToolSetSpecParam {
 }
 
 type ToolSetSpecParam struct {
-	Description param.Opt[string]   `json:"description,omitzero"`
-	Adapter     ToolSetAdapterParam `json:"adapter,omitzero"`
+	Description param.Opt[string]        `json:"description,omitzero"`
+	Adapter     ToolSetAdapterUnionParam `json:"adapter,omitzero"`
 	paramObj
 }
 

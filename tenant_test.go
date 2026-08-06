@@ -29,7 +29,7 @@ func TestTenantGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.TenantGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			IncludeInfo: cadenya.Bool(true),
 		},
 	)
@@ -56,7 +56,7 @@ func TestTenantListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Tenants.List(context.TODO(), cadenya.TenantListParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		Cursor:      cadenya.String("cursor"),
 		IncludeInfo: cadenya.Bool(true),
 		Labels:      cadenya.String("labels"),
@@ -90,7 +90,7 @@ func TestTenantDelete(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.TenantDeleteParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {

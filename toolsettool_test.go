@@ -28,9 +28,9 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.New(
 		context.TODO(),
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetToolNewParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.CreateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -39,32 +39,20 @@ func TestToolSetToolNewWithOptionalParams(t *testing.T) {
 				},
 			},
 			Spec: cadenya.ToolSpecParam{
-				Config: cadenya.ToolSpecConfigParam{
-					Bare: cadenya.ConfigBareParam{},
-					HTTP: cadenya.ConfigHTTPParam{
-						RequestMethod: cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified,
-						Headers: map[string]string{
-							"foo": "string",
+				Config: cadenya.ToolSpecConfigUnionParam{
+					OfHTTP: &cadenya.ToolSpecConfigHTTPParam{
+						HTTP: cadenya.ConfigHTTPParam{
+							RequestMethod: cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified,
+							Headers: map[string]string{
+								"foo": "string",
+							},
+							Path:                   cadenya.String("path"),
+							Query:                  cadenya.String("query"),
+							RequestBodyContentType: cadenya.String("requestBodyContentType"),
+							RequestBodyTemplate:    cadenya.String("requestBodyTemplate"),
 						},
-						Path:                   cadenya.String("path"),
-						Query:                  cadenya.String("query"),
-						RequestBodyContentType: cadenya.String("requestBodyContentType"),
-						RequestBodyTemplate:    cadenya.String("requestBodyTemplate"),
+						Type: cadenya.ToolSpecConfigHTTPTypeHTTP,
 					},
-					MCP: cadenya.ConfigMCPParam{
-						Annotations: cadenya.MCPAnnotationsParam{
-							DestructiveHint: cadenya.Bool(true),
-							IdempotentHint:  cadenya.Bool(true),
-							OpenWorldHint:   cadenya.Bool(true),
-							ReadOnlyHint:    cadenya.Bool(true),
-							Title:           cadenya.String("title"),
-						},
-					},
-					OpenAPI: cadenya.ConfigOpenAPIParam{
-						Method: cadenya.String("method"),
-						Path:   cadenya.String("path"),
-					},
-					Type: cadenya.String("type"),
 				},
 				Description: "description",
 				Parameters: map[string]any{
@@ -99,10 +87,10 @@ func TestToolSetToolGet(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Get(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
 		cadenya.ToolSetToolGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -129,10 +117,10 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Update(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
 		cadenya.ToolSetToolUpdateParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -141,32 +129,20 @@ func TestToolSetToolUpdateWithOptionalParams(t *testing.T) {
 				},
 			},
 			Spec: cadenya.ToolSpecParam{
-				Config: cadenya.ToolSpecConfigParam{
-					Bare: cadenya.ConfigBareParam{},
-					HTTP: cadenya.ConfigHTTPParam{
-						RequestMethod: cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified,
-						Headers: map[string]string{
-							"foo": "string",
+				Config: cadenya.ToolSpecConfigUnionParam{
+					OfHTTP: &cadenya.ToolSpecConfigHTTPParam{
+						HTTP: cadenya.ConfigHTTPParam{
+							RequestMethod: cadenya.ConfigHTTPRequestMethodHTTPMethodUnspecified,
+							Headers: map[string]string{
+								"foo": "string",
+							},
+							Path:                   cadenya.String("path"),
+							Query:                  cadenya.String("query"),
+							RequestBodyContentType: cadenya.String("requestBodyContentType"),
+							RequestBodyTemplate:    cadenya.String("requestBodyTemplate"),
 						},
-						Path:                   cadenya.String("path"),
-						Query:                  cadenya.String("query"),
-						RequestBodyContentType: cadenya.String("requestBodyContentType"),
-						RequestBodyTemplate:    cadenya.String("requestBodyTemplate"),
+						Type: cadenya.ToolSpecConfigHTTPTypeHTTP,
 					},
-					MCP: cadenya.ConfigMCPParam{
-						Annotations: cadenya.MCPAnnotationsParam{
-							DestructiveHint: cadenya.Bool(true),
-							IdempotentHint:  cadenya.Bool(true),
-							OpenWorldHint:   cadenya.Bool(true),
-							ReadOnlyHint:    cadenya.Bool(true),
-							Title:           cadenya.String("title"),
-						},
-					},
-					OpenAPI: cadenya.ConfigOpenAPIParam{
-						Method: cadenya.String("method"),
-						Path:   cadenya.String("path"),
-					},
-					Type: cadenya.String("type"),
 				},
 				Description: "description",
 				Parameters: map[string]any{
@@ -202,9 +178,9 @@ func TestToolSetToolListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.List(
 		context.TODO(),
-		"toolSetId",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
 		cadenya.ToolSetToolListParams{
-			WorkspaceID:      cadenya.String("workspaceId"),
+			WorkspaceID:      cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:           cadenya.String("cursor"),
 			IncludeInfo:      cadenya.Bool(true),
 			Labels:           cadenya.String("labels"),
@@ -241,10 +217,10 @@ func TestToolSetToolDelete(t *testing.T) {
 	)
 	err := client.ToolSets.Tools.Delete(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
 		cadenya.ToolSetToolDeleteParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -271,10 +247,10 @@ func TestToolSetToolOmit(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Omit(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
 		cadenya.ToolSetToolOmitParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -301,10 +277,10 @@ func TestToolSetToolRestore(t *testing.T) {
 	)
 	_, err := client.ToolSets.Tools.Restore(
 		context.TODO(),
-		"toolSetId",
-		"id",
+		"toolset_01HXKD2E5NQM3T9AYWCFNRMN74",
+		"tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
 		cadenya.ToolSetToolRestoreParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {

@@ -15,10 +15,20 @@
 
 Params Types:
 
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenAIParam">AIProviderConfigOpenAIParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenAICompatibleParam">AIProviderConfigOpenAICompatibleParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenrouterParam">AIProviderConfigOpenrouterParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderCredentialAPIKeyParam">AIProviderCredentialAPIKeyParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderCredentialHeadersParam">AIProviderCredentialHeadersParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderKeySpecParam">AIProviderKeySpecParam</a>
 
 Response Types:
 
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenAI">AIProviderConfigOpenAI</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenAICompatible">AIProviderConfigOpenAICompatible</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderConfigOpenrouter">AIProviderConfigOpenrouter</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderCredentialAPIKey">AIProviderCredentialAPIKey</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderCredentialHeaders">AIProviderCredentialHeaders</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderKey">AIProviderKey</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AIProviderKeySpec">AIProviderKeySpec</a>
 
@@ -100,6 +110,9 @@ Methods:
 
 Params Types:
 
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AddAgentVariationAssignmentRequestSubAgentIDParam">AddAgentVariationAssignmentRequestSubAgentIDParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AddAgentVariationAssignmentRequestToolIDParam">AddAgentVariationAssignmentRequestToolIDParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AddAgentVariationAssignmentRequestToolSetIDParam">AddAgentVariationAssignmentRequestToolSetIDParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationSpecParam">AgentVariationSpecParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationSpecCompactionConfigParam">AgentVariationSpecCompactionConfigParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationSpecConstraintsParam">AgentVariationSpecConstraintsParam</a>
@@ -119,7 +132,10 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationSpecProgressiveDiscovery">AgentVariationSpecProgressiveDiscovery</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CompactionConfigSummarizationStrategy">CompactionConfigSummarizationStrategy</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CompactionConfigToolResultClearingStrategy">CompactionConfigToolResultClearingStrategy</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignment">VariationAssignment</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignmentUnion">VariationAssignmentUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignmentAgent">VariationAssignmentAgent</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignmentTool">VariationAssignmentTool</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignmentToolSet">VariationAssignmentToolSet</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationMemoryLayerAssignment">VariationMemoryLayerAssignment</a>
 
 Methods:
@@ -129,7 +145,7 @@ Methods:
 - <code title="patch /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{id}">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationUpdateParams">AgentVariationUpdateParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariation">AgentVariation</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/workspaces/{workspaceId}/agents/{agentId}/variations">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationListParams">AgentVariationListParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariation">AgentVariation</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="delete /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{id}">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.Delete">Delete</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationDeleteParams">AgentVariationDeleteParams</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
-- <code title="post /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{variationId}/assignments">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.AddAssignment">AddAssignment</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, variationID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationAddAssignmentParams">AgentVariationAddAssignmentParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignment">VariationAssignment</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{variationId}/assignments">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.AddAssignment">AddAssignment</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, variationID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationAddAssignmentParams">AgentVariationAddAssignmentParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationAssignmentUnion">VariationAssignmentUnion</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{variationId}/memory_layer_assignments">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.AddMemoryLayer">AddMemoryLayer</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, variationID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationAddMemoryLayerParams">AgentVariationAddMemoryLayerParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#VariationMemoryLayerAssignment">VariationMemoryLayerAssignment</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="delete /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{variationId}/assignments/{id}">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.RemoveAssignment">RemoveAssignment</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, variationID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationRemoveAssignmentParams">AgentVariationRemoveAssignmentParams</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
 - <code title="delete /v1/workspaces/{workspaceId}/agents/{agentId}/variations/{variationId}/memory_layer_assignments/{id}">client.Agents.Variations.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationService.RemoveMemoryLayer">RemoveMemoryLayer</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, agentID <a href="https://pkg.go.dev/builtin#string">string</a>, variationID <a href="https://pkg.go.dev/builtin#string">string</a>, id <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AgentVariationRemoveMemoryLayerParams">AgentVariationRemoveMemoryLayerParams</a>) <a href="https://pkg.go.dev/builtin#error">error</a></code>
@@ -176,7 +192,10 @@ Response Types:
 
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AssistantMessage">AssistantMessage</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AssistantToolCall">AssistantToolCall</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CallableTool">CallableTool</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CallableToolUnion">CallableToolUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CallableToolAgent">CallableToolAgent</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CallableToolCadenyaProvidedTool">CallableToolCadenyaProvidedTool</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CallableToolTool">CallableToolTool</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ContextLengths">ContextLengths</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ContextWindowCompacted">ContextWindowCompacted</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryRead">MemoryRead</a>
@@ -188,7 +207,25 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveDiagnostics">ObjectiveDiagnostics</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveError">ObjectiveError</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEvent">ObjectiveEvent</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventData">ObjectiveEventData</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataUnion">ObjectiveEventDataUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataAssistantMessage">ObjectiveEventDataAssistantMessage</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataCancelled">ObjectiveEventDataCancelled</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataContextWindowCompacted">ObjectiveEventDataContextWindowCompacted</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataError">ObjectiveEventDataError</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataFinalized">ObjectiveEventDataFinalized</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataMemoryRead">ObjectiveEventDataMemoryRead</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataNotice">ObjectiveEventDataNotice</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataReasoning">ObjectiveEventDataReasoning</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataSubAgentSpawned">ObjectiveEventDataSubAgentSpawned</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataSubAgentUpdated">ObjectiveEventDataSubAgentUpdated</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataTimedOut">ObjectiveEventDataTimedOut</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolApprovalRequested">ObjectiveEventDataToolApprovalRequested</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolApproved">ObjectiveEventDataToolApproved</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolCalled">ObjectiveEventDataToolCalled</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolDenied">ObjectiveEventDataToolDenied</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolError">ObjectiveEventDataToolError</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataToolResult">ObjectiveEventDataToolResult</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventDataUserMessage">ObjectiveEventDataUserMessage</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveEventInfo">ObjectiveEventInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveInfo">ObjectiveInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveSecret">ObjectiveSecret</a>
@@ -233,7 +270,10 @@ Methods:
 Params Types:
 
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestAudioBlockParam">SetToolCallContentRequestAudioBlockParam</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestContentBlockParam">SetToolCallContentRequestContentBlockParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestContentBlockUnionParam">SetToolCallContentRequestContentBlockUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestContentBlockAudioParam">SetToolCallContentRequestContentBlockAudioParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestContentBlockImageParam">SetToolCallContentRequestContentBlockImageParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestContentBlockTextParam">SetToolCallContentRequestContentBlockTextParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestImageBlockParam">SetToolCallContentRequestImageBlockParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SetToolCallContentRequestTextBlockParam">SetToolCallContentRequestTextBlockParam</a>
 
@@ -244,7 +284,10 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallInfo">ObjectiveToolCallInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResult">ObjectiveToolCallResult</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultAudioBlock">ObjectiveToolCallResultAudioBlock</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultContentBlock">ObjectiveToolCallResultContentBlock</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultContentBlockUnion">ObjectiveToolCallResultContentBlockUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultContentBlockAudio">ObjectiveToolCallResultContentBlockAudio</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultContentBlockImage">ObjectiveToolCallResultContentBlockImage</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultContentBlockText">ObjectiveToolCallResultContentBlockText</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultImageBlock">ObjectiveToolCallResultImageBlock</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallResultTextBlock">ObjectiveToolCallResultTextBlock</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ObjectiveToolCallWithResult">ObjectiveToolCallWithResult</a>
@@ -311,7 +354,9 @@ Methods:
 
 Params Types:
 
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryEntryCreateSpecParam">MemoryEntryCreateSpecParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryEntryCreateSpecUnionParam">MemoryEntryCreateSpecUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryEntryCreateSpecContentParam">MemoryEntryCreateSpecContentParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryEntryCreateSpecUploadIDParam">MemoryEntryCreateSpecUploadIDParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MemoryEntryUpdateSpecParam">MemoryEntryUpdateSpecParam</a>
 
 Response Types:
@@ -376,34 +421,63 @@ Methods:
 
 Params Types:
 
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterParam">ApprovalRequirementFilterParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterUnionParam">ApprovalRequirementFilterUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterAlwaysParam">ApprovalRequirementFilterAlwaysParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterOnlyParam">ApprovalRequirementFilterOnlyParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AttributeFilterParam">AttributeFilterParam</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherParam">StringMatcherParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherUnionParam">StringMatcherUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherContainsParam">StringMatcherContainsParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherEndsWithParam">StringMatcherEndsWithParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherExactParam">StringMatcherExactParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherRegexParam">StringMatcherRegexParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherStartsWithParam">StringMatcherStartsWithParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolFilterParam">ToolFilterParam</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterParam">ToolSetAdapterParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterUnionParam">ToolSetAdapterUnionParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterBareParam">ToolSetAdapterBareParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterBareVariantParam">ToolSetAdapterBareVariantParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterHTTPParam">ToolSetAdapterHTTPParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterHTTPVariantParam">ToolSetAdapterHTTPVariantParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterMCPParam">ToolSetAdapterMCPParam</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIParam">ToolSetAdapterOpenAPIParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterMCPVariantParam">ToolSetAdapterMCPVariantParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIUnionParam">ToolSetAdapterOpenAPIUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIUploadIDParam">ToolSetAdapterOpenAPIUploadIDParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIURLParam">ToolSetAdapterOpenAPIURLParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIVariantParam">ToolSetAdapterOpenAPIVariantParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetSpecParam">ToolSetSpecParam</a>
 
 Response Types:
 
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilter">ApprovalRequirementFilter</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterUnion">ApprovalRequirementFilterUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterAlways">ApprovalRequirementFilterAlways</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ApprovalRequirementFilterOnly">ApprovalRequirementFilterOnly</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#AttributeFilter">AttributeFilter</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcher">StringMatcher</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherUnion">StringMatcherUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherContains">StringMatcherContains</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherEndsWith">StringMatcherEndsWith</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherExact">StringMatcherExact</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherRegex">StringMatcherRegex</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#StringMatcherStartsWith">StringMatcherStartsWith</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SyncCompleted">SyncCompleted</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SyncFailed">SyncFailed</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#SyncStarted">SyncStarted</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolFilter">ToolFilter</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSet">ToolSet</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapter">ToolSetAdapter</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterUnion">ToolSetAdapterUnion</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterBare">ToolSetAdapterBare</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterBareVariant">ToolSetAdapterBareVariant</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterHTTP">ToolSetAdapterHTTP</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterHTTPVariant">ToolSetAdapterHTTPVariant</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterMCP">ToolSetAdapterMCP</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPI">ToolSetAdapterOpenAPI</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterMCPVariant">ToolSetAdapterMCPVariant</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIUnion">ToolSetAdapterOpenAPIUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIUploadID">ToolSetAdapterOpenAPIUploadID</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIURL">ToolSetAdapterOpenAPIURL</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetAdapterOpenAPIVariant">ToolSetAdapterOpenAPIVariant</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEvent">ToolSetEvent</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEventData">ToolSetEventData</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEventDataUnion">ToolSetEventDataUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEventDataSyncCompleted">ToolSetEventDataSyncCompleted</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEventDataSyncFailed">ToolSetEventDataSyncFailed</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetEventDataSyncStarted">ToolSetEventDataSyncStarted</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetInfo">ToolSetInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetSpec">ToolSetSpec</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSetUsage">ToolSetUsage</a>
@@ -432,7 +506,11 @@ Params Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ConfigOpenAPIParam">ConfigOpenAPIParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#MCPAnnotationsParam">MCPAnnotationsParam</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecParam">ToolSpecParam</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigParam">ToolSpecConfigParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigUnionParam">ToolSpecConfigUnionParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigBareParam">ToolSpecConfigBareParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigHTTPParam">ToolSpecConfigHTTPParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigMCPParam">ToolSpecConfigMCPParam</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigOpenAPIParam">ToolSpecConfigOpenAPIParam</a>
 
 Response Types:
 
@@ -444,7 +522,11 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#Tool">Tool</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolInfo">ToolInfo</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpec">ToolSpec</a>
-- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfig">ToolSpecConfig</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigUnion">ToolSpecConfigUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigBare">ToolSpecConfigBare</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigHTTP">ToolSpecConfigHTTP</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigMCP">ToolSpecConfigMCP</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ToolSpecConfigOpenAPI">ToolSpecConfigOpenAPI</a>
 
 Methods:
 
@@ -572,6 +654,11 @@ Methods:
 - <code title="get /v1/account/profiles">client.WorkspaceAdmin.Profiles.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#WorkspaceAdminProfileService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#WorkspaceAdminProfileListParams">WorkspaceAdminProfileListParams</a>) (\*<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go/packages/pagination#CursorPagination">CursorPagination</a>[<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#Profile">Profile</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # Webhooks
+
+Response Types:
+
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#UnsafeUnwrapWebhookEvent">UnsafeUnwrapWebhookEvent</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#UnwrapWebhookEvent">UnwrapWebhookEvent</a>
 
 # Widgets
 

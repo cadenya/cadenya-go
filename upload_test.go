@@ -27,7 +27,7 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Uploads.New(context.TODO(), cadenya.UploadNewParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		Metadata: shared.CreateResourceMetadataParam{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -65,9 +65,9 @@ func TestUploadGet(t *testing.T) {
 	)
 	_, err := client.Uploads.Get(
 		context.TODO(),
-		"id",
+		"upload_01HXKD2E5NQM3T9AYWCFZ05DNK",
 		cadenya.UploadGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {

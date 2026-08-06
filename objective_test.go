@@ -27,7 +27,7 @@ func TestObjectiveNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.New(context.TODO(), cadenya.ObjectiveNewParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		AgentID:     "agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		SystemPromptData: map[string]any{
 			"foo": "bar",
@@ -90,9 +90,9 @@ func TestObjectiveGet(t *testing.T) {
 	)
 	_, err := client.Objectives.Get(
 		context.TODO(),
-		"id",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -118,15 +118,15 @@ func TestObjectiveListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Objectives.List(context.TODO(), cadenya.ObjectiveListParams{
-		WorkspaceID:       cadenya.String("workspaceId"),
-		AgentID:           cadenya.String("agentId"),
+		WorkspaceID:       cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		AgentID:           cadenya.String("agent_01HXKD2E5NQM3T9AYWCFMGWT9Y"),
 		AgentScheduleID:   cadenya.String("agentScheduleId"),
 		Cursor:            cadenya.String("cursor"),
 		IncludeInfo:       cadenya.Bool(true),
 		Labels:            cadenya.String("labels"),
 		Limit:             cadenya.Int(0),
 		ParentObjectiveID: cadenya.String("parentObjectiveId"),
-		ProfileID:         cadenya.String("profileId"),
+		ProfileID:         cadenya.String("profile_01HXKD2E5NQM3T9AYWCFS0AP08"),
 		SortOrder:         cadenya.String("sortOrder"),
 		State:             cadenya.ObjectiveListParamsStateStateUnspecified,
 		SubjectID:         cadenya.String("subjectId"),
@@ -158,9 +158,9 @@ func TestObjectiveCancelWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Cancel(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveCancelParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Reason:      cadenya.String("reason"),
 		},
 	)
@@ -188,9 +188,9 @@ func TestObjectiveCompactWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Compact(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveCompactParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			CompactionConfig: cadenya.AgentVariationSpecCompactionConfigParam{
 				Summarization: cadenya.CompactionConfigSummarizationStrategyParam{
 					Instructions: cadenya.String("instructions"),
@@ -226,9 +226,9 @@ func TestObjectiveContinueWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Continue(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveContinueParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Message:     "message",
 			Enqueue:     cadenya.Bool(true),
 		},
@@ -257,9 +257,9 @@ func TestObjectiveListContextWindowsWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ListContextWindows(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveListContextWindowsParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:      cadenya.String("cursor"),
 			IncludeInfo: cadenya.Bool(true),
 			Labels:      cadenya.String("labels"),
@@ -290,9 +290,9 @@ func TestObjectiveListEventsWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ListEvents(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveListEventsParams{
-			WorkspaceID:  cadenya.String("workspaceId"),
+			WorkspaceID:  cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:       cadenya.String("cursor"),
 			IncludeInfo:  cadenya.Bool(true),
 			Labels:       cadenya.String("labels"),
@@ -326,9 +326,9 @@ func TestObjectiveGetDiagnostics(t *testing.T) {
 	)
 	_, err := client.Objectives.GetDiagnostics(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveGetDiagnosticsParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {

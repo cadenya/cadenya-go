@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestSearchSearchToolsOrToolSetsWithOptionalParams(t *testing.T) {
+func TestSearchSearchToolsOrToolSets(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,8 +26,8 @@ func TestSearchSearchToolsOrToolSetsWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Search.SearchToolsOrToolSets(context.TODO(), cadenya.SearchSearchToolsOrToolSetsParams{
-		WorkspaceID: cadenya.String("workspaceId"),
-		Query:       cadenya.String("query"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		Query:       "query",
 	})
 	if err != nil {
 		var apierr *cadenya.Error

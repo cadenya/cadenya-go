@@ -28,9 +28,9 @@ func TestAgentVariationNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.New(
 		context.TODO(),
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentVariationNewParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.CreateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -91,10 +91,10 @@ func TestAgentVariationGet(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.Get(
 		context.TODO(),
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
 		cadenya.AgentVariationGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -121,10 +121,10 @@ func TestAgentVariationUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.Update(
 		context.TODO(),
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
 		cadenya.AgentVariationUpdateParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -186,9 +186,9 @@ func TestAgentVariationListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.List(
 		context.TODO(),
-		"agentId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
 		cadenya.AgentVariationListParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:      cadenya.String("cursor"),
 			IncludeInfo: cadenya.Bool(true),
 			Labels:      cadenya.String("labels"),
@@ -220,10 +220,10 @@ func TestAgentVariationDelete(t *testing.T) {
 	)
 	err := client.Agents.Variations.Delete(
 		context.TODO(),
-		"agentId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
 		cadenya.AgentVariationDeleteParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -250,14 +250,14 @@ func TestAgentVariationAddAssignmentWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.AddAssignment(
 		context.TODO(),
-		"agentId",
-		"variationId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
 		cadenya.AgentVariationAddAssignmentParams{
-			WorkspaceID: cadenya.String("workspaceId"),
-			SubAgentID:  cadenya.String("agent_01HXKD2E5NQM3T9AYWCFMGWT9Y"),
-			ToolID:      cadenya.String("tool_01HXKD2E5NQM3T9AYWCFWVYY9K"),
-			ToolSetID:   cadenya.String("toolset_01HXKD2E5NQM3T9AYWCFNRMN74"),
-			Type:        cadenya.String("type"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			OfToolID: &cadenya.AddAgentVariationAssignmentRequestToolIDParam{
+				ToolID: "tool_01HXKD2E5NQM3T9AYWCFWVYY9K",
+				Type:   cadenya.AddAgentVariationAssignmentRequestToolIDTypeToolID,
+			},
 		},
 	)
 	if err != nil {
@@ -284,10 +284,10 @@ func TestAgentVariationAddMemoryLayerWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.AddMemoryLayer(
 		context.TODO(),
-		"agentId",
-		"variationId",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
 		cadenya.AgentVariationAddMemoryLayerParams{
-			WorkspaceID:   cadenya.String("workspaceId"),
+			WorkspaceID:   cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			MemoryLayerID: "memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
 			Position:      cadenya.Int(0),
 		},
@@ -316,11 +316,11 @@ func TestAgentVariationRemoveAssignment(t *testing.T) {
 	)
 	err := client.Agents.Variations.RemoveAssignment(
 		context.TODO(),
-		"agentId",
-		"variationId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
+		"avt_01HXKD2E5NQM3T9AYWCFJE6K89",
 		cadenya.AgentVariationRemoveAssignmentParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -347,11 +347,11 @@ func TestAgentVariationRemoveMemoryLayer(t *testing.T) {
 	)
 	err := client.Agents.Variations.RemoveMemoryLayer(
 		context.TODO(),
-		"agentId",
-		"variationId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
+		"avml_01HXKD2E5NQM3T9AYWCFX8AF59",
 		cadenya.AgentVariationRemoveMemoryLayerParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -378,11 +378,11 @@ func TestAgentVariationUpdateMemoryLayerWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Variations.UpdateMemoryLayer(
 		context.TODO(),
-		"agentId",
-		"variationId",
-		"id",
+		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentvar_01HXKD2E5NQM3T9AYWCF32BSPP",
+		"avml_01HXKD2E5NQM3T9AYWCFX8AF59",
 		cadenya.AgentVariationUpdateMemoryLayerParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Position:    cadenya.Int(0),
 		},
 	)

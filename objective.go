@@ -289,6 +289,7 @@ func (r *ObjectiveService) StreamEventsStreaming(ctx context.Context, objectiveI
 		err error
 	)
 	opts = slices.Concat(r.options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
 	precfg, err := requestconfig.PreRequestOptions(opts...)
 	if err != nil {
 		return ssestream.NewStream[ObjectiveEvent](nil, err)
@@ -332,7 +333,7 @@ type AssistantToolCall struct {
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Tool CallableTool `json:"tool"`
+	Tool CallableToolUnion `json:"tool"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Arguments    respjson.Field
@@ -349,25 +350,117 @@ func (r *AssistantToolCall) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CallableTool is a union that represents a tool that can be called by an agent.
-// In Cadenya, a tool that is used within an agent objective might be a
-// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
-// or a Cadenya Tool (one Cadenya provides).
-type CallableTool struct {
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	Agent shared.ResourceMetadata `json:"agent"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
-	CadenyaProvidedTool shared.ResourceMetadata `json:"cadenyaProvidedTool"`
-	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+// CallableToolUnion contains all possible properties and values from
+// [CallableToolTool], [CallableToolAgent], [CallableToolCadenyaProvidedTool].
+//
+// Use the [CallableToolUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type CallableToolUnion struct {
+	// This field is from variant [CallableToolTool].
 	Tool shared.ResourceMetadata `json:"tool"`
-	// The JSON name of the variant set in `callable` (e.g. "tool"). Filled by the
-	// server; drives the discriminated union in the generated OpenAPI.
+	// Any of "tool", "agent", "cadenyaProvidedTool".
 	Type string `json:"type"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
+	// This field is from variant [CallableToolAgent].
+	Agent shared.ResourceMetadata `json:"agent"`
+	// This field is from variant [CallableToolCadenyaProvidedTool].
+	CadenyaProvidedTool shared.ResourceMetadata `json:"cadenyaProvidedTool"`
+	JSON                struct {
+		Tool                respjson.Field
+		Type                respjson.Field
 		Agent               respjson.Field
 		CadenyaProvidedTool respjson.Field
-		Tool                respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// anyCallableTool is implemented by each variant of [CallableToolUnion] to add
+// type safety for the return type of [CallableToolUnion.AsAny]
+type anyCallableTool interface {
+	implCallableToolUnion()
+}
+
+func (CallableToolTool) implCallableToolUnion()                {}
+func (CallableToolAgent) implCallableToolUnion()               {}
+func (CallableToolCadenyaProvidedTool) implCallableToolUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := CallableToolUnion.AsAny().(type) {
+//	case cadenya.CallableToolTool:
+//	case cadenya.CallableToolAgent:
+//	case cadenya.CallableToolCadenyaProvidedTool:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u CallableToolUnion) AsAny() anyCallableTool {
+	switch u.Type {
+	case "tool":
+		return u.AsTool()
+	case "agent":
+		return u.AsAgent()
+	case "cadenyaProvidedTool":
+		return u.AsCadenyaProvidedTool()
+	}
+	return nil
+}
+
+func (u CallableToolUnion) AsTool() (v CallableToolTool) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CallableToolUnion) AsAgent() (v CallableToolAgent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CallableToolUnion) AsCadenyaProvidedTool() (v CallableToolCadenyaProvidedTool) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CallableToolUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CallableToolUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CallableToolAgent struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Agent shared.ResourceMetadata `json:"agent" api:"required"`
+	// Any of "agent".
+	Type CallableToolAgentType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agent       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CallableToolAgent) RawJSON() string { return r.JSON.raw }
+func (r *CallableToolAgent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CallableToolAgentType string
+
+const (
+	CallableToolAgentTypeAgent CallableToolAgentType = "agent"
+)
+
+type CallableToolCadenyaProvidedTool struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	CadenyaProvidedTool shared.ResourceMetadata `json:"cadenyaProvidedTool" api:"required"`
+	// Any of "cadenyaProvidedTool".
+	Type CallableToolCadenyaProvidedToolType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CadenyaProvidedTool respjson.Field
 		Type                respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -375,10 +468,42 @@ type CallableTool struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CallableTool) RawJSON() string { return r.JSON.raw }
-func (r *CallableTool) UnmarshalJSON(data []byte) error {
+func (r CallableToolCadenyaProvidedTool) RawJSON() string { return r.JSON.raw }
+func (r *CallableToolCadenyaProvidedTool) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type CallableToolCadenyaProvidedToolType string
+
+const (
+	CallableToolCadenyaProvidedToolTypeCadenyaProvidedTool CallableToolCadenyaProvidedToolType = "cadenyaProvidedTool"
+)
+
+type CallableToolTool struct {
+	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
+	Tool shared.ResourceMetadata `json:"tool" api:"required"`
+	// Any of "tool".
+	Type CallableToolToolType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Tool        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CallableToolTool) RawJSON() string { return r.JSON.raw }
+func (r *CallableToolTool) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CallableToolToolType string
+
+const (
+	CallableToolToolTypeTool CallableToolToolType = "tool"
+)
 
 // ContextLengths is the measured character length of each distinct component of an
 // iteration's assembled context window. Values are raw character lengths of the
@@ -833,7 +958,7 @@ func (r *ObjectiveError) UnmarshalJSON(data []byte) error {
 }
 
 type ObjectiveEvent struct {
-	Data ObjectiveEventData `json:"data" api:"required"`
+	Data ObjectiveEventDataUnion `json:"data" api:"required"`
 	// Metadata for ephemeral operations and activities (e.g., objectives, executions,
 	// runs)
 	Metadata        shared.OperationMetadata `json:"metadata" api:"required"`
@@ -868,89 +993,326 @@ func (r *ObjectiveEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type ObjectiveEventData struct {
-	AssistantMessage AssistantMessage `json:"assistantMessage"`
-	// ObjectiveCancelled is the terminal event written when an objective is cancelled.
-	// After this event, the objective is super-terminal: no further iterations,
-	// compaction, or continuation are permitted.
-	Cancelled              ObjectiveEventDataCancelled `json:"cancelled"`
-	ContextWindowCompacted ContextWindowCompacted      `json:"contextWindowCompacted"`
-	Error                  ObjectiveError              `json:"error"`
-	// ObjectiveFinalized is the terminal event written when an objective is finalized.
-	// After this event, the objective is super-terminal: no further iterations,
-	// compaction, or continuation are permitted.
-	Finalized ObjectiveEventDataFinalized `json:"finalized"`
-	// MemoryRead is emitted each time the agent resolves a key against the memory
-	// cascade and loads an entry. Lookups that miss (key not found in any layer) do
-	// not emit this event.
-	MemoryRead MemoryRead `json:"memoryRead"`
-	// Notice is a non-terminal diagnostic emitted by the runtime when something
-	// noteworthy but non-fatal happens during an objective — for example a
-	// just-in-time tool set failing to load, or a previously loaded tool being dropped
-	// because it was archived. Notices carry no structured payload; they exist to make
-	// the objective timeline self-explanatory.
-	Notice ObjectiveEventDataNotice `json:"notice"`
-	// Reasoning carries the human-readable reasoning text a model produced while
-	// working on an iteration — extended thinking (Anthropic, Gemini) or reasoning
-	// summaries (OpenAI). It is emitted alongside the assistant message from the same
-	// model response and is purely informational: the text shown here is never sent
-	// back to the model.
-	Reasoning       Reasoning       `json:"reasoning"`
-	SubAgentSpawned SubAgentSpawned `json:"subAgentSpawned"`
-	SubAgentUpdated SubAgentUpdated `json:"subAgentUpdated"`
-	// ObjectiveTimedOut is the terminal event written when an objective is finalized
-	// by the inactivity sweep because it saw no activity (no user messages, no LLM
-	// calls) within its variation's inactivity timeout — or the system-wide 24 hour
-	// maximum when no timeout is configured. The objective produces no output. After
-	// this event, the objective is super-terminal: no further iterations, compaction,
-	// or continuation are permitted.
-	TimedOut              ObjectiveEventDataTimedOut `json:"timedOut"`
-	ToolApprovalRequested ToolApprovalRequested      `json:"toolApprovalRequested"`
-	ToolApproved          ToolApproved               `json:"toolApproved"`
-	ToolCalled            ToolCalled                 `json:"toolCalled"`
-	ToolDenied            ToolDenied                 `json:"toolDenied"`
-	ToolError             ToolError                  `json:"toolError"`
-	ToolResult            ToolResult                 `json:"toolResult"`
-	// The JSON name of the variant set in `data` (e.g. "userMessage"). Filled by the
-	// server; drives the discriminated union in the generated OpenAPI.
-	Type        string      `json:"type"`
+// ObjectiveEventDataUnion contains all possible properties and values from
+// [ObjectiveEventDataUserMessage], [ObjectiveEventDataToolApprovalRequested],
+// [ObjectiveEventDataToolApproved], [ObjectiveEventDataToolDenied],
+// [ObjectiveEventDataToolCalled], [ObjectiveEventDataError],
+// [ObjectiveEventDataAssistantMessage], [ObjectiveEventDataToolResult],
+// [ObjectiveEventDataToolError], [ObjectiveEventDataContextWindowCompacted],
+// [ObjectiveEventDataMemoryRead], [ObjectiveEventDataCancelled],
+// [ObjectiveEventDataSubAgentSpawned], [ObjectiveEventDataSubAgentUpdated],
+// [ObjectiveEventDataFinalized], [ObjectiveEventDataNotice],
+// [ObjectiveEventDataTimedOut], [ObjectiveEventDataReasoning].
+//
+// Use the [ObjectiveEventDataUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ObjectiveEventDataUnion struct {
+	// Any of "userMessage", "toolApprovalRequested", "toolApproved", "toolDenied",
+	// "toolCalled", "error", "assistantMessage", "toolResult", "toolError",
+	// "contextWindowCompacted", "memoryRead", "cancelled", "subAgentSpawned",
+	// "subAgentUpdated", "finalized", "notice", "timedOut", "reasoning".
+	Type string `json:"type"`
+	// This field is from variant [ObjectiveEventDataUserMessage].
 	UserMessage UserMessage `json:"userMessage"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		AssistantMessage       respjson.Field
-		Cancelled              respjson.Field
-		ContextWindowCompacted respjson.Field
-		Error                  respjson.Field
-		Finalized              respjson.Field
-		MemoryRead             respjson.Field
-		Notice                 respjson.Field
-		Reasoning              respjson.Field
-		SubAgentSpawned        respjson.Field
-		SubAgentUpdated        respjson.Field
-		TimedOut               respjson.Field
-		ToolApprovalRequested  respjson.Field
-		ToolApproved           respjson.Field
-		ToolCalled             respjson.Field
-		ToolDenied             respjson.Field
-		ToolError              respjson.Field
-		ToolResult             respjson.Field
+	// This field is from variant [ObjectiveEventDataToolApprovalRequested].
+	ToolApprovalRequested ToolApprovalRequested `json:"toolApprovalRequested"`
+	// This field is from variant [ObjectiveEventDataToolApproved].
+	ToolApproved ToolApproved `json:"toolApproved"`
+	// This field is from variant [ObjectiveEventDataToolDenied].
+	ToolDenied ToolDenied `json:"toolDenied"`
+	// This field is from variant [ObjectiveEventDataToolCalled].
+	ToolCalled ToolCalled `json:"toolCalled"`
+	// This field is from variant [ObjectiveEventDataError].
+	Error ObjectiveError `json:"error"`
+	// This field is from variant [ObjectiveEventDataAssistantMessage].
+	AssistantMessage AssistantMessage `json:"assistantMessage"`
+	// This field is from variant [ObjectiveEventDataToolResult].
+	ToolResult ToolResult `json:"toolResult"`
+	// This field is from variant [ObjectiveEventDataToolError].
+	ToolError ToolError `json:"toolError"`
+	// This field is from variant [ObjectiveEventDataContextWindowCompacted].
+	ContextWindowCompacted ContextWindowCompacted `json:"contextWindowCompacted"`
+	// This field is from variant [ObjectiveEventDataMemoryRead].
+	MemoryRead MemoryRead `json:"memoryRead"`
+	// This field is from variant [ObjectiveEventDataCancelled].
+	Cancelled ObjectiveEventDataCancelledCancelled `json:"cancelled"`
+	// This field is from variant [ObjectiveEventDataSubAgentSpawned].
+	SubAgentSpawned SubAgentSpawned `json:"subAgentSpawned"`
+	// This field is from variant [ObjectiveEventDataSubAgentUpdated].
+	SubAgentUpdated SubAgentUpdated `json:"subAgentUpdated"`
+	// This field is from variant [ObjectiveEventDataFinalized].
+	Finalized ObjectiveEventDataFinalizedFinalized `json:"finalized"`
+	// This field is from variant [ObjectiveEventDataNotice].
+	Notice ObjectiveEventDataNoticeNotice `json:"notice"`
+	// This field is from variant [ObjectiveEventDataTimedOut].
+	TimedOut ObjectiveEventDataTimedOutTimedOut `json:"timedOut"`
+	// This field is from variant [ObjectiveEventDataReasoning].
+	Reasoning Reasoning `json:"reasoning"`
+	JSON      struct {
 		Type                   respjson.Field
 		UserMessage            respjson.Field
-		ExtraFields            map[string]respjson.Field
+		ToolApprovalRequested  respjson.Field
+		ToolApproved           respjson.Field
+		ToolDenied             respjson.Field
+		ToolCalled             respjson.Field
+		Error                  respjson.Field
+		AssistantMessage       respjson.Field
+		ToolResult             respjson.Field
+		ToolError              respjson.Field
+		ContextWindowCompacted respjson.Field
+		MemoryRead             respjson.Field
+		Cancelled              respjson.Field
+		SubAgentSpawned        respjson.Field
+		SubAgentUpdated        respjson.Field
+		Finalized              respjson.Field
+		Notice                 respjson.Field
+		TimedOut               respjson.Field
+		Reasoning              respjson.Field
 		raw                    string
 	} `json:"-"`
 }
 
+// anyObjectiveEventData is implemented by each variant of
+// [ObjectiveEventDataUnion] to add type safety for the return type of
+// [ObjectiveEventDataUnion.AsAny]
+type anyObjectiveEventData interface {
+	implObjectiveEventDataUnion()
+}
+
+func (ObjectiveEventDataUserMessage) implObjectiveEventDataUnion()            {}
+func (ObjectiveEventDataToolApprovalRequested) implObjectiveEventDataUnion()  {}
+func (ObjectiveEventDataToolApproved) implObjectiveEventDataUnion()           {}
+func (ObjectiveEventDataToolDenied) implObjectiveEventDataUnion()             {}
+func (ObjectiveEventDataToolCalled) implObjectiveEventDataUnion()             {}
+func (ObjectiveEventDataError) implObjectiveEventDataUnion()                  {}
+func (ObjectiveEventDataAssistantMessage) implObjectiveEventDataUnion()       {}
+func (ObjectiveEventDataToolResult) implObjectiveEventDataUnion()             {}
+func (ObjectiveEventDataToolError) implObjectiveEventDataUnion()              {}
+func (ObjectiveEventDataContextWindowCompacted) implObjectiveEventDataUnion() {}
+func (ObjectiveEventDataMemoryRead) implObjectiveEventDataUnion()             {}
+func (ObjectiveEventDataCancelled) implObjectiveEventDataUnion()              {}
+func (ObjectiveEventDataSubAgentSpawned) implObjectiveEventDataUnion()        {}
+func (ObjectiveEventDataSubAgentUpdated) implObjectiveEventDataUnion()        {}
+func (ObjectiveEventDataFinalized) implObjectiveEventDataUnion()              {}
+func (ObjectiveEventDataNotice) implObjectiveEventDataUnion()                 {}
+func (ObjectiveEventDataTimedOut) implObjectiveEventDataUnion()               {}
+func (ObjectiveEventDataReasoning) implObjectiveEventDataUnion()              {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ObjectiveEventDataUnion.AsAny().(type) {
+//	case cadenya.ObjectiveEventDataUserMessage:
+//	case cadenya.ObjectiveEventDataToolApprovalRequested:
+//	case cadenya.ObjectiveEventDataToolApproved:
+//	case cadenya.ObjectiveEventDataToolDenied:
+//	case cadenya.ObjectiveEventDataToolCalled:
+//	case cadenya.ObjectiveEventDataError:
+//	case cadenya.ObjectiveEventDataAssistantMessage:
+//	case cadenya.ObjectiveEventDataToolResult:
+//	case cadenya.ObjectiveEventDataToolError:
+//	case cadenya.ObjectiveEventDataContextWindowCompacted:
+//	case cadenya.ObjectiveEventDataMemoryRead:
+//	case cadenya.ObjectiveEventDataCancelled:
+//	case cadenya.ObjectiveEventDataSubAgentSpawned:
+//	case cadenya.ObjectiveEventDataSubAgentUpdated:
+//	case cadenya.ObjectiveEventDataFinalized:
+//	case cadenya.ObjectiveEventDataNotice:
+//	case cadenya.ObjectiveEventDataTimedOut:
+//	case cadenya.ObjectiveEventDataReasoning:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ObjectiveEventDataUnion) AsAny() anyObjectiveEventData {
+	switch u.Type {
+	case "userMessage":
+		return u.AsUserMessage()
+	case "toolApprovalRequested":
+		return u.AsToolApprovalRequested()
+	case "toolApproved":
+		return u.AsToolApproved()
+	case "toolDenied":
+		return u.AsToolDenied()
+	case "toolCalled":
+		return u.AsToolCalled()
+	case "error":
+		return u.AsError()
+	case "assistantMessage":
+		return u.AsAssistantMessage()
+	case "toolResult":
+		return u.AsToolResult()
+	case "toolError":
+		return u.AsToolError()
+	case "contextWindowCompacted":
+		return u.AsContextWindowCompacted()
+	case "memoryRead":
+		return u.AsMemoryRead()
+	case "cancelled":
+		return u.AsCancelled()
+	case "subAgentSpawned":
+		return u.AsSubAgentSpawned()
+	case "subAgentUpdated":
+		return u.AsSubAgentUpdated()
+	case "finalized":
+		return u.AsFinalized()
+	case "notice":
+		return u.AsNotice()
+	case "timedOut":
+		return u.AsTimedOut()
+	case "reasoning":
+		return u.AsReasoning()
+	}
+	return nil
+}
+
+func (u ObjectiveEventDataUnion) AsUserMessage() (v ObjectiveEventDataUserMessage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolApprovalRequested() (v ObjectiveEventDataToolApprovalRequested) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolApproved() (v ObjectiveEventDataToolApproved) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolDenied() (v ObjectiveEventDataToolDenied) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolCalled() (v ObjectiveEventDataToolCalled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsError() (v ObjectiveEventDataError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsAssistantMessage() (v ObjectiveEventDataAssistantMessage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolResult() (v ObjectiveEventDataToolResult) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsToolError() (v ObjectiveEventDataToolError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsContextWindowCompacted() (v ObjectiveEventDataContextWindowCompacted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsMemoryRead() (v ObjectiveEventDataMemoryRead) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsCancelled() (v ObjectiveEventDataCancelled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsSubAgentSpawned() (v ObjectiveEventDataSubAgentSpawned) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsSubAgentUpdated() (v ObjectiveEventDataSubAgentUpdated) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsFinalized() (v ObjectiveEventDataFinalized) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsNotice() (v ObjectiveEventDataNotice) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsTimedOut() (v ObjectiveEventDataTimedOut) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ObjectiveEventDataUnion) AsReasoning() (v ObjectiveEventDataReasoning) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
-func (r ObjectiveEventData) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventData) UnmarshalJSON(data []byte) error {
+func (u ObjectiveEventDataUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ObjectiveEventDataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataAssistantMessage struct {
+	AssistantMessage AssistantMessage `json:"assistantMessage" api:"required"`
+	// Any of "assistantMessage".
+	Type ObjectiveEventDataAssistantMessageType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AssistantMessage respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataAssistantMessage) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataAssistantMessage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataAssistantMessageType string
+
+const (
+	ObjectiveEventDataAssistantMessageTypeAssistantMessage ObjectiveEventDataAssistantMessageType = "assistantMessage"
+)
+
+type ObjectiveEventDataCancelled struct {
+	// ObjectiveCancelled is the terminal event written when an objective is cancelled.
+	// After this event, the objective is super-terminal: no further iterations,
+	// compaction, or continuation are permitted.
+	Cancelled ObjectiveEventDataCancelledCancelled `json:"cancelled" api:"required"`
+	// Any of "cancelled".
+	Type ObjectiveEventDataCancelledType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Cancelled   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataCancelled) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataCancelled) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // ObjectiveCancelled is the terminal event written when an objective is cancelled.
 // After this event, the objective is super-terminal: no further iterations,
 // compaction, or continuation are permitted.
-type ObjectiveEventDataCancelled struct {
+type ObjectiveEventDataCancelledCancelled struct {
 	// Optional human-readable note recorded at cancel time. Today the workflow sets
 	// "Cancelled" but this field leaves room for richer reasons (e.g. "Cancelled by
 	// user", "Cancelled by schedule sweep", "Credit balance exhausted").
@@ -964,15 +1326,93 @@ type ObjectiveEventDataCancelled struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ObjectiveEventDataCancelled) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventDataCancelled) UnmarshalJSON(data []byte) error {
+func (r ObjectiveEventDataCancelledCancelled) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataCancelledCancelled) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataCancelledType string
+
+const (
+	ObjectiveEventDataCancelledTypeCancelled ObjectiveEventDataCancelledType = "cancelled"
+)
+
+type ObjectiveEventDataContextWindowCompacted struct {
+	ContextWindowCompacted ContextWindowCompacted `json:"contextWindowCompacted" api:"required"`
+	// Any of "contextWindowCompacted".
+	Type ObjectiveEventDataContextWindowCompactedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ContextWindowCompacted respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataContextWindowCompacted) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataContextWindowCompacted) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataContextWindowCompactedType string
+
+const (
+	ObjectiveEventDataContextWindowCompactedTypeContextWindowCompacted ObjectiveEventDataContextWindowCompactedType = "contextWindowCompacted"
+)
+
+type ObjectiveEventDataError struct {
+	Error ObjectiveError `json:"error" api:"required"`
+	// Any of "error".
+	Type ObjectiveEventDataErrorType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataError) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataErrorType string
+
+const (
+	ObjectiveEventDataErrorTypeError ObjectiveEventDataErrorType = "error"
+)
+
+type ObjectiveEventDataFinalized struct {
+	// ObjectiveFinalized is the terminal event written when an objective is finalized.
+	// After this event, the objective is super-terminal: no further iterations,
+	// compaction, or continuation are permitted.
+	Finalized ObjectiveEventDataFinalizedFinalized `json:"finalized" api:"required"`
+	// Any of "finalized".
+	Type ObjectiveEventDataFinalizedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Finalized   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataFinalized) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataFinalized) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // ObjectiveFinalized is the terminal event written when an objective is finalized.
 // After this event, the objective is super-terminal: no further iterations,
 // compaction, or continuation are permitted.
-type ObjectiveEventDataFinalized struct {
+type ObjectiveEventDataFinalizedFinalized struct {
 	// If the objective was created with an output schema, and the agent successfully
 	// completed the objective, this field will contain the structured output of the
 	// objective.
@@ -986,8 +1426,66 @@ type ObjectiveEventDataFinalized struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ObjectiveEventDataFinalized) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventDataFinalized) UnmarshalJSON(data []byte) error {
+func (r ObjectiveEventDataFinalizedFinalized) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataFinalizedFinalized) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataFinalizedType string
+
+const (
+	ObjectiveEventDataFinalizedTypeFinalized ObjectiveEventDataFinalizedType = "finalized"
+)
+
+type ObjectiveEventDataMemoryRead struct {
+	// MemoryRead is emitted each time the agent resolves a key against the memory
+	// cascade and loads an entry. Lookups that miss (key not found in any layer) do
+	// not emit this event.
+	MemoryRead MemoryRead `json:"memoryRead" api:"required"`
+	// Any of "memoryRead".
+	Type ObjectiveEventDataMemoryReadType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MemoryRead  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataMemoryRead) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataMemoryRead) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataMemoryReadType string
+
+const (
+	ObjectiveEventDataMemoryReadTypeMemoryRead ObjectiveEventDataMemoryReadType = "memoryRead"
+)
+
+type ObjectiveEventDataNotice struct {
+	// Notice is a non-terminal diagnostic emitted by the runtime when something
+	// noteworthy but non-fatal happens during an objective — for example a
+	// just-in-time tool set failing to load, or a previously loaded tool being dropped
+	// because it was archived. Notices carry no structured payload; they exist to make
+	// the objective timeline self-explanatory.
+	Notice ObjectiveEventDataNoticeNotice `json:"notice" api:"required"`
+	// Any of "notice".
+	Type ObjectiveEventDataNoticeType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Notice      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataNotice) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataNotice) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -996,7 +1494,7 @@ func (r *ObjectiveEventDataFinalized) UnmarshalJSON(data []byte) error {
 // just-in-time tool set failing to load, or a previously loaded tool being dropped
 // because it was archived. Notices carry no structured payload; they exist to make
 // the objective timeline self-explanatory.
-type ObjectiveEventDataNotice struct {
+type ObjectiveEventDataNoticeNotice struct {
 	// Stable machine-readable identifier for the notice kind (for example
 	// "tool_set_load_failed", "tool_archived"). Clients can switch on it or use it as
 	// an i18n key; the message is the English fallback.
@@ -1016,8 +1514,119 @@ type ObjectiveEventDataNotice struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ObjectiveEventDataNotice) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventDataNotice) UnmarshalJSON(data []byte) error {
+func (r ObjectiveEventDataNoticeNotice) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataNoticeNotice) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataNoticeType string
+
+const (
+	ObjectiveEventDataNoticeTypeNotice ObjectiveEventDataNoticeType = "notice"
+)
+
+type ObjectiveEventDataReasoning struct {
+	// Reasoning carries the human-readable reasoning text a model produced while
+	// working on an iteration — extended thinking (Anthropic, Gemini) or reasoning
+	// summaries (OpenAI). It is emitted alongside the assistant message from the same
+	// model response and is purely informational: the text shown here is never sent
+	// back to the model.
+	Reasoning Reasoning `json:"reasoning" api:"required"`
+	// Any of "reasoning".
+	Type ObjectiveEventDataReasoningType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Reasoning   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataReasoning) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataReasoning) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataReasoningType string
+
+const (
+	ObjectiveEventDataReasoningTypeReasoning ObjectiveEventDataReasoningType = "reasoning"
+)
+
+type ObjectiveEventDataSubAgentSpawned struct {
+	SubAgentSpawned SubAgentSpawned `json:"subAgentSpawned" api:"required"`
+	// Any of "subAgentSpawned".
+	Type ObjectiveEventDataSubAgentSpawnedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SubAgentSpawned respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataSubAgentSpawned) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataSubAgentSpawned) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataSubAgentSpawnedType string
+
+const (
+	ObjectiveEventDataSubAgentSpawnedTypeSubAgentSpawned ObjectiveEventDataSubAgentSpawnedType = "subAgentSpawned"
+)
+
+type ObjectiveEventDataSubAgentUpdated struct {
+	SubAgentUpdated SubAgentUpdated `json:"subAgentUpdated" api:"required"`
+	// Any of "subAgentUpdated".
+	Type ObjectiveEventDataSubAgentUpdatedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SubAgentUpdated respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataSubAgentUpdated) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataSubAgentUpdated) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataSubAgentUpdatedType string
+
+const (
+	ObjectiveEventDataSubAgentUpdatedTypeSubAgentUpdated ObjectiveEventDataSubAgentUpdatedType = "subAgentUpdated"
+)
+
+type ObjectiveEventDataTimedOut struct {
+	// ObjectiveTimedOut is the terminal event written when an objective is finalized
+	// by the inactivity sweep because it saw no activity (no user messages, no LLM
+	// calls) within its variation's inactivity timeout — or the system-wide 24 hour
+	// maximum when no timeout is configured. The objective produces no output. After
+	// this event, the objective is super-terminal: no further iterations, compaction,
+	// or continuation are permitted.
+	TimedOut ObjectiveEventDataTimedOutTimedOut `json:"timedOut" api:"required"`
+	// Any of "timedOut".
+	Type ObjectiveEventDataTimedOutType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		TimedOut    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataTimedOut) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataTimedOut) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1027,7 +1636,7 @@ func (r *ObjectiveEventDataNotice) UnmarshalJSON(data []byte) error {
 // maximum when no timeout is configured. The objective produces no output. After
 // this event, the objective is super-terminal: no further iterations, compaction,
 // or continuation are permitted.
-type ObjectiveEventDataTimedOut struct {
+type ObjectiveEventDataTimedOutTimedOut struct {
 	// Human-readable note recorded at timeout time (e.g. "Timed out after 2h of
 	// inactivity").
 	Message string `json:"message"`
@@ -1040,10 +1649,191 @@ type ObjectiveEventDataTimedOut struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ObjectiveEventDataTimedOut) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventDataTimedOut) UnmarshalJSON(data []byte) error {
+func (r ObjectiveEventDataTimedOutTimedOut) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataTimedOutTimedOut) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type ObjectiveEventDataTimedOutType string
+
+const (
+	ObjectiveEventDataTimedOutTypeTimedOut ObjectiveEventDataTimedOutType = "timedOut"
+)
+
+type ObjectiveEventDataToolApprovalRequested struct {
+	ToolApprovalRequested ToolApprovalRequested `json:"toolApprovalRequested" api:"required"`
+	// Any of "toolApprovalRequested".
+	Type ObjectiveEventDataToolApprovalRequestedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolApprovalRequested respjson.Field
+		Type                  respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolApprovalRequested) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolApprovalRequested) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolApprovalRequestedType string
+
+const (
+	ObjectiveEventDataToolApprovalRequestedTypeToolApprovalRequested ObjectiveEventDataToolApprovalRequestedType = "toolApprovalRequested"
+)
+
+type ObjectiveEventDataToolApproved struct {
+	ToolApproved ToolApproved `json:"toolApproved" api:"required"`
+	// Any of "toolApproved".
+	Type ObjectiveEventDataToolApprovedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolApproved respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolApproved) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolApproved) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolApprovedType string
+
+const (
+	ObjectiveEventDataToolApprovedTypeToolApproved ObjectiveEventDataToolApprovedType = "toolApproved"
+)
+
+type ObjectiveEventDataToolCalled struct {
+	ToolCalled ToolCalled `json:"toolCalled" api:"required"`
+	// Any of "toolCalled".
+	Type ObjectiveEventDataToolCalledType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolCalled  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolCalled) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolCalled) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolCalledType string
+
+const (
+	ObjectiveEventDataToolCalledTypeToolCalled ObjectiveEventDataToolCalledType = "toolCalled"
+)
+
+type ObjectiveEventDataToolDenied struct {
+	ToolDenied ToolDenied `json:"toolDenied" api:"required"`
+	// Any of "toolDenied".
+	Type ObjectiveEventDataToolDeniedType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolDenied  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolDenied) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolDenied) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolDeniedType string
+
+const (
+	ObjectiveEventDataToolDeniedTypeToolDenied ObjectiveEventDataToolDeniedType = "toolDenied"
+)
+
+type ObjectiveEventDataToolError struct {
+	ToolError ToolError `json:"toolError" api:"required"`
+	// Any of "toolError".
+	Type ObjectiveEventDataToolErrorType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolError   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolError) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolErrorType string
+
+const (
+	ObjectiveEventDataToolErrorTypeToolError ObjectiveEventDataToolErrorType = "toolError"
+)
+
+type ObjectiveEventDataToolResult struct {
+	ToolResult ToolResult `json:"toolResult" api:"required"`
+	// Any of "toolResult".
+	Type ObjectiveEventDataToolResultType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolResult  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataToolResult) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataToolResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataToolResultType string
+
+const (
+	ObjectiveEventDataToolResultTypeToolResult ObjectiveEventDataToolResultType = "toolResult"
+)
+
+type ObjectiveEventDataUserMessage struct {
+	// Any of "userMessage".
+	Type        ObjectiveEventDataUserMessageType `json:"type" api:"required"`
+	UserMessage UserMessage                       `json:"userMessage" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		UserMessage respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ObjectiveEventDataUserMessage) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveEventDataUserMessage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ObjectiveEventDataUserMessageType string
+
+const (
+	ObjectiveEventDataUserMessageTypeUserMessage ObjectiveEventDataUserMessageType = "userMessage"
+)
 
 type ObjectiveEventInfo struct {
 	// A profile identifies a user or non-human principal (such as an API key) at the
@@ -1293,12 +2083,12 @@ type ToolCalled struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
 	// be Http. If the tool is an inline tool, the adapter will be Inline.
-	Config ToolSpecConfig `json:"config"`
+	Config ToolSpecConfigUnion `json:"config"`
 	// CallableTool is a union that represents a tool that can be called by an agent.
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Tool CallableTool `json:"tool"`
+	Tool CallableToolUnion `json:"tool"`
 	// The ID of the objective tool call record that was executed.
 	ToolCallID string `json:"toolCallId"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

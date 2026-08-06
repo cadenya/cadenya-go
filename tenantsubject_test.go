@@ -29,7 +29,7 @@ func TestTenantSubjectListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tenantId",
 		cadenya.TenantSubjectListParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:      cadenya.String("cursor"),
 			IncludeInfo: cadenya.Bool(true),
 			Limit:       cadenya.Int(0),

@@ -77,7 +77,7 @@ type SearchSearchToolsOrToolSetsParams struct {
 	// Use [option.WithWorkspaceID] on the client to set a global default for this
 	// field.
 	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
-	Query       param.Opt[string] `query:"query,omitzero" json:"-"`
+	Query       string            `query:"query" api:"required" json:"-"`
 	paramObj
 }
 

@@ -177,7 +177,7 @@ func (r *AgentVariationService) Delete(ctx context.Context, agentID string, id s
 
 // Assigns a tool, tool set, or sub-agent to a variation. Exactly one target ID
 // must be set.
-func (r *AgentVariationService) AddAssignment(ctx context.Context, agentID string, variationID string, params AgentVariationAddAssignmentParams, opts ...option.RequestOption) (res *VariationAssignment, err error) {
+func (r *AgentVariationService) AddAssignment(ctx context.Context, agentID string, variationID string, params AgentVariationAddAssignmentParams, opts ...option.RequestOption) (res *VariationAssignmentUnion, err error) {
 	opts = slices.Concat(r.options, opts)
 	precfg, err := requestconfig.PreRequestOptions(opts...)
 	if err != nil {
@@ -318,6 +318,72 @@ func (r *AgentVariationService) UpdateMemoryLayer(ctx context.Context, agentID s
 	return res, err
 }
 
+// The properties SubAgentID, Type are required.
+type AddAgentVariationAssignmentRequestSubAgentIDParam struct {
+	SubAgentID string `json:"subAgentId" api:"required"`
+	// Any of "subAgentId".
+	Type AddAgentVariationAssignmentRequestSubAgentIDType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r AddAgentVariationAssignmentRequestSubAgentIDParam) MarshalJSON() (data []byte, err error) {
+	type shadow AddAgentVariationAssignmentRequestSubAgentIDParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AddAgentVariationAssignmentRequestSubAgentIDParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AddAgentVariationAssignmentRequestSubAgentIDType string
+
+const (
+	AddAgentVariationAssignmentRequestSubAgentIDTypeSubAgentID AddAgentVariationAssignmentRequestSubAgentIDType = "subAgentId"
+)
+
+// The properties ToolID, Type are required.
+type AddAgentVariationAssignmentRequestToolIDParam struct {
+	ToolID string `json:"toolId" api:"required"`
+	// Any of "toolId".
+	Type AddAgentVariationAssignmentRequestToolIDType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r AddAgentVariationAssignmentRequestToolIDParam) MarshalJSON() (data []byte, err error) {
+	type shadow AddAgentVariationAssignmentRequestToolIDParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AddAgentVariationAssignmentRequestToolIDParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AddAgentVariationAssignmentRequestToolIDType string
+
+const (
+	AddAgentVariationAssignmentRequestToolIDTypeToolID AddAgentVariationAssignmentRequestToolIDType = "toolId"
+)
+
+// The properties ToolSetID, Type are required.
+type AddAgentVariationAssignmentRequestToolSetIDParam struct {
+	ToolSetID string `json:"toolSetId" api:"required"`
+	// Any of "toolSetId".
+	Type AddAgentVariationAssignmentRequestToolSetIDType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r AddAgentVariationAssignmentRequestToolSetIDParam) MarshalJSON() (data []byte, err error) {
+	type shadow AddAgentVariationAssignmentRequestToolSetIDParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AddAgentVariationAssignmentRequestToolSetIDParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type AddAgentVariationAssignmentRequestToolSetIDType string
+
+const (
+	AddAgentVariationAssignmentRequestToolSetIDTypeToolSetID AddAgentVariationAssignmentRequestToolSetIDType = "toolSetId"
+)
+
 // AgentVariation resource
 type AgentVariation struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
@@ -347,7 +413,7 @@ type AgentVariationInfo struct {
 	// All tools, tool sets, and sub-agents assigned to this variation. Populated on
 	// reads so clients can render a variation's full assignment list without calling
 	// the add/remove endpoints just to enumerate.
-	Assignments []VariationAssignment `json:"assignments"`
+	Assignments []VariationAssignmentUnion `json:"assignments"`
 	// A profile identifies a user or non-human principal (such as an API key) at the
 	// account level. Profiles are account-scoped and can be granted access to multiple
 	// workspaces.
@@ -834,57 +900,185 @@ func (r *CompactionConfigToolResultClearingStrategyParam) UnmarshalJSON(data []b
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A read-only reference to a single tool, tool set, or sub-agent attached to a
-// variation. Read the full set of assignments via
-// `AgentVariationInfo.assignments`; mutations go through the dedicated add/remove
-// assignment endpoints.
+// VariationAssignmentUnion contains all possible properties and values from
+// [VariationAssignmentTool], [VariationAssignmentToolSet],
+// [VariationAssignmentAgent].
 //
-// The `id` identifies the assignment itself (not the referenced resource) and is
-// the handle used to remove the assignment. It is returned by the add endpoint and
-// present on every entry in `AgentVariationInfo.assignments`.
-type VariationAssignment struct {
-	ID string `json:"id"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
-	Agent shared.BareMetadata `json:"agent"`
-	// BareMetadata contains the minimal metadata for a resource: the ID and an
-	// optional human-readable name. These are used for reference fields where the full
-	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
-	// e.g., the tool references inside an agent variation spec or the tools assigned
-	// to an objective. Both fields are server-populated; clients provide IDs through
-	// sibling fields rather than by constructing a BareMetadata themselves.
+// Use the [VariationAssignmentUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type VariationAssignmentUnion struct {
+	// This field is from variant [VariationAssignmentTool].
 	Tool shared.BareMetadata `json:"tool"`
+	// Any of "tool", "toolSet", "agent".
+	Type string `json:"type"`
+	ID   string `json:"id"`
+	// This field is from variant [VariationAssignmentToolSet].
+	ToolSet shared.BareMetadata `json:"toolSet"`
+	// This field is from variant [VariationAssignmentAgent].
+	Agent shared.BareMetadata `json:"agent"`
+	JSON  struct {
+		Tool    respjson.Field
+		Type    respjson.Field
+		ID      respjson.Field
+		ToolSet respjson.Field
+		Agent   respjson.Field
+		raw     string
+	} `json:"-"`
+}
+
+// anyVariationAssignment is implemented by each variant of
+// [VariationAssignmentUnion] to add type safety for the return type of
+// [VariationAssignmentUnion.AsAny]
+type anyVariationAssignment interface {
+	implVariationAssignmentUnion()
+}
+
+func (VariationAssignmentTool) implVariationAssignmentUnion()    {}
+func (VariationAssignmentToolSet) implVariationAssignmentUnion() {}
+func (VariationAssignmentAgent) implVariationAssignmentUnion()   {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := VariationAssignmentUnion.AsAny().(type) {
+//	case cadenya.VariationAssignmentTool:
+//	case cadenya.VariationAssignmentToolSet:
+//	case cadenya.VariationAssignmentAgent:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u VariationAssignmentUnion) AsAny() anyVariationAssignment {
+	switch u.Type {
+	case "tool":
+		return u.AsTool()
+	case "toolSet":
+		return u.AsToolSet()
+	case "agent":
+		return u.AsAgent()
+	}
+	return nil
+}
+
+func (u VariationAssignmentUnion) AsTool() (v VariationAssignmentTool) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u VariationAssignmentUnion) AsToolSet() (v VariationAssignmentToolSet) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u VariationAssignmentUnion) AsAgent() (v VariationAssignmentAgent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u VariationAssignmentUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *VariationAssignmentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type VariationAssignmentAgent struct {
 	// BareMetadata contains the minimal metadata for a resource: the ID and an
 	// optional human-readable name. These are used for reference fields where the full
 	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
 	// e.g., the tool references inside an agent variation spec or the tools assigned
 	// to an objective. Both fields are server-populated; clients provide IDs through
 	// sibling fields rather than by constructing a BareMetadata themselves.
-	ToolSet shared.BareMetadata `json:"toolSet"`
-	// The JSON name of the variant set in `reference` (e.g. "toolSet"). Filled by the
-	// server; drives the discriminated union in the generated OpenAPI.
-	Type string `json:"type"`
+	Agent shared.BareMetadata `json:"agent" api:"required"`
+	// Any of "agent".
+	Type VariationAssignmentAgentType `json:"type" api:"required"`
+	ID   string                       `json:"id"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
 		Agent       respjson.Field
-		Tool        respjson.Field
-		ToolSet     respjson.Field
 		Type        respjson.Field
+		ID          respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
-func (r VariationAssignment) RawJSON() string { return r.JSON.raw }
-func (r *VariationAssignment) UnmarshalJSON(data []byte) error {
+func (r VariationAssignmentAgent) RawJSON() string { return r.JSON.raw }
+func (r *VariationAssignmentAgent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type VariationAssignmentAgentType string
+
+const (
+	VariationAssignmentAgentTypeAgent VariationAssignmentAgentType = "agent"
+)
+
+type VariationAssignmentTool struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	Tool shared.BareMetadata `json:"tool" api:"required"`
+	// Any of "tool".
+	Type VariationAssignmentToolType `json:"type" api:"required"`
+	ID   string                      `json:"id"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Tool        respjson.Field
+		Type        respjson.Field
+		ID          respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r VariationAssignmentTool) RawJSON() string { return r.JSON.raw }
+func (r *VariationAssignmentTool) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type VariationAssignmentToolType string
+
+const (
+	VariationAssignmentToolTypeTool VariationAssignmentToolType = "tool"
+)
+
+type VariationAssignmentToolSet struct {
+	// BareMetadata contains the minimal metadata for a resource: the ID and an
+	// optional human-readable name. These are used for reference fields where the full
+	// metadata (account scoping, timestamps, labels, external IDs) is not needed —
+	// e.g., the tool references inside an agent variation spec or the tools assigned
+	// to an objective. Both fields are server-populated; clients provide IDs through
+	// sibling fields rather than by constructing a BareMetadata themselves.
+	ToolSet shared.BareMetadata `json:"toolSet" api:"required"`
+	// Any of "toolSet".
+	Type VariationAssignmentToolSetType `json:"type" api:"required"`
+	ID   string                         `json:"id"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolSet     respjson.Field
+		Type        respjson.Field
+		ID          respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r VariationAssignmentToolSet) RawJSON() string { return r.JSON.raw }
+func (r *VariationAssignmentToolSet) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type VariationAssignmentToolSetType string
+
+const (
+	VariationAssignmentToolSetTypeToolSet VariationAssignmentToolSetType = "toolSet"
+)
 
 // VariationMemoryLayerAssignment attaches a single MemoryLayer to a variation at a
 // given position in the variation's baseline memory cascade. A variation has at
@@ -1017,18 +1211,23 @@ type AgentVariationAddAssignmentParams struct {
 	// Use [option.WithWorkspaceID] on the client to set a global default for this
 	// field.
 	WorkspaceID param.Opt[string] `path:"workspaceId,omitzero" api:"required" json:"-"`
-	SubAgentID  param.Opt[string] `json:"subAgentId,omitzero"`
-	ToolID      param.Opt[string] `json:"toolId,omitzero"`
-	ToolSetID   param.Opt[string] `json:"toolSetId,omitzero"`
-	// The JSON name of the variant set in `target` (e.g. "toolId"). Required on input;
-	// drives the discriminated union in the generated OpenAPI.
-	Type param.Opt[string] `json:"type,omitzero"`
+
+	//
+	// Request body variants
+	//
+
+	// This field is a request body variant, only one variant field can be set.
+	OfToolID *AddAgentVariationAssignmentRequestToolIDParam `json:",inline"`
+	// This field is a request body variant, only one variant field can be set.
+	OfToolSetID *AddAgentVariationAssignmentRequestToolSetIDParam `json:",inline"`
+	// This field is a request body variant, only one variant field can be set.
+	OfSubAgentID *AddAgentVariationAssignmentRequestSubAgentIDParam `json:",inline"`
+
 	paramObj
 }
 
-func (r AgentVariationAddAssignmentParams) MarshalJSON() (data []byte, err error) {
-	type shadow AgentVariationAddAssignmentParams
-	return param.MarshalObject(r, (*shadow)(&r))
+func (u AgentVariationAddAssignmentParams) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfToolID, u.OfToolSetID, u.OfSubAgentID)
 }
 func (r *AgentVariationAddAssignmentParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)

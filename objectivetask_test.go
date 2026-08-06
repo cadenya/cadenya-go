@@ -27,10 +27,10 @@ func TestObjectiveTaskGet(t *testing.T) {
 	)
 	_, err := client.Objectives.Tasks.Get(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		"id",
 		cadenya.ObjectiveTaskGetParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		},
 	)
 	if err != nil {
@@ -57,9 +57,9 @@ func TestObjectiveTaskListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Tasks.List(
 		context.TODO(),
-		"objectiveId",
+		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
 		cadenya.ObjectiveTaskListParams{
-			WorkspaceID: cadenya.String("workspaceId"),
+			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 			Cursor:      cadenya.String("cursor"),
 			Limit:       cadenya.Int(0),
 			SortOrder:   cadenya.String("sortOrder"),

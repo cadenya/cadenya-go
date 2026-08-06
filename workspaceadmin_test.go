@@ -60,7 +60,7 @@ func TestWorkspaceAdminGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.Get(context.TODO(), cadenya.WorkspaceAdminGetParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -85,7 +85,7 @@ func TestWorkspaceAdminUpdateWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.Update(context.TODO(), cadenya.WorkspaceAdminUpdateParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 		Metadata: cadenya.WorkspaceAdminUpdateParamsMetadata{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -149,7 +149,7 @@ func TestWorkspaceAdminArchive(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.WorkspaceAdmin.Archive(context.TODO(), cadenya.WorkspaceAdminArchiveParams{
-		WorkspaceID: cadenya.String("workspaceId"),
+		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
