@@ -1002,7 +1002,7 @@ func (r *ObjectiveEvent) UnmarshalJSON(data []byte) error {
 // [ObjectiveEventDataMemoryRead], [ObjectiveEventDataCancelled],
 // [ObjectiveEventDataSubAgentSpawned], [ObjectiveEventDataSubAgentUpdated],
 // [ObjectiveEventDataFinalized], [ObjectiveEventDataNotice],
-// [ObjectiveEventDataTimedOut], [ObjectiveEventDataReasoning].
+// [ObjectiveEventDataTimedOut].
 //
 // Use the [ObjectiveEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -1011,7 +1011,7 @@ type ObjectiveEventDataUnion struct {
 	// Any of "userMessage", "toolApprovalRequested", "toolApproved", "toolDenied",
 	// "toolCalled", "error", "assistantMessage", "toolResult", "toolError",
 	// "contextWindowCompacted", "memoryRead", "cancelled", "subAgentSpawned",
-	// "subAgentUpdated", "finalized", "notice", "timedOut", "reasoning".
+	// "subAgentUpdated", "finalized", "notice", "timedOut".
 	Type string `json:"type"`
 	// This field is from variant [ObjectiveEventDataUserMessage].
 	UserMessage UserMessage `json:"userMessage"`
@@ -1047,9 +1047,7 @@ type ObjectiveEventDataUnion struct {
 	Notice ObjectiveEventDataNoticeNotice `json:"notice"`
 	// This field is from variant [ObjectiveEventDataTimedOut].
 	TimedOut ObjectiveEventDataTimedOutTimedOut `json:"timedOut"`
-	// This field is from variant [ObjectiveEventDataReasoning].
-	Reasoning Reasoning `json:"reasoning"`
-	JSON      struct {
+	JSON     struct {
 		Type                   respjson.Field
 		UserMessage            respjson.Field
 		ToolApprovalRequested  respjson.Field
@@ -1068,7 +1066,6 @@ type ObjectiveEventDataUnion struct {
 		Finalized              respjson.Field
 		Notice                 respjson.Field
 		TimedOut               respjson.Field
-		Reasoning              respjson.Field
 		raw                    string
 	} `json:"-"`
 }
@@ -1097,7 +1094,6 @@ func (ObjectiveEventDataSubAgentUpdated) implObjectiveEventDataUnion()        {}
 func (ObjectiveEventDataFinalized) implObjectiveEventDataUnion()              {}
 func (ObjectiveEventDataNotice) implObjectiveEventDataUnion()                 {}
 func (ObjectiveEventDataTimedOut) implObjectiveEventDataUnion()               {}
-func (ObjectiveEventDataReasoning) implObjectiveEventDataUnion()              {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -1119,7 +1115,6 @@ func (ObjectiveEventDataReasoning) implObjectiveEventDataUnion()              {}
 //	case cadenya.ObjectiveEventDataFinalized:
 //	case cadenya.ObjectiveEventDataNotice:
 //	case cadenya.ObjectiveEventDataTimedOut:
-//	case cadenya.ObjectiveEventDataReasoning:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1159,8 +1154,6 @@ func (u ObjectiveEventDataUnion) AsAny() anyObjectiveEventData {
 		return u.AsNotice()
 	case "timedOut":
 		return u.AsTimedOut()
-	case "reasoning":
-		return u.AsReasoning()
 	}
 	return nil
 }
@@ -1246,11 +1239,6 @@ func (u ObjectiveEventDataUnion) AsNotice() (v ObjectiveEventDataNotice) {
 }
 
 func (u ObjectiveEventDataUnion) AsTimedOut() (v ObjectiveEventDataTimedOut) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ObjectiveEventDataUnion) AsReasoning() (v ObjectiveEventDataReasoning) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1523,36 +1511,6 @@ type ObjectiveEventDataNoticeType string
 
 const (
 	ObjectiveEventDataNoticeTypeNotice ObjectiveEventDataNoticeType = "notice"
-)
-
-type ObjectiveEventDataReasoning struct {
-	// Reasoning carries the human-readable reasoning text a model produced while
-	// working on an iteration — extended thinking (Anthropic, Gemini) or reasoning
-	// summaries (OpenAI). It is emitted alongside the assistant message from the same
-	// model response and is purely informational: the text shown here is never sent
-	// back to the model.
-	Reasoning Reasoning `json:"reasoning" api:"required"`
-	// Any of "reasoning".
-	Type ObjectiveEventDataReasoningType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Reasoning   respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ObjectiveEventDataReasoning) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveEventDataReasoning) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ObjectiveEventDataReasoningType string
-
-const (
-	ObjectiveEventDataReasoningTypeReasoning ObjectiveEventDataReasoningType = "reasoning"
 )
 
 type ObjectiveEventDataSubAgentSpawned struct {
@@ -1945,29 +1903,6 @@ type ObjectiveSecret struct {
 // Returns the unmodified JSON received from the API
 func (r ObjectiveSecret) RawJSON() string { return r.JSON.raw }
 func (r *ObjectiveSecret) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Reasoning carries the human-readable reasoning text a model produced while
-// working on an iteration — extended thinking (Anthropic, Gemini) or reasoning
-// summaries (OpenAI). It is emitted alongside the assistant message from the same
-// model response and is purely informational: the text shown here is never sent
-// back to the model.
-type Reasoning struct {
-	// The reasoning text. May be a verbatim chain of thought or a provider-generated
-	// summary depending on the model.
-	Content string `json:"content" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Content     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r Reasoning) RawJSON() string { return r.JSON.raw }
-func (r *Reasoning) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

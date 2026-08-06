@@ -114,8 +114,7 @@ type WebhookDeliveryData struct {
 	// "OBJECTIVE_EVENT_TYPE_MEMORY_READ", "OBJECTIVE_EVENT_TYPE_CANCELLED",
 	// "OBJECTIVE_EVENT_TYPE_SUB_AGENT_SPAWNED",
 	// "OBJECTIVE_EVENT_TYPE_SUB_AGENT_UPDATED", "OBJECTIVE_EVENT_TYPE_FINALIZED",
-	// "OBJECTIVE_EVENT_TYPE_NOTICE", "OBJECTIVE_EVENT_TYPE_TIMED_OUT",
-	// "OBJECTIVE_EVENT_TYPE_REASONING".
+	// "OBJECTIVE_EVENT_TYPE_NOTICE", "OBJECTIVE_EVENT_TYPE_TIMED_OUT".
 	EventType WebhookDeliveryDataEventType `json:"eventType" api:"required"`
 	// Response details. The response body is not retained.
 	HTTPStatusCode   int64     `json:"httpStatusCode" api:"required"`
@@ -184,7 +183,6 @@ const (
 	WebhookDeliveryDataEventTypeObjectiveEventTypeFinalized              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_FINALIZED"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeNotice                 WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_NOTICE"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeTimedOut               WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
-	WebhookDeliveryDataEventTypeObjectiveEventTypeReasoning              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 )
 
 type WebhookDeliveryDataStatus string
@@ -223,8 +221,7 @@ type AgentWebhookDeliveryListParams struct {
 	// "OBJECTIVE_EVENT_TYPE_MEMORY_READ", "OBJECTIVE_EVENT_TYPE_CANCELLED",
 	// "OBJECTIVE_EVENT_TYPE_SUB_AGENT_SPAWNED",
 	// "OBJECTIVE_EVENT_TYPE_SUB_AGENT_UPDATED", "OBJECTIVE_EVENT_TYPE_FINALIZED",
-	// "OBJECTIVE_EVENT_TYPE_NOTICE", "OBJECTIVE_EVENT_TYPE_TIMED_OUT",
-	// "OBJECTIVE_EVENT_TYPE_REASONING".
+	// "OBJECTIVE_EVENT_TYPE_NOTICE", "OBJECTIVE_EVENT_TYPE_TIMED_OUT".
 	EventType AgentWebhookDeliveryListParamsEventType `query:"eventType,omitzero" json:"-"`
 	paramObj
 }
@@ -260,5 +257,4 @@ const (
 	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeFinalized              AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_FINALIZED"
 	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeNotice                 AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_NOTICE"
 	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeTimedOut               AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
-	AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeReasoning              AgentWebhookDeliveryListParamsEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 )
