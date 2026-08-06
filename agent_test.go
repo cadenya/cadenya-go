@@ -27,7 +27,7 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.New(context.TODO(), cadenya.AgentNewParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Metadata: shared.CreateResourceMetadataParam{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -109,9 +109,9 @@ func TestAgentGet(t *testing.T) {
 	)
 	_, err := client.Agents.Get(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -138,9 +138,9 @@ func TestAgentUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Update(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentUpdateParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -187,7 +187,7 @@ func TestAgentListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Agents.List(context.TODO(), cadenya.AgentListParams{
-		WorkspaceID:            cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID:            cadenya.String("workspaceId"),
 		Cursor:                 cadenya.String("cursor"),
 		IncludeInfo:            cadenya.Bool(true),
 		Labels:                 cadenya.String("labels"),
@@ -222,9 +222,9 @@ func TestAgentDelete(t *testing.T) {
 	)
 	err := client.Agents.Delete(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -251,9 +251,9 @@ func TestAgentArchive(t *testing.T) {
 	)
 	_, err := client.Agents.Archive(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentArchiveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -280,9 +280,9 @@ func TestAgentPublish(t *testing.T) {
 	)
 	_, err := client.Agents.Publish(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentPublishParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -309,9 +309,9 @@ func TestAgentUnarchive(t *testing.T) {
 	)
 	_, err := client.Agents.Unarchive(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentUnarchiveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -338,9 +338,9 @@ func TestAgentUnpublish(t *testing.T) {
 	)
 	_, err := client.Agents.Unpublish(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"id",
 		cadenya.AgentUnpublishParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

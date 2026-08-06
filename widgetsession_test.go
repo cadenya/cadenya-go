@@ -28,7 +28,7 @@ func TestWidgetSessionNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WidgetSessions.New(context.TODO(), cadenya.WidgetSessionNewParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Spec: cadenya.WidgetSessionSpecParam{
 			WidgetID:  "wgt_01HXKD2E5NQM3T9AYWCFMZZZBD",
 			ExpiresAt: cadenya.Time(time.Now()),
@@ -81,7 +81,7 @@ func TestWidgetSessionGet(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetSessionGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -107,7 +107,7 @@ func TestWidgetSessionListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WidgetSessions.List(context.TODO(), cadenya.WidgetSessionListParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Cursor:      cadenya.String("cursor"),
 		IncludeInfo: cadenya.Bool(true),
 		Labels:      cadenya.String("labels"),
@@ -144,7 +144,7 @@ func TestWidgetSessionDelete(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetSessionDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -170,7 +170,7 @@ func TestWidgetSessionDeleteTenantWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WidgetSessions.DeleteTenant(context.TODO(), cadenya.WidgetSessionDeleteTenantParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		TenantID:    cadenya.String("tenantId"),
 	})
 	if err != nil {
@@ -199,7 +199,7 @@ func TestWidgetSessionRevoke(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetSessionRevokeParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

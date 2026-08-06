@@ -26,7 +26,7 @@ func TestWorkspaceAdminMemberListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.Members.List(context.TODO(), cadenya.WorkspaceAdminMemberListParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Cursor:      cadenya.String("cursor"),
 		Limit:       cadenya.Int(0),
 	})
@@ -53,7 +53,7 @@ func TestWorkspaceAdminMemberAddWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceAdmin.Members.Add(context.TODO(), cadenya.WorkspaceAdminMemberAddParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Email:       cadenya.String("email"),
 		ProfileID:   cadenya.String("profile_01HXKD2E5NQM3T9AYWCFS0AP08"),
 	})
@@ -81,9 +81,9 @@ func TestWorkspaceAdminMemberRemove(t *testing.T) {
 	)
 	err := client.WorkspaceAdmin.Members.Remove(
 		context.TODO(),
-		"profile_01HXKD2E5NQM3T9AYWCFS0AP08",
+		"profileId",
 		cadenya.WorkspaceAdminMemberRemoveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

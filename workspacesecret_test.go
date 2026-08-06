@@ -27,7 +27,7 @@ func TestWorkspaceSecretNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceSecrets.New(context.TODO(), cadenya.WorkspaceSecretNewParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Metadata: shared.CreateResourceMetadataParam{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -63,9 +63,9 @@ func TestWorkspaceSecretGet(t *testing.T) {
 	)
 	_, err := client.WorkspaceSecrets.Get(
 		context.TODO(),
-		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
+		"id",
 		cadenya.WorkspaceSecretGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -92,9 +92,9 @@ func TestWorkspaceSecretUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.WorkspaceSecrets.Update(
 		context.TODO(),
-		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
+		"id",
 		cadenya.WorkspaceSecretUpdateParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -131,7 +131,7 @@ func TestWorkspaceSecretListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.WorkspaceSecrets.List(context.TODO(), cadenya.WorkspaceSecretListParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Cursor:      cadenya.String("cursor"),
 		IncludeInfo: cadenya.Bool(true),
 		Labels:      cadenya.String("labels"),
@@ -164,9 +164,9 @@ func TestWorkspaceSecretDelete(t *testing.T) {
 	)
 	err := client.WorkspaceSecrets.Delete(
 		context.TODO(),
-		"wsecret_01HXKD2E5NQM3T9AYWCF586W5A",
+		"id",
 		cadenya.WorkspaceSecretDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

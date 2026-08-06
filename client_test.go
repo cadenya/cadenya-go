@@ -272,9 +272,9 @@ func TestContextDeadlineStreaming(t *testing.T) {
 		)
 		stream := client.Objectives.StreamEventsStreaming(
 			deadlineCtx,
-			"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+			"objectiveId",
 			cadenya.ObjectiveStreamEventsParams{
-				WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+				WorkspaceID: cadenya.String("workspaceId"),
 			},
 		)
 		for stream.Next() {
@@ -323,9 +323,9 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 		)
 		stream := client.Objectives.StreamEventsStreaming(
 			context.Background(),
-			"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+			"objectiveId",
 			cadenya.ObjectiveStreamEventsParams{
-				WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+				WorkspaceID: cadenya.String("workspaceId"),
 			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)

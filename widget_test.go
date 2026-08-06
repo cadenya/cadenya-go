@@ -27,7 +27,7 @@ func TestWidgetNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Widgets.New(context.TODO(), cadenya.WidgetNewParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Metadata: shared.CreateResourceMetadataParam{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -67,7 +67,7 @@ func TestWidgetGet(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestWidgetUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetUpdateParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -135,8 +135,8 @@ func TestWidgetListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Widgets.List(context.TODO(), cadenya.WidgetListParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
-		AgentID:     cadenya.String("agent_01HXKD2E5NQM3T9AYWCFMGWT9Y"),
+		WorkspaceID: cadenya.String("workspaceId"),
+		AgentID:     cadenya.String("agentId"),
 		Cursor:      cadenya.String("cursor"),
 		IncludeInfo: cadenya.Bool(true),
 		Labels:      cadenya.String("labels"),
@@ -169,7 +169,7 @@ func TestWidgetDelete(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -198,7 +198,7 @@ func TestWidgetArchive(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetArchiveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -227,7 +227,7 @@ func TestWidgetUnarchive(t *testing.T) {
 		context.TODO(),
 		"id",
 		cadenya.WidgetUnarchiveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

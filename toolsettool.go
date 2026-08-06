@@ -576,8 +576,8 @@ type ToolSpec struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
 	// be Http. If the tool is an inline tool, the adapter will be Inline.
-	Config      ToolSpecConfigUnion `json:"config" api:"required"`
-	Description string              `json:"description" api:"required"`
+	Config      ToolSpecConfig `json:"config" api:"required"`
+	Description string         `json:"description" api:"required"`
 	// The tool's JSON Schema, as handed to the LLM. Required, but may be the empty
 	// object `{}` for a tool that takes no arguments. Requiring it rather than
 	// defaulting it means a misspelled field name (`inputSchema`, say) is a 400
@@ -621,8 +621,8 @@ type ToolSpecParam struct {
 	// Config defines the adapter to use for the tool. This is used to determine how
 	// the tool is called. For example, if the tool is an HTTP tool, the adapter will
 	// be Http. If the tool is an inline tool, the adapter will be Inline.
-	Config      ToolSpecConfigUnionParam `json:"config,omitzero" api:"required"`
-	Description string                   `json:"description" api:"required"`
+	Config      ToolSpecConfigParam `json:"config,omitzero" api:"required"`
+	Description string              `json:"description" api:"required"`
 	// The tool's JSON Schema, as handed to the LLM. Required, but may be the empty
 	// object `{}` for a tool that takes no arguments. Requiring it rather than
 	// defaulting it means a misspelled field name (`inputSchema`, say) is a 400
@@ -645,319 +645,26 @@ func (r *ToolSpecParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToolSpecConfigUnion contains all possible properties and values from
-// [ToolSpecConfigHTTP], [ToolSpecConfigMCP], [ToolSpecConfigOpenAPI],
-// [ToolSpecConfigBare].
-//
-// Use the [ToolSpecConfigUnion.AsAny] method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ToolSpecConfigUnion struct {
-	// This field is from variant [ToolSpecConfigHTTP].
-	HTTP ConfigHTTP `json:"http"`
-	// Any of "http", "mcp", "openapi", "bare".
-	Type string `json:"type"`
-	// This field is from variant [ToolSpecConfigMCP].
-	MCP ConfigMCP `json:"mcp"`
-	// This field is from variant [ToolSpecConfigOpenAPI].
-	OpenAPI ConfigOpenAPI `json:"openapi"`
-	// This field is from variant [ToolSpecConfigBare].
-	Bare ConfigBare `json:"bare"`
-	JSON struct {
-		HTTP    respjson.Field
-		Type    respjson.Field
-		MCP     respjson.Field
-		OpenAPI respjson.Field
-		Bare    respjson.Field
-		raw     string
-	} `json:"-"`
-}
-
-// anyToolSpecConfig is implemented by each variant of [ToolSpecConfigUnion] to add
-// type safety for the return type of [ToolSpecConfigUnion.AsAny]
-type anyToolSpecConfig interface {
-	implToolSpecConfigUnion()
-}
-
-func (ToolSpecConfigHTTP) implToolSpecConfigUnion()    {}
-func (ToolSpecConfigMCP) implToolSpecConfigUnion()     {}
-func (ToolSpecConfigOpenAPI) implToolSpecConfigUnion() {}
-func (ToolSpecConfigBare) implToolSpecConfigUnion()    {}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := ToolSpecConfigUnion.AsAny().(type) {
-//	case cadenya.ToolSpecConfigHTTP:
-//	case cadenya.ToolSpecConfigMCP:
-//	case cadenya.ToolSpecConfigOpenAPI:
-//	case cadenya.ToolSpecConfigBare:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u ToolSpecConfigUnion) AsAny() anyToolSpecConfig {
-	switch u.Type {
-	case "http":
-		return u.AsHTTP()
-	case "mcp":
-		return u.AsMCP()
-	case "openapi":
-		return u.AsOpenAPI()
-	case "bare":
-		return u.AsBare()
-	}
-	return nil
-}
-
-func (u ToolSpecConfigUnion) AsHTTP() (v ToolSpecConfigHTTP) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ToolSpecConfigUnion) AsMCP() (v ToolSpecConfigMCP) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ToolSpecConfigUnion) AsOpenAPI() (v ToolSpecConfigOpenAPI) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ToolSpecConfigUnion) AsBare() (v ToolSpecConfigBare) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u ToolSpecConfigUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *ToolSpecConfigUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// ToParam converts this ToolSpecConfigUnion to a ToolSpecConfigUnionParam.
-//
-// Warning: the fields of the param type will not be present. ToParam should only
-// be used at the last possible moment before sending a request. Test for this with
-// ToolSpecConfigUnionParam.Overrides()
-func (r ToolSpecConfigUnion) ToParam() ToolSpecConfigUnionParam {
-	return param.Override[ToolSpecConfigUnionParam](json.RawMessage(r.RawJSON()))
-}
-
-func ToolSpecConfigParamOfHTTP(http ConfigHTTPParam) ToolSpecConfigUnionParam {
-	var variant ToolSpecConfigHTTPParam
-	variant.HTTP = http
-	return ToolSpecConfigUnionParam{OfHTTP: &variant}
-}
-
-func ToolSpecConfigParamOfMCP(mcp ConfigMCPParam) ToolSpecConfigUnionParam {
-	var variant ToolSpecConfigMCPParam
-	variant.MCP = mcp
-	return ToolSpecConfigUnionParam{OfMCP: &variant}
-}
-
-func ToolSpecConfigParamOfOpenAPI(openAPI ConfigOpenAPIParam) ToolSpecConfigUnionParam {
-	var variant ToolSpecConfigOpenAPIParam
-	variant.OpenAPI = openAPI
-	return ToolSpecConfigUnionParam{OfOpenAPI: &variant}
-}
-
-func ToolSpecConfigParamOfBare(bare ConfigBareParam) ToolSpecConfigUnionParam {
-	var variant ToolSpecConfigBareParam
-	variant.Bare = bare
-	return ToolSpecConfigUnionParam{OfBare: &variant}
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ToolSpecConfigUnionParam struct {
-	OfHTTP    *ToolSpecConfigHTTPParam    `json:",omitzero,inline"`
-	OfMCP     *ToolSpecConfigMCPParam     `json:",omitzero,inline"`
-	OfOpenAPI *ToolSpecConfigOpenAPIParam `json:",omitzero,inline"`
-	OfBare    *ToolSpecConfigBareParam    `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u ToolSpecConfigUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfHTTP, u.OfMCP, u.OfOpenAPI, u.OfBare)
-}
-func (u *ToolSpecConfigUnionParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func init() {
-	apijson.RegisterUnion[ToolSpecConfigUnionParam](
-		"type",
-		apijson.Discriminator[ToolSpecConfigHTTPParam]("http"),
-		apijson.Discriminator[ToolSpecConfigMCPParam]("mcp"),
-		apijson.Discriminator[ToolSpecConfigOpenAPIParam]("openapi"),
-		apijson.Discriminator[ToolSpecConfigBareParam]("bare"),
-	)
-}
-
-type ToolSpecConfigBare struct {
+// Config defines the adapter to use for the tool. This is used to determine how
+// the tool is called. For example, if the tool is an HTTP tool, the adapter will
+// be Http. If the tool is an inline tool, the adapter will be Inline.
+type ToolSpecConfig struct {
 	// Marks the tool as bare: it has no execution adapter of its own and relies on the
 	// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
 	// tool is bare from the tool data alone, without cross-referencing the tool set.
-	Bare ConfigBare `json:"bare" api:"required"`
-	// Any of "bare".
-	Type ToolSpecConfigBareType `json:"type" api:"required"`
+	Bare    ConfigBare    `json:"bare"`
+	HTTP    ConfigHTTP    `json:"http"`
+	MCP     ConfigMCP     `json:"mcp"`
+	OpenAPI ConfigOpenAPI `json:"openapi"`
+	// The JSON name of the variant set in `adapter` (e.g. "http"). Required from
+	// clients on writes, filled by the server on reads; drives the discriminated union
+	// in the generated OpenAPI.
+	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Bare        respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ToolSpecConfigBare) RawJSON() string { return r.JSON.raw }
-func (r *ToolSpecConfigBare) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// ToParam converts this ToolSpecConfigBare to a ToolSpecConfigBareParam.
-//
-// Warning: the fields of the param type will not be present. ToParam should only
-// be used at the last possible moment before sending a request. Test for this with
-// ToolSpecConfigBareParam.Overrides()
-func (r ToolSpecConfigBare) ToParam() ToolSpecConfigBareParam {
-	return param.Override[ToolSpecConfigBareParam](json.RawMessage(r.RawJSON()))
-}
-
-type ToolSpecConfigBareType string
-
-const (
-	ToolSpecConfigBareTypeBare ToolSpecConfigBareType = "bare"
-)
-
-// The properties Bare, Type are required.
-type ToolSpecConfigBareParam struct {
-	// Marks the tool as bare: it has no execution adapter of its own and relies on the
-	// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
-	// tool is bare from the tool data alone, without cross-referencing the tool set.
-	Bare ConfigBareParam `json:"bare,omitzero" api:"required"`
-	// Any of "bare".
-	Type ToolSpecConfigBareType `json:"type,omitzero" api:"required"`
-	paramObj
-}
-
-func (r ToolSpecConfigBareParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSpecConfigBareParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolSpecConfigBareParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ToolSpecConfigHTTP struct {
-	HTTP ConfigHTTP `json:"http" api:"required"`
-	// Any of "http".
-	Type ToolSpecConfigHTTPType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
 		HTTP        respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ToolSpecConfigHTTP) RawJSON() string { return r.JSON.raw }
-func (r *ToolSpecConfigHTTP) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// ToParam converts this ToolSpecConfigHTTP to a ToolSpecConfigHTTPParam.
-//
-// Warning: the fields of the param type will not be present. ToParam should only
-// be used at the last possible moment before sending a request. Test for this with
-// ToolSpecConfigHTTPParam.Overrides()
-func (r ToolSpecConfigHTTP) ToParam() ToolSpecConfigHTTPParam {
-	return param.Override[ToolSpecConfigHTTPParam](json.RawMessage(r.RawJSON()))
-}
-
-type ToolSpecConfigHTTPType string
-
-const (
-	ToolSpecConfigHTTPTypeHTTP ToolSpecConfigHTTPType = "http"
-)
-
-// The properties HTTP, Type are required.
-type ToolSpecConfigHTTPParam struct {
-	HTTP ConfigHTTPParam `json:"http,omitzero" api:"required"`
-	// Any of "http".
-	Type ToolSpecConfigHTTPType `json:"type,omitzero" api:"required"`
-	paramObj
-}
-
-func (r ToolSpecConfigHTTPParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSpecConfigHTTPParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolSpecConfigHTTPParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ToolSpecConfigMCP struct {
-	MCP ConfigMCP `json:"mcp" api:"required"`
-	// Any of "mcp".
-	Type ToolSpecConfigMCPType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
 		MCP         respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ToolSpecConfigMCP) RawJSON() string { return r.JSON.raw }
-func (r *ToolSpecConfigMCP) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// ToParam converts this ToolSpecConfigMCP to a ToolSpecConfigMCPParam.
-//
-// Warning: the fields of the param type will not be present. ToParam should only
-// be used at the last possible moment before sending a request. Test for this with
-// ToolSpecConfigMCPParam.Overrides()
-func (r ToolSpecConfigMCP) ToParam() ToolSpecConfigMCPParam {
-	return param.Override[ToolSpecConfigMCPParam](json.RawMessage(r.RawJSON()))
-}
-
-type ToolSpecConfigMCPType string
-
-const (
-	ToolSpecConfigMCPTypeMCP ToolSpecConfigMCPType = "mcp"
-)
-
-// The properties MCP, Type are required.
-type ToolSpecConfigMCPParam struct {
-	MCP ConfigMCPParam `json:"mcp,omitzero" api:"required"`
-	// Any of "mcp".
-	Type ToolSpecConfigMCPType `json:"type,omitzero" api:"required"`
-	paramObj
-}
-
-func (r ToolSpecConfigMCPParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSpecConfigMCPParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolSpecConfigMCPParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ToolSpecConfigOpenAPI struct {
-	OpenAPI ConfigOpenAPI `json:"openapi" api:"required"`
-	// Any of "openapi".
-	Type ToolSpecConfigOpenAPIType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
 		OpenAPI     respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -966,39 +673,43 @@ type ToolSpecConfigOpenAPI struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ToolSpecConfigOpenAPI) RawJSON() string { return r.JSON.raw }
-func (r *ToolSpecConfigOpenAPI) UnmarshalJSON(data []byte) error {
+func (r ToolSpecConfig) RawJSON() string { return r.JSON.raw }
+func (r *ToolSpecConfig) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ToParam converts this ToolSpecConfigOpenAPI to a ToolSpecConfigOpenAPIParam.
+// ToParam converts this ToolSpecConfig to a ToolSpecConfigParam.
 //
 // Warning: the fields of the param type will not be present. ToParam should only
 // be used at the last possible moment before sending a request. Test for this with
-// ToolSpecConfigOpenAPIParam.Overrides()
-func (r ToolSpecConfigOpenAPI) ToParam() ToolSpecConfigOpenAPIParam {
-	return param.Override[ToolSpecConfigOpenAPIParam](json.RawMessage(r.RawJSON()))
+// ToolSpecConfigParam.Overrides()
+func (r ToolSpecConfig) ToParam() ToolSpecConfigParam {
+	return param.Override[ToolSpecConfigParam](json.RawMessage(r.RawJSON()))
 }
 
-type ToolSpecConfigOpenAPIType string
-
-const (
-	ToolSpecConfigOpenAPITypeOpenAPI ToolSpecConfigOpenAPIType = "openapi"
-)
-
-// The properties OpenAPI, Type are required.
-type ToolSpecConfigOpenAPIParam struct {
-	OpenAPI ConfigOpenAPIParam `json:"openapi,omitzero" api:"required"`
-	// Any of "openapi".
-	Type ToolSpecConfigOpenAPIType `json:"type,omitzero" api:"required"`
+// Config defines the adapter to use for the tool. This is used to determine how
+// the tool is called. For example, if the tool is an HTTP tool, the adapter will
+// be Http. If the tool is an inline tool, the adapter will be Inline.
+type ToolSpecConfigParam struct {
+	// The JSON name of the variant set in `adapter` (e.g. "http"). Required from
+	// clients on writes, filled by the server on reads; drives the discriminated union
+	// in the generated OpenAPI.
+	Type param.Opt[string] `json:"type,omitzero"`
+	// Marks the tool as bare: it has no execution adapter of its own and relies on the
+	// parent tool set being a Bare tool set. Present so a webhook consumer can tell a
+	// tool is bare from the tool data alone, without cross-referencing the tool set.
+	Bare    ConfigBareParam    `json:"bare,omitzero"`
+	HTTP    ConfigHTTPParam    `json:"http,omitzero"`
+	MCP     ConfigMCPParam     `json:"mcp,omitzero"`
+	OpenAPI ConfigOpenAPIParam `json:"openapi,omitzero"`
 	paramObj
 }
 
-func (r ToolSpecConfigOpenAPIParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolSpecConfigOpenAPIParam
+func (r ToolSpecConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ToolSpecConfigParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *ToolSpecConfigOpenAPIParam) UnmarshalJSON(data []byte) error {
+func (r *ToolSpecConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

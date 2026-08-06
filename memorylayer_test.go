@@ -27,7 +27,7 @@ func TestMemoryLayerNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.MemoryLayers.New(context.TODO(), cadenya.MemoryLayerNewParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		Metadata: shared.CreateResourceMetadataParam{
 			Name:       "name",
 			ExternalID: cadenya.String("externalId"),
@@ -64,9 +64,9 @@ func TestMemoryLayerGet(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Get(
 		context.TODO(),
-		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"id",
 		cadenya.MemoryLayerGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -93,9 +93,9 @@ func TestMemoryLayerUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.MemoryLayers.Update(
 		context.TODO(),
-		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"id",
 		cadenya.MemoryLayerUpdateParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -133,8 +133,8 @@ func TestMemoryLayerListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.MemoryLayers.List(context.TODO(), cadenya.MemoryLayerListParams{
-		WorkspaceID:       cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
-		AgentID:           cadenya.String("agent_01HXKD2E5NQM3T9AYWCFMGWT9Y"),
+		WorkspaceID:       cadenya.String("workspaceId"),
+		AgentID:           cadenya.String("agentId"),
 		Cursor:            cadenya.String("cursor"),
 		EpisodicKeyPrefix: cadenya.String("episodicKeyPrefix"),
 		IncludeInfo:       cadenya.Bool(true),
@@ -169,9 +169,9 @@ func TestMemoryLayerDelete(t *testing.T) {
 	)
 	err := client.MemoryLayers.Delete(
 		context.TODO(),
-		"memlyr_01HXKD2E5NQM3T9AYWCFFFBMJH",
+		"id",
 		cadenya.MemoryLayerDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

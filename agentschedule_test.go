@@ -28,9 +28,9 @@ func TestAgentScheduleNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.New(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentId",
 		cadenya.AgentScheduleNewParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.CreateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -111,10 +111,10 @@ func TestAgentScheduleGet(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Get(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentScheduleGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -141,10 +141,10 @@ func TestAgentScheduleUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Update(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentScheduleUpdateParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Metadata: shared.UpdateResourceMetadataParam{
 				Name:       "name",
 				ExternalID: cadenya.String("externalId"),
@@ -226,9 +226,9 @@ func TestAgentScheduleListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.List(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentId",
 		cadenya.AgentScheduleListParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Cursor:      cadenya.String("cursor"),
 			IncludeInfo: cadenya.Bool(true),
 			Labels:      cadenya.String("labels"),
@@ -262,10 +262,10 @@ func TestAgentScheduleDelete(t *testing.T) {
 	)
 	err := client.Agents.Schedules.Delete(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentScheduleDeleteParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -292,10 +292,10 @@ func TestAgentScheduleArchive(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Archive(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentScheduleArchiveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -322,10 +322,10 @@ func TestAgentSchedulePause(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Pause(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentSchedulePauseParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -352,10 +352,10 @@ func TestAgentScheduleResume(t *testing.T) {
 	)
 	_, err := client.Agents.Schedules.Resume(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
-		"as_01HXKD2E5NQM3T9AYWCFMZZZBD",
+		"agentId",
+		"id",
 		cadenya.AgentScheduleResumeParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {

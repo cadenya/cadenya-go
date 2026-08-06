@@ -4,7 +4,6 @@ package cadenya
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"go.cadenya.com/cadenya-go/internal/apijson"
@@ -247,7 +246,7 @@ type ObjectiveToolCallData struct {
 	// In Cadenya, a tool that is used within an agent objective might be a
 	// user-defined tool (IE: MCP, HTTP), another Agent (useful to separate context),
 	// or a Cadenya Tool (one Cadenya provides).
-	Callable CallableToolUnion `json:"callable" api:"required"`
+	Callable CallableTool `json:"callable" api:"required"`
 	// The arguments passed to the tool
 	Arguments map[string]any `json:"arguments"`
 	// A memo supplied by the reviewer when denying the tool call
@@ -320,7 +319,7 @@ func (r *ObjectiveToolCallInfo) UnmarshalJSON(data []byte) error {
 // audio). Media blocks are stored by Cadenya and served as short-lived signed URLs
 // rather than inline bytes.
 type ObjectiveToolCallResult struct {
-	Content []ObjectiveToolCallResultContentBlockUnion `json:"content" api:"required"`
+	Content []ObjectiveToolCallResultContentBlock `json:"content" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -361,143 +360,19 @@ func (r *ObjectiveToolCallResultAudioBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ObjectiveToolCallResultContentBlockUnion contains all possible properties and
-// values from [ObjectiveToolCallResultContentBlockText],
-// [ObjectiveToolCallResultContentBlockImage],
-// [ObjectiveToolCallResultContentBlockAudio].
-//
-// Use the [ObjectiveToolCallResultContentBlockUnion.AsAny] method to switch on the
-// variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ObjectiveToolCallResultContentBlockUnion struct {
-	// This field is from variant [ObjectiveToolCallResultContentBlockText].
-	Text ObjectiveToolCallResultTextBlock `json:"text"`
-	// Any of "text", "image", "audio".
-	Type string `json:"type"`
-	// This field is from variant [ObjectiveToolCallResultContentBlockImage].
-	Image ObjectiveToolCallResultImageBlock `json:"image"`
-	// This field is from variant [ObjectiveToolCallResultContentBlockAudio].
+// ContentBlock is a single block of tool result content. Exactly one of the
+// variants is set.
+type ObjectiveToolCallResultContentBlock struct {
 	Audio ObjectiveToolCallResultAudioBlock `json:"audio"`
-	JSON  struct {
-		Text  respjson.Field
-		Type  respjson.Field
-		Image respjson.Field
-		Audio respjson.Field
-		raw   string
-	} `json:"-"`
-}
-
-// anyObjectiveToolCallResultContentBlock is implemented by each variant of
-// [ObjectiveToolCallResultContentBlockUnion] to add type safety for the return
-// type of [ObjectiveToolCallResultContentBlockUnion.AsAny]
-type anyObjectiveToolCallResultContentBlock interface {
-	implObjectiveToolCallResultContentBlockUnion()
-}
-
-func (ObjectiveToolCallResultContentBlockText) implObjectiveToolCallResultContentBlockUnion()  {}
-func (ObjectiveToolCallResultContentBlockImage) implObjectiveToolCallResultContentBlockUnion() {}
-func (ObjectiveToolCallResultContentBlockAudio) implObjectiveToolCallResultContentBlockUnion() {}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := ObjectiveToolCallResultContentBlockUnion.AsAny().(type) {
-//	case cadenya.ObjectiveToolCallResultContentBlockText:
-//	case cadenya.ObjectiveToolCallResultContentBlockImage:
-//	case cadenya.ObjectiveToolCallResultContentBlockAudio:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u ObjectiveToolCallResultContentBlockUnion) AsAny() anyObjectiveToolCallResultContentBlock {
-	switch u.Type {
-	case "text":
-		return u.AsText()
-	case "image":
-		return u.AsImage()
-	case "audio":
-		return u.AsAudio()
-	}
-	return nil
-}
-
-func (u ObjectiveToolCallResultContentBlockUnion) AsText() (v ObjectiveToolCallResultContentBlockText) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ObjectiveToolCallResultContentBlockUnion) AsImage() (v ObjectiveToolCallResultContentBlockImage) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ObjectiveToolCallResultContentBlockUnion) AsAudio() (v ObjectiveToolCallResultContentBlockAudio) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u ObjectiveToolCallResultContentBlockUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *ObjectiveToolCallResultContentBlockUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ObjectiveToolCallResultContentBlockAudio struct {
-	Audio ObjectiveToolCallResultAudioBlock `json:"audio" api:"required"`
-	// Any of "audio".
-	Type ObjectiveToolCallResultContentBlockAudioType `json:"type" api:"required"`
+	Image ObjectiveToolCallResultImageBlock `json:"image"`
+	Text  ObjectiveToolCallResultTextBlock  `json:"text"`
+	// The JSON name of the variant set in `block` (e.g. "text"). Filled by the server;
+	// drives the discriminated union in the generated OpenAPI.
+	Type string `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Audio       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ObjectiveToolCallResultContentBlockAudio) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveToolCallResultContentBlockAudio) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ObjectiveToolCallResultContentBlockAudioType string
-
-const (
-	ObjectiveToolCallResultContentBlockAudioTypeAudio ObjectiveToolCallResultContentBlockAudioType = "audio"
-)
-
-type ObjectiveToolCallResultContentBlockImage struct {
-	Image ObjectiveToolCallResultImageBlock `json:"image" api:"required"`
-	// Any of "image".
-	Type ObjectiveToolCallResultContentBlockImageType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
 		Image       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ObjectiveToolCallResultContentBlockImage) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveToolCallResultContentBlockImage) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ObjectiveToolCallResultContentBlockImageType string
-
-const (
-	ObjectiveToolCallResultContentBlockImageTypeImage ObjectiveToolCallResultContentBlockImageType = "image"
-)
-
-type ObjectiveToolCallResultContentBlockText struct {
-	Text ObjectiveToolCallResultTextBlock `json:"text" api:"required"`
-	// Any of "text".
-	Type ObjectiveToolCallResultContentBlockTextType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
 		Text        respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -506,16 +381,10 @@ type ObjectiveToolCallResultContentBlockText struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ObjectiveToolCallResultContentBlockText) RawJSON() string { return r.JSON.raw }
-func (r *ObjectiveToolCallResultContentBlockText) UnmarshalJSON(data []byte) error {
+func (r ObjectiveToolCallResultContentBlock) RawJSON() string { return r.JSON.raw }
+func (r *ObjectiveToolCallResultContentBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type ObjectiveToolCallResultContentBlockTextType string
-
-const (
-	ObjectiveToolCallResultContentBlockTextTypeText ObjectiveToolCallResultContentBlockTextType = "text"
-)
 
 type ObjectiveToolCallResultImageBlock struct {
 	// When the signed URL expires.
@@ -665,7 +534,7 @@ const (
 // The properties Data, MimeType are required.
 type SetToolCallContentRequestAudioBlockParam struct {
 	// Base64-encoded audio bytes.
-	Data string `json:"data" api:"required"`
+	Data string `json:"data" api:"required" format:"bytes"`
 	// IANA media type of the audio, e.g. audio/wav.
 	MimeType string `json:"mimeType" api:"required"`
 	paramObj
@@ -679,120 +548,30 @@ func (r *SetToolCallContentRequestAudioBlockParam) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func SetToolCallContentRequestContentBlockParamOfText(text SetToolCallContentRequestTextBlockParam) SetToolCallContentRequestContentBlockUnionParam {
-	var variant SetToolCallContentRequestContentBlockTextParam
-	variant.Text = text
-	return SetToolCallContentRequestContentBlockUnionParam{OfText: &variant}
-}
-
-func SetToolCallContentRequestContentBlockParamOfImage(image SetToolCallContentRequestImageBlockParam) SetToolCallContentRequestContentBlockUnionParam {
-	var variant SetToolCallContentRequestContentBlockImageParam
-	variant.Image = image
-	return SetToolCallContentRequestContentBlockUnionParam{OfImage: &variant}
-}
-
-func SetToolCallContentRequestContentBlockParamOfAudio(audio SetToolCallContentRequestAudioBlockParam) SetToolCallContentRequestContentBlockUnionParam {
-	var variant SetToolCallContentRequestContentBlockAudioParam
-	variant.Audio = audio
-	return SetToolCallContentRequestContentBlockUnionParam{OfAudio: &variant}
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type SetToolCallContentRequestContentBlockUnionParam struct {
-	OfText  *SetToolCallContentRequestContentBlockTextParam  `json:",omitzero,inline"`
-	OfImage *SetToolCallContentRequestContentBlockImageParam `json:",omitzero,inline"`
-	OfAudio *SetToolCallContentRequestContentBlockAudioParam `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u SetToolCallContentRequestContentBlockUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfAudio)
-}
-func (u *SetToolCallContentRequestContentBlockUnionParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func init() {
-	apijson.RegisterUnion[SetToolCallContentRequestContentBlockUnionParam](
-		"type",
-		apijson.Discriminator[SetToolCallContentRequestContentBlockTextParam]("text"),
-		apijson.Discriminator[SetToolCallContentRequestContentBlockImageParam]("image"),
-		apijson.Discriminator[SetToolCallContentRequestContentBlockAudioParam]("audio"),
-	)
-}
-
-// The properties Audio, Type are required.
-type SetToolCallContentRequestContentBlockAudioParam struct {
-	Audio SetToolCallContentRequestAudioBlockParam `json:"audio,omitzero" api:"required"`
-	// Any of "audio".
-	Type SetToolCallContentRequestContentBlockAudioType `json:"type,omitzero" api:"required"`
+// ContentBlock is a single block of tool call content supplied on input. Exactly
+// one of the variants is set.
+type SetToolCallContentRequestContentBlockParam struct {
+	// The JSON name of the variant set in `block` (e.g. "text"). Required on input;
+	// drives the discriminated union in the generated OpenAPI.
+	Type  param.Opt[string]                        `json:"type,omitzero"`
+	Audio SetToolCallContentRequestAudioBlockParam `json:"audio,omitzero"`
+	Image SetToolCallContentRequestImageBlockParam `json:"image,omitzero"`
+	Text  SetToolCallContentRequestTextBlockParam  `json:"text,omitzero"`
 	paramObj
 }
 
-func (r SetToolCallContentRequestContentBlockAudioParam) MarshalJSON() (data []byte, err error) {
-	type shadow SetToolCallContentRequestContentBlockAudioParam
+func (r SetToolCallContentRequestContentBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow SetToolCallContentRequestContentBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *SetToolCallContentRequestContentBlockAudioParam) UnmarshalJSON(data []byte) error {
+func (r *SetToolCallContentRequestContentBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type SetToolCallContentRequestContentBlockAudioType string
-
-const (
-	SetToolCallContentRequestContentBlockAudioTypeAudio SetToolCallContentRequestContentBlockAudioType = "audio"
-)
-
-// The properties Image, Type are required.
-type SetToolCallContentRequestContentBlockImageParam struct {
-	Image SetToolCallContentRequestImageBlockParam `json:"image,omitzero" api:"required"`
-	// Any of "image".
-	Type SetToolCallContentRequestContentBlockImageType `json:"type,omitzero" api:"required"`
-	paramObj
-}
-
-func (r SetToolCallContentRequestContentBlockImageParam) MarshalJSON() (data []byte, err error) {
-	type shadow SetToolCallContentRequestContentBlockImageParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SetToolCallContentRequestContentBlockImageParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SetToolCallContentRequestContentBlockImageType string
-
-const (
-	SetToolCallContentRequestContentBlockImageTypeImage SetToolCallContentRequestContentBlockImageType = "image"
-)
-
-// The properties Text, Type are required.
-type SetToolCallContentRequestContentBlockTextParam struct {
-	Text SetToolCallContentRequestTextBlockParam `json:"text,omitzero" api:"required"`
-	// Any of "text".
-	Type SetToolCallContentRequestContentBlockTextType `json:"type,omitzero" api:"required"`
-	paramObj
-}
-
-func (r SetToolCallContentRequestContentBlockTextParam) MarshalJSON() (data []byte, err error) {
-	type shadow SetToolCallContentRequestContentBlockTextParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *SetToolCallContentRequestContentBlockTextParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type SetToolCallContentRequestContentBlockTextType string
-
-const (
-	SetToolCallContentRequestContentBlockTextTypeText SetToolCallContentRequestContentBlockTextType = "text"
-)
 
 // The properties Data, MimeType are required.
 type SetToolCallContentRequestImageBlockParam struct {
 	// Base64-encoded image bytes.
-	Data string `json:"data" api:"required"`
+	Data string `json:"data" api:"required" format:"bytes"`
 	// IANA media type of the image, e.g. image/png.
 	MimeType string `json:"mimeType" api:"required"`
 	paramObj
@@ -933,7 +712,7 @@ type ObjectiveToolCallSetContentParams struct {
 	// The content to set on the tool call. Mirrors
 	// ObjectiveToolCallResult.ContentBlock but writable: media blocks carry raw data
 	// on input where the result-side carries a signed url on output.
-	Content []SetToolCallContentRequestContentBlockUnionParam `json:"content,omitzero" api:"required"`
+	Content []SetToolCallContentRequestContentBlockParam `json:"content,omitzero" api:"required"`
 	paramObj
 }
 

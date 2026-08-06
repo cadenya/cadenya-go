@@ -8,12 +8,11 @@ import (
 	"go.cadenya.com/cadenya-go"
 	"go.cadenya.com/cadenya-go/internal/testutil"
 	"go.cadenya.com/cadenya-go/option"
-	"go.cadenya.com/cadenya-go/shared"
 	"os"
 	"testing"
 )
 
-func TestUploadNewWithOptionalParams(t *testing.T) {
+func TestTenantGetWithOptionalParams(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -26,20 +25,44 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Uploads.New(context.TODO(), cadenya.UploadNewParams{
+	_, err := client.Tenants.Get(
+		context.TODO(),
+		"id",
+		cadenya.TenantGetParams{
+			WorkspaceID: cadenya.String("workspaceId"),
+			IncludeInfo: cadenya.Bool(true),
+		},
+	)
+	if err != nil {
+		var apierr *cadenya.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestTenantListWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cadenya.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Tenants.List(context.TODO(), cadenya.TenantListParams{
 		WorkspaceID: cadenya.String("workspaceId"),
-		Metadata: shared.CreateResourceMetadataParam{
-			Name:       "name",
-			ExternalID: cadenya.String("externalId"),
-			Labels: map[string]string{
-				"foo": "string",
-			},
-		},
-		Spec: cadenya.UploadSpecParam{
-			ContentType: "contentType",
-			Filename:    "filename",
-			SizeBytes:   "sizeBytes",
-		},
+		Cursor:      cadenya.String("cursor"),
+		IncludeInfo: cadenya.Bool(true),
+		Labels:      cadenya.String("labels"),
+		Limit:       cadenya.Int(0),
+		Query:       cadenya.String("query"),
+		SortOrder:   cadenya.String("sortOrder"),
 	})
 	if err != nil {
 		var apierr *cadenya.Error
@@ -50,7 +73,7 @@ func TestUploadNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestUploadGet(t *testing.T) {
+func TestTenantDelete(t *testing.T) {
 	t.Skip("Mock server tests are disabled")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -63,10 +86,10 @@ func TestUploadGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Uploads.Get(
+	_, err := client.Tenants.Delete(
 		context.TODO(),
 		"id",
-		cadenya.UploadGetParams{
+		cadenya.TenantDeleteParams{
 			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)

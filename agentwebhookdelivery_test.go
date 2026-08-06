@@ -27,14 +27,14 @@ func TestAgentWebhookDeliveryListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Agents.WebhookDeliveries.List(
 		context.TODO(),
-		"agent_01HXKD2E5NQM3T9AYWCFMGWT9Y",
+		"agentId",
 		cadenya.AgentWebhookDeliveryListParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Cursor:      cadenya.String("cursor"),
 			EventType:   cadenya.AgentWebhookDeliveryListParamsEventTypeObjectiveEventTypeUnspecified,
 			Labels:      cadenya.String("labels"),
 			Limit:       cadenya.Int(0),
-			ObjectiveID: cadenya.String("obj_01HXKD2E5NQM3T9AYWCFQAZGFV"),
+			ObjectiveID: cadenya.String("objectiveId"),
 		},
 	)
 	if err != nil {

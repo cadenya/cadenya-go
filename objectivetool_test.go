@@ -27,9 +27,9 @@ func TestObjectiveToolListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Tools.List(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+		"objectiveId",
 		cadenya.ObjectiveToolListParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Cursor:      cadenya.String("cursor"),
 			Limit:       cadenya.Int(0),
 		},

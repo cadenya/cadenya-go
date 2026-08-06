@@ -212,94 +212,33 @@ func (r *MemoryEntry) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func MemoryEntryCreateSpecParamOfContent(content string) MemoryEntryCreateSpecUnionParam {
-	var variant MemoryEntryCreateSpecContentParam
-	variant.Content = content
-	return MemoryEntryCreateSpecUnionParam{OfContent: &variant}
-}
-
-func MemoryEntryCreateSpecParamOfUploadID(uploadID string) MemoryEntryCreateSpecUnionParam {
-	var variant MemoryEntryCreateSpecUploadIDParam
-	variant.UploadID = uploadID
-	return MemoryEntryCreateSpecUnionParam{OfUploadID: &variant}
-}
-
-// Only one field can be non-zero.
+// MemoryEntryCreateSpec is the input shape for CreateMemoryEntry. It accepts
+// either inline content or a reference to a completed Upload; exactly one of the
+// two must be set.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type MemoryEntryCreateSpecUnionParam struct {
-	OfContent  *MemoryEntryCreateSpecContentParam  `json:",omitzero,inline"`
-	OfUploadID *MemoryEntryCreateSpecUploadIDParam `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u MemoryEntryCreateSpecUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfContent, u.OfUploadID)
-}
-func (u *MemoryEntryCreateSpecUnionParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func init() {
-	apijson.RegisterUnion[MemoryEntryCreateSpecUnionParam](
-		"type",
-		apijson.Discriminator[MemoryEntryCreateSpecContentParam]("content"),
-		apijson.Discriminator[MemoryEntryCreateSpecUploadIDParam]("uploadId"),
-	)
-}
-
-// The properties Content, Type are required.
-type MemoryEntryCreateSpecContentParam struct {
-	// Inline content, written directly into the entry.
-	Content string `json:"content" api:"required"`
-	// Any of "content".
-	Type        MemoryEntryCreateSpecContentType `json:"type,omitzero" api:"required"`
-	Description param.Opt[string]                `json:"description,omitzero"`
+// The property Key is required.
+type MemoryEntryCreateSpecParam struct {
 	// See MemoryEntrySpec.key for the full rule set. Same constraints apply here.
-	Key param.Opt[string] `json:"key,omitzero"`
-	paramObj
-}
-
-func (r MemoryEntryCreateSpecContentParam) MarshalJSON() (data []byte, err error) {
-	type shadow MemoryEntryCreateSpecContentParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MemoryEntryCreateSpecContentParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type MemoryEntryCreateSpecContentType string
-
-const (
-	MemoryEntryCreateSpecContentTypeContent MemoryEntryCreateSpecContentType = "content"
-)
-
-// The properties Type, UploadID are required.
-type MemoryEntryCreateSpecUploadIDParam struct {
-	// Any of "uploadId".
-	Type MemoryEntryCreateSpecUploadIDType `json:"type,omitzero" api:"required"`
+	Key string `json:"key" api:"required"`
+	// Inline content, written directly into the entry.
+	Content     param.Opt[string] `json:"content,omitzero"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	// The JSON name of the variant set in `source` (e.g. "content"). Required on
+	// input; drives the discriminated union in the generated OpenAPI.
+	Type param.Opt[string] `json:"type,omitzero"`
 	// ID of a COMPLETE Upload. The server reads the object from storage, copies its
 	// bytes into the entry, and marks the upload consumed.
-	UploadID    string            `json:"uploadId" api:"required"`
-	Description param.Opt[string] `json:"description,omitzero"`
-	// See MemoryEntrySpec.key for the full rule set. Same constraints apply here.
-	Key param.Opt[string] `json:"key,omitzero"`
+	UploadID param.Opt[string] `json:"uploadId,omitzero"`
 	paramObj
 }
 
-func (r MemoryEntryCreateSpecUploadIDParam) MarshalJSON() (data []byte, err error) {
-	type shadow MemoryEntryCreateSpecUploadIDParam
+func (r MemoryEntryCreateSpecParam) MarshalJSON() (data []byte, err error) {
+	type shadow MemoryEntryCreateSpecParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *MemoryEntryCreateSpecUploadIDParam) UnmarshalJSON(data []byte) error {
+func (r *MemoryEntryCreateSpecParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type MemoryEntryCreateSpecUploadIDType string
-
-const (
-	MemoryEntryCreateSpecUploadIDTypeUploadID MemoryEntryCreateSpecUploadIDType = "uploadId"
-)
 
 // MemoryEntryDetail is the full representation of an entry, including the resolved
 // content body. Returned by GetMemoryEntry, CreateMemoryEntry, and
@@ -428,7 +367,7 @@ type MemoryLayerEntryNewParams struct {
 	// MemoryEntryCreateSpec is the input shape for CreateMemoryEntry. It accepts
 	// either inline content or a reference to a completed Upload; exactly one of the
 	// two must be set.
-	Spec MemoryEntryCreateSpecUnionParam `json:"spec,omitzero" api:"required"`
+	Spec MemoryEntryCreateSpecParam `json:"spec,omitzero" api:"required"`
 	paramObj
 }
 

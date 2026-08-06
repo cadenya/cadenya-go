@@ -27,9 +27,9 @@ func TestModelGet(t *testing.T) {
 	)
 	_, err := client.Models.Get(
 		context.TODO(),
-		"model_01HXKD2E5NQM3T9AYWCFKJ4GED",
+		"id",
 		cadenya.ModelGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Models.List(context.TODO(), cadenya.ModelListParams{
-		WorkspaceID:     cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID:     cadenya.String("workspaceId"),
 		AIProviderKeyID: cadenya.String("aiProviderKeyId"),
 		Cursor:          cadenya.String("cursor"),
 		IncludeInfo:     cadenya.Bool(true),
@@ -91,9 +91,9 @@ func TestModelDisable(t *testing.T) {
 	)
 	_, err := client.Models.Disable(
 		context.TODO(),
-		"model_01HXKD2E5NQM3T9AYWCFKJ4GED",
+		"id",
 		cadenya.ModelDisableParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -120,9 +120,9 @@ func TestModelEnable(t *testing.T) {
 	)
 	_, err := client.Models.Enable(
 		context.TODO(),
-		"model_01HXKD2E5NQM3T9AYWCFKJ4GED",
+		"id",
 		cadenya.ModelEnableParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -148,7 +148,7 @@ func TestModelSwapWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Models.Swap(context.TODO(), cadenya.ModelSwapParams{
-		WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+		WorkspaceID: cadenya.String("workspaceId"),
 		ModelSwaps: []cadenya.ModelSwapParamsModelSwap{{
 			CurrentModelID:          cadenya.String("model_01HXKD2E5NQM3T9AYWCFKJ4GED"),
 			DisableCurrentAfterSwap: cadenya.Bool(true),

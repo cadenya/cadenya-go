@@ -27,10 +27,10 @@ func TestObjectiveToolCallGet(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.Get(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
-		"toolcall_01HXKD2E5NQM3T9AYWCFTANFGV",
+		"objectiveId",
+		"toolCallId",
 		cadenya.ObjectiveToolCallGetParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -57,9 +57,9 @@ func TestObjectiveToolCallListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.List(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+		"objectiveId",
 		cadenya.ObjectiveToolCallListParams{
-			WorkspaceID:     cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID:     cadenya.String("workspaceId"),
 			Cursor:          cadenya.String("cursor"),
 			ExecutionStatus: cadenya.ObjectiveToolCallListParamsExecutionStatusToolCallExecutionStatusUnspecified,
 			IncludeInfo:     cadenya.Bool(true),
@@ -92,10 +92,10 @@ func TestObjectiveToolCallApprove(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.Approve(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
-		"toolcall_01HXKD2E5NQM3T9AYWCFTANFGV",
+		"objectiveId",
+		"toolCallId",
 		cadenya.ObjectiveToolCallApproveParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 		},
 	)
 	if err != nil {
@@ -122,10 +122,10 @@ func TestObjectiveToolCallDenyWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.Deny(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
-		"toolcall_01HXKD2E5NQM3T9AYWCFTANFGV",
+		"objectiveId",
+		"toolCallId",
 		cadenya.ObjectiveToolCallDenyParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Memo:        cadenya.String("memo"),
 		},
 	)
@@ -153,17 +153,23 @@ func TestObjectiveToolCallSetContent(t *testing.T) {
 	)
 	_, err := client.Objectives.ToolCalls.SetContent(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
-		"toolcall_01HXKD2E5NQM3T9AYWCFTANFGV",
+		"objectiveId",
+		"toolCallId",
 		cadenya.ObjectiveToolCallSetContentParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
-			Content: []cadenya.SetToolCallContentRequestContentBlockUnionParam{{
-				OfText: &cadenya.SetToolCallContentRequestContentBlockTextParam{
-					Text: cadenya.SetToolCallContentRequestTextBlockParam{
-						Text: "text",
-					},
-					Type: cadenya.SetToolCallContentRequestContentBlockTextTypeText,
+			WorkspaceID: cadenya.String("workspaceId"),
+			Content: []cadenya.SetToolCallContentRequestContentBlockParam{{
+				Audio: cadenya.SetToolCallContentRequestAudioBlockParam{
+					Data:     "data",
+					MimeType: "mimeType",
 				},
+				Image: cadenya.SetToolCallContentRequestImageBlockParam{
+					Data:     "data",
+					MimeType: "mimeType",
+				},
+				Text: cadenya.SetToolCallContentRequestTextBlockParam{
+					Text: "text",
+				},
+				Type: cadenya.String("type"),
 			}},
 		},
 	)

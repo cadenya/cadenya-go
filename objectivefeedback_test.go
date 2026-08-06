@@ -28,9 +28,9 @@ func TestObjectiveFeedbackNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.New(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+		"objectiveId",
 		cadenya.ObjectiveFeedbackNewParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Data: cadenya.ObjectiveFeedbackDataParam{
 				Comment: cadenya.String("comment"),
 				Score:   cadenya.Float(0),
@@ -67,9 +67,9 @@ func TestObjectiveFeedbackListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Objectives.Feedback.List(
 		context.TODO(),
-		"obj_01HXKD2E5NQM3T9AYWCFQAZGFV",
+		"objectiveId",
 		cadenya.ObjectiveFeedbackListParams{
-			WorkspaceID: cadenya.String("workspace_01HXKD2E5NQM3T9AYWCF133E3Q"),
+			WorkspaceID: cadenya.String("workspaceId"),
 			Cursor:      cadenya.String("cursor"),
 			Labels:      cadenya.String("labels"),
 			Limit:       cadenya.Int(0),
