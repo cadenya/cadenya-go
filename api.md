@@ -395,6 +395,7 @@ Methods:
 
 Response Types:
 
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityCaching">CapabilityCaching</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityMaxOutputTokens">CapabilityMaxOutputTokens</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityReasoning">CapabilityReasoning</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityStopSequences">CapabilityStopSequences</a>
@@ -404,6 +405,7 @@ Response Types:
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#Model">Model</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpec">ModelSpec</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityUnion">ModelSpecCapabilityUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityCaching">ModelSpecCapabilityCaching</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityMaxOutputTokens">ModelSpecCapabilityMaxOutputTokens</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityReasoning">ModelSpecCapabilityReasoning</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityStopSequences">ModelSpecCapabilityStopSequences</a>

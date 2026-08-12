@@ -73,6 +73,7 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				FirstUserMessageTemplate: cadenya.String("firstUserMessageTemplate"),
 				ModelConfig: cadenya.AgentVariationSpecModelConfigParam{
 					ModelID:         "claude/opus-4.6",
+					CachingEnabled:  cadenya.Bool(true),
 					MaxOutputTokens: cadenya.Int(0),
 					ReasoningEffort: cadenya.AgentVariationSpecModelConfigReasoningEffortReasoningEffortUnspecified,
 					StopSequences:   []string{"string"},

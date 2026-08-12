@@ -157,6 +157,12 @@ func (r *ModelService) Swap(ctx context.Context, params ModelSwapParams, opts ..
 	return res, err
 }
 
+// Prompt/token caching (ModelConfig.caching_enabled). A model that cannot cache
+// prompt prefixes simply omits this capability. When the capability is present,
+// caching defaults to ON — a variation opts out by setting caching_enabled to
+// false.
+type CapabilityCaching = any
+
 type CapabilityMaxOutputTokens = any
 
 // Reasoning / extended thinking (ModelConfig.reasoning_effort). A model that does
@@ -323,7 +329,8 @@ func (r *ModelSpec) UnmarshalJSON(data []byte) error {
 // ModelSpecCapabilityUnion contains all possible properties and values from
 // [ModelSpecCapabilityTemperature], [ModelSpecCapabilityTopP],
 // [ModelSpecCapabilityTopK], [ModelSpecCapabilityStopSequences],
-// [ModelSpecCapabilityMaxOutputTokens], [ModelSpecCapabilityReasoning].
+// [ModelSpecCapabilityMaxOutputTokens], [ModelSpecCapabilityReasoning],
+// [ModelSpecCapabilityCaching].
 //
 // Use the [ModelSpecCapabilityUnion.AsAny] method to switch on the variant.
 //
@@ -332,7 +339,7 @@ type ModelSpecCapabilityUnion struct {
 	// This field is from variant [ModelSpecCapabilityTemperature].
 	Temperature CapabilityTemperature `json:"temperature"`
 	// Any of "temperature", "topP", "topK", "stopSequences", "maxOutputTokens",
-	// "reasoning".
+	// "reasoning", "caching".
 	Type string `json:"type"`
 	// This field is from variant [ModelSpecCapabilityTopP].
 	TopP CapabilityTopP `json:"topP"`
@@ -344,7 +351,9 @@ type ModelSpecCapabilityUnion struct {
 	MaxOutputTokens CapabilityMaxOutputTokens `json:"maxOutputTokens"`
 	// This field is from variant [ModelSpecCapabilityReasoning].
 	Reasoning CapabilityReasoning `json:"reasoning"`
-	JSON      struct {
+	// This field is from variant [ModelSpecCapabilityCaching].
+	Caching CapabilityCaching `json:"caching"`
+	JSON    struct {
 		Temperature     respjson.Field
 		Type            respjson.Field
 		TopP            respjson.Field
@@ -352,6 +361,7 @@ type ModelSpecCapabilityUnion struct {
 		StopSequences   respjson.Field
 		MaxOutputTokens respjson.Field
 		Reasoning       respjson.Field
+		Caching         respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -369,6 +379,7 @@ func (ModelSpecCapabilityTopK) implModelSpecCapabilityUnion()            {}
 func (ModelSpecCapabilityStopSequences) implModelSpecCapabilityUnion()   {}
 func (ModelSpecCapabilityMaxOutputTokens) implModelSpecCapabilityUnion() {}
 func (ModelSpecCapabilityReasoning) implModelSpecCapabilityUnion()       {}
+func (ModelSpecCapabilityCaching) implModelSpecCapabilityUnion()         {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -379,6 +390,7 @@ func (ModelSpecCapabilityReasoning) implModelSpecCapabilityUnion()       {}
 //	case cadenya.ModelSpecCapabilityStopSequences:
 //	case cadenya.ModelSpecCapabilityMaxOutputTokens:
 //	case cadenya.ModelSpecCapabilityReasoning:
+//	case cadenya.ModelSpecCapabilityCaching:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -396,6 +408,8 @@ func (u ModelSpecCapabilityUnion) AsAny() anyModelSpecCapability {
 		return u.AsMaxOutputTokens()
 	case "reasoning":
 		return u.AsReasoning()
+	case "caching":
+		return u.AsCaching()
 	}
 	return nil
 }
@@ -430,12 +444,46 @@ func (u ModelSpecCapabilityUnion) AsReasoning() (v ModelSpecCapabilityReasoning)
 	return
 }
 
+func (u ModelSpecCapabilityUnion) AsCaching() (v ModelSpecCapabilityCaching) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u ModelSpecCapabilityUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *ModelSpecCapabilityUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type ModelSpecCapabilityCaching struct {
+	// Prompt/token caching (ModelConfig.caching_enabled). A model that cannot cache
+	// prompt prefixes simply omits this capability. When the capability is present,
+	// caching defaults to ON — a variation opts out by setting caching_enabled to
+	// false.
+	Caching CapabilityCaching `json:"caching" api:"required"`
+	// Any of "caching".
+	Type ModelSpecCapabilityCachingType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Caching     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityCaching) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityCaching) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityCachingType string
+
+const (
+	ModelSpecCapabilityCachingTypeCaching ModelSpecCapabilityCachingType = "caching"
+)
 
 type ModelSpecCapabilityMaxOutputTokens struct {
 	// Per-request output token cap (ModelConfig.max_output_tokens). The effective
