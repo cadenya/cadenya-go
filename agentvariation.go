@@ -698,6 +698,11 @@ type AgentVariationSpecModelConfig struct {
 	// The model identifier in family/model format (e.g., "claude/opus-4.6",
 	// "claude/sonnet-4.5")
 	ModelID string `json:"modelId" api:"required"`
+	// Prompt/token caching. Requires the model's "caching" capability.
+	// Presence-tracked tri-state: unset means the default — caching is ON
+	// whenever the model has the capability; false opts this variation
+	// out; true is an explicit opt-in (equivalent to unset).
+	CachingEnabled bool `json:"cachingEnabled"`
 	// Cap on output tokens per LLM call. Must not exceed the model's
 	// spec.max_output_tokens. Requires the model's "maxOutputTokens" capability.
 	MaxOutputTokens int64 `json:"maxOutputTokens"`
@@ -725,6 +730,7 @@ type AgentVariationSpecModelConfig struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ModelID         respjson.Field
+		CachingEnabled  respjson.Field
 		MaxOutputTokens respjson.Field
 		ReasoningEffort respjson.Field
 		StopSequences   respjson.Field
@@ -773,6 +779,11 @@ type AgentVariationSpecModelConfigParam struct {
 	// The model identifier in family/model format (e.g., "claude/opus-4.6",
 	// "claude/sonnet-4.5")
 	ModelID string `json:"modelId" api:"required"`
+	// Prompt/token caching. Requires the model's "caching" capability.
+	// Presence-tracked tri-state: unset means the default — caching is ON
+	// whenever the model has the capability; false opts this variation
+	// out; true is an explicit opt-in (equivalent to unset).
+	CachingEnabled param.Opt[bool] `json:"cachingEnabled,omitzero"`
 	// Cap on output tokens per LLM call. Must not exceed the model's
 	// spec.max_output_tokens. Requires the model's "maxOutputTokens" capability.
 	MaxOutputTokens param.Opt[int64] `json:"maxOutputTokens,omitzero"`
