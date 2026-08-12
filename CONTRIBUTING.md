@@ -13,13 +13,13 @@ You can also [install go 1.22+ manually](https://go.dev/doc/install).
 
 ## Modifying/Adding code
 
-Most of the SDK is generated code. Modifications to code will be persisted between generations, but may
-result in merge conflicts between manual patches and changes from the generator. The generator will never
-modify the contents of the `lib/` and `examples/` directories.
+Changes to this SDK are made directly in this repository — by Cadenya's coding agents and by human
+contributors — and land via pull requests or pushes. There is no code generator; edit the source
+files directly.
 
 ## Adding and running examples
 
-All files in the `examples/` directory are not modified by the generator and can be freely edited or added to.
+Files in the `examples/` directory can be freely edited or added to.
 
 ```go
 # add an example to examples/<your-example>/main.go

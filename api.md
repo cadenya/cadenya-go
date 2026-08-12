@@ -395,8 +395,21 @@ Methods:
 
 Response Types:
 
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityMaxOutputTokens">CapabilityMaxOutputTokens</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityReasoning">CapabilityReasoning</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityStopSequences">CapabilityStopSequences</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityTemperature">CapabilityTemperature</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityTopK">CapabilityTopK</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#CapabilityTopP">CapabilityTopP</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#Model">Model</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpec">ModelSpec</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityUnion">ModelSpecCapabilityUnion</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityMaxOutputTokens">ModelSpecCapabilityMaxOutputTokens</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityReasoning">ModelSpecCapabilityReasoning</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityStopSequences">ModelSpecCapabilityStopSequences</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityTemperature">ModelSpecCapabilityTemperature</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityTopK">ModelSpecCapabilityTopK</a>
+- <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSpecCapabilityTopP">ModelSpecCapabilityTopP</a>
 - <a href="https://pkg.go.dev/go.cadenya.com/cadenya-go">cadenya</a>.<a href="https://pkg.go.dev/go.cadenya.com/cadenya-go#ModelSwapResponse">ModelSwapResponse</a>
 
 Methods:

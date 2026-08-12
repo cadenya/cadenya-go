@@ -6,7 +6,7 @@
 ### Features
 
 * regenerate from spec with webhooks and discriminator overlays ([6b5277a](https://github.com/cadenya/cadenya-go/commit/6b5277a27f04c593c2a23d949dc80a50d7ed3d10))
-* sync SDKs to current API spec and add stlc promote/sync workflows ([7f271e1](https://github.com/cadenya/cadenya-go/commit/7f271e11b9eeda9e8315f22edf0230f5eeca9076))
+* sync SDKs to current API spec and add promote/sync workflows ([7f271e1](https://github.com/cadenya/cadenya-go/commit/7f271e11b9eeda9e8315f22edf0230f5eeca9076))
 
 ## 0.75.0 (2026-08-05)
 
@@ -95,7 +95,7 @@ Full Changelog: [v0.64.0...v0.65.0](https://github.com/cadenya/cadenya-go/compar
 
 ### Features
 
-* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([130b7c9](https://github.com/cadenya/cadenya-go/commit/130b7c960bfa2b5a5f6074f3702b7b380f6487e4))
+* **ci:** configurable CI runner and private-production-repo support in workflow templates ([130b7c9](https://github.com/cadenya/cadenya-go/commit/130b7c960bfa2b5a5f6074f3702b7b380f6487e4))
 
 ## 0.64.0 (2026-07-18)
 

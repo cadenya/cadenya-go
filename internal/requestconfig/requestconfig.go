@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package requestconfig
 
 import (
@@ -68,12 +66,12 @@ func getNormalizedArchitecture() string {
 
 func getPlatformProperties() map[string]string {
 	return map[string]string{
-		"X-Stainless-Lang":            "go",
-		"X-Stainless-Package-Version": internal.PackageVersion,
-		"X-Stainless-OS":              getNormalizedOS(),
-		"X-Stainless-Arch":            getNormalizedArchitecture(),
-		"X-Stainless-Runtime":         "go",
-		"X-Stainless-Runtime-Version": runtime.Version(),
+		"X-Cadenya-Lang":            "go",
+		"X-Cadenya-Package-Version": internal.PackageVersion,
+		"X-Cadenya-OS":              getNormalizedOS(),
+		"X-Cadenya-Arch":            getNormalizedArchitecture(),
+		"X-Cadenya-Runtime":         "go",
+		"X-Cadenya-Runtime-Version": runtime.Version(),
 	}
 }
 
@@ -160,8 +158,8 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-Stainless-Retry-Count", "0")
-	req.Header.Set("X-Stainless-Timeout", "0")
+	req.Header.Set("X-Cadenya-Retry-Count", "0")
+	req.Header.Set("X-Cadenya-Timeout", "0")
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
@@ -185,11 +183,11 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	// This must run after `cfg.Apply(...)` above in case the request timeout gets modified. We also only
 	// apply our own logic for it if it's still "0" from above. If it's not, then it was deleted or modified
 	// by the user and we should respect that.
-	if req.Header.Get("X-Stainless-Timeout") == "0" {
+	if req.Header.Get("X-Cadenya-Timeout") == "0" {
 		if cfg.RequestTimeout == time.Duration(0) {
-			req.Header.Del("X-Stainless-Timeout")
+			req.Header.Del("X-Cadenya-Timeout")
 		} else {
-			req.Header.Set("X-Stainless-Timeout", strconv.Itoa(int(cfg.RequestTimeout.Seconds())))
+			req.Header.Set("X-Cadenya-Timeout", strconv.Itoa(int(cfg.RequestTimeout.Seconds())))
 		}
 	}
 
@@ -431,7 +429,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 	}
 
 	// Don't send the current retry count in the headers if the caller modified the header defaults.
-	shouldSendRetryCount := cfg.Request.Header.Get("X-Stainless-Retry-Count") == "0"
+	shouldSendRetryCount := cfg.Request.Header.Get("X-Cadenya-Retry-Count") == "0"
 
 	var res *http.Response
 	var cancel context.CancelFunc
@@ -449,7 +447,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 		req := cfg.Request.Clone(ctx)
 		if shouldSendRetryCount {
-			req.Header.Set("X-Stainless-Retry-Count", strconv.Itoa(retryCount))
+			req.Header.Set("X-Cadenya-Retry-Count", strconv.Itoa(retryCount))
 		}
 
 		res, err = handler(req)

@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package cadenya_test
 
 import (
@@ -51,7 +49,7 @@ func TestRetryAfter(t *testing.T) {
 		option.WithHTTPClient(&http.Client{
 			Transport: &closureTransport{
 				fn: func(req *http.Request) (*http.Response, error) {
-					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Stainless-Retry-Count"))
+					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Cadenya-Retry-Count"))
 					return &http.Response{
 						StatusCode: http.StatusTooManyRequests,
 						Header: http.Header{
@@ -85,7 +83,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		option.WithHTTPClient(&http.Client{
 			Transport: &closureTransport{
 				fn: func(req *http.Request) (*http.Response, error) {
-					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Stainless-Retry-Count"))
+					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Cadenya-Retry-Count"))
 					return &http.Response{
 						StatusCode: http.StatusTooManyRequests,
 						Header: http.Header{
@@ -95,7 +93,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 				},
 			},
 		}),
-		option.WithHeaderDel("X-Stainless-Retry-Count"),
+		option.WithHeaderDel("X-Cadenya-Retry-Count"),
 	)
 	_, err := client.Account.Get(context.Background())
 	if err == nil {
@@ -115,7 +113,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		option.WithHTTPClient(&http.Client{
 			Transport: &closureTransport{
 				fn: func(req *http.Request) (*http.Response, error) {
-					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Stainless-Retry-Count"))
+					retryCountHeaders = append(retryCountHeaders, req.Header.Get("X-Cadenya-Retry-Count"))
 					return &http.Response{
 						StatusCode: http.StatusTooManyRequests,
 						Header: http.Header{
@@ -125,7 +123,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 				},
 			},
 		}),
-		option.WithHeader("X-Stainless-Retry-Count", "42"),
+		option.WithHeader("X-Cadenya-Retry-Count", "42"),
 	)
 	_, err := client.Account.Get(context.Background())
 	if err == nil {

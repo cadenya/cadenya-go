@@ -9,7 +9,7 @@
 The Cadenya Go library provides convenient access to the [Cadenya REST API](https://docs.cadenya.com)
 from applications written in Go.
 
-It is generated with [Stainless](https://www.stainless.com/).
+It is maintained by Cadenya, including its coding agents. Community contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Installation
 

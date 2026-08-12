@@ -1,0 +1,59 @@
+name: Promote to production
+
+# Phase three of the SDK promotion pipeline: every push to this staging
+# repo's main rolls into a single sync branch + PR on the production repo.
+# A human merges that PR to release; release-please on the production repo
+# then opens its version PR and the publish workflow ships the release.
+#
+# The sync branch is force-updated on every push (it is derived state), so
+# one rolling PR stays current until it is merged.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-promote
+  cancel-in-progress: true
+
+env:
+  PRODUCTION_REPO: cadenya/cadenya-go
+  SYNC_BRANCH: staging-sync
+
+jobs:
+  promote:
+    # Guard against this file running after it syncs into the production repo.
+    if: github.repository == 'cadenya/cadenya-go-staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push sync branch and open the rolling PR
+        env:
+          GH_TOKEN: ${{ secrets.PRODUCTION_REPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::notice::PRODUCTION_REPO_TOKEN is not configured on this repo — skipping promotion."
+            exit 0
+          fi
+          git push --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${PRODUCTION_REPO}.git" \
+            "HEAD:refs/heads/${SYNC_BRANCH}"
+
+          existing=$(gh pr list --repo "$PRODUCTION_REPO" --head "$SYNC_BRANCH" --base main --state open --json number --jq '.[0].number' || true)
+          if [ -n "${existing:-}" ]; then
+            echo "Rolling sync PR #$existing already open — branch updated."
+          else
+            gh pr create --repo "$PRODUCTION_REPO" --base main --head "$SYNC_BRANCH" \
+              --title "Sync from staging" \
+              --body "Rolling sync of \`${{ github.repository }}\` main into production. Force-updated on every staging push; merging this releases the accumulated changes (release-please opens the version PR next)."
+          fi
