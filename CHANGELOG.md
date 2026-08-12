@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.77.0](https://github.com/cadenya/cadenya-go/compare/v0.76.0...v0.77.0) (2026-08-12)
+
+
+### Features
+
+* add the caching model capability and per-variation cachingEnabled opt-out ([#81](https://github.com/cadenya/cadenya-go/issues/81)) ([4b10fc1](https://github.com/cadenya/cadenya-go/commit/4b10fc105a89a67d4088bbd4ca02c67e130b1a5c))
+* **api:** api update ([4b10fc1](https://github.com/cadenya/cadenya-go/commit/4b10fc105a89a67d4088bbd4ca02c67e130b1a5c))
+* **api:** api update ([4b10fc1](https://github.com/cadenya/cadenya-go/commit/4b10fc105a89a67d4088bbd4ca02c67e130b1a5c))
+* regenerate from spec with webhooks and discriminator overlays ([4b10fc1](https://github.com/cadenya/cadenya-go/commit/4b10fc105a89a67d4088bbd4ca02c67e130b1a5c))
+* sync SDKs to current API spec and add stlc promote/sync workflows ([4b10fc1](https://github.com/cadenya/cadenya-go/commit/4b10fc105a89a67d4088bbd4ca02c67e130b1a5c))
+
 ## [0.76.0](https://github.com/cadenya/cadenya-go/compare/v0.75.0...v0.76.0) (2026-08-06)
 
 
