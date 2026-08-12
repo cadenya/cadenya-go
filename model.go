@@ -4,6 +4,7 @@ package cadenya
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"go.cadenya.com/cadenya-go/internal/apijson"
@@ -158,6 +159,65 @@ func (r *ModelService) Swap(ctx context.Context, params ModelSwapParams, opts ..
 	return res, err
 }
 
+type CapabilityMaxOutputTokens = any
+
+// Reasoning / extended thinking (ModelConfig.reasoning_effort). A model that does
+// not reason simply omits this capability.
+type CapabilityReasoning struct {
+	// How reasoning is enabled for this model. Catalog data used to decide whether
+	// thinking is requested for objective iterations on this model.
+	//
+	// Any of "MODE_UNSPECIFIED", "MODE_ADAPTIVE", "MODE_BUDGET".
+	Mode CapabilityReasoningMode `json:"mode"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Mode        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CapabilityReasoning) RawJSON() string { return r.JSON.raw }
+func (r *CapabilityReasoning) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How reasoning is enabled for this model. Catalog data used to decide whether
+// thinking is requested for objective iterations on this model.
+type CapabilityReasoningMode string
+
+const (
+	CapabilityReasoningModeModeUnspecified CapabilityReasoningMode = "MODE_UNSPECIFIED"
+	CapabilityReasoningModeModeAdaptive    CapabilityReasoningMode = "MODE_ADAPTIVE"
+	CapabilityReasoningModeModeBudget      CapabilityReasoningMode = "MODE_BUDGET"
+)
+
+// Custom stop sequences (ModelConfig.stop_sequences).
+type CapabilityStopSequences struct {
+	// Maximum number of stop sequences the model accepts per request. 0 means the
+	// provider imposes no meaningful limit.
+	Limit int64 `json:"limit"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Limit       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CapabilityStopSequences) RawJSON() string { return r.JSON.raw }
+func (r *CapabilityStopSequences) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CapabilityTemperature = any
+
+type CapabilityTopK = any
+
+type CapabilityTopP = any
+
 type Model struct {
 	// Standard metadata for persistent, named resources (e.g., agents, tools, prompts)
 	Metadata shared.ResourceMetadata `json:"metadata" api:"required"`
@@ -230,6 +290,10 @@ type ModelSpec struct {
 	Family string `json:"family" api:"required"`
 	// The model provider (e.g., "anthropic", "openai", "google")
 	Provider string `json:"provider" api:"required"`
+	// The inference knobs this model supports. Catalog data; drives which ModelConfig
+	// fields a variation on this model may set. Reasoning support (and its mode) lives
+	// here too, as the "reasoning" capability.
+	Capabilities []ModelSpecCapabilityUnion `json:"capabilities"`
 	// Cost per million input tokens in cents (e.g., 300 = $3.00)
 	InputPricePerMillionTokens string `json:"inputPricePerMillionTokens"`
 	// Maximum number of input tokens the model supports
@@ -238,21 +302,15 @@ type ModelSpec struct {
 	MaxOutputTokens int64 `json:"maxOutputTokens"`
 	// Cost per million output tokens in cents (e.g., 1500 = $15.00)
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
-	// The model's reasoning capability. Catalog data used to decide whether thinking
-	// is requested for objective iterations on this model.
-	//
-	// Any of "REASONING_UNSPECIFIED", "REASONING_NONE", "REASONING_ADAPTIVE",
-	// "REASONING_BUDGET".
-	Reasoning ModelSpecReasoning `json:"reasoning"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Family                      respjson.Field
 		Provider                    respjson.Field
+		Capabilities                respjson.Field
 		InputPricePerMillionTokens  respjson.Field
 		MaxInputTokens              respjson.Field
 		MaxOutputTokens             respjson.Field
 		OutputPricePerMillionTokens respjson.Field
-		Reasoning                   respjson.Field
 		ExtraFields                 map[string]respjson.Field
 		raw                         string
 	} `json:"-"`
@@ -264,15 +322,279 @@ func (r *ModelSpec) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The model's reasoning capability. Catalog data used to decide whether thinking
-// is requested for objective iterations on this model.
-type ModelSpecReasoning string
+// ModelSpecCapabilityUnion contains all possible properties and values from
+// [ModelSpecCapabilityTemperature], [ModelSpecCapabilityTopP],
+// [ModelSpecCapabilityTopK], [ModelSpecCapabilityStopSequences],
+// [ModelSpecCapabilityMaxOutputTokens], [ModelSpecCapabilityReasoning].
+//
+// Use the [ModelSpecCapabilityUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type ModelSpecCapabilityUnion struct {
+	// This field is from variant [ModelSpecCapabilityTemperature].
+	Temperature CapabilityTemperature `json:"temperature"`
+	// Any of "temperature", "topP", "topK", "stopSequences", "maxOutputTokens",
+	// "reasoning".
+	Type string `json:"type"`
+	// This field is from variant [ModelSpecCapabilityTopP].
+	TopP CapabilityTopP `json:"topP"`
+	// This field is from variant [ModelSpecCapabilityTopK].
+	TopK CapabilityTopK `json:"topK"`
+	// This field is from variant [ModelSpecCapabilityStopSequences].
+	StopSequences CapabilityStopSequences `json:"stopSequences"`
+	// This field is from variant [ModelSpecCapabilityMaxOutputTokens].
+	MaxOutputTokens CapabilityMaxOutputTokens `json:"maxOutputTokens"`
+	// This field is from variant [ModelSpecCapabilityReasoning].
+	Reasoning CapabilityReasoning `json:"reasoning"`
+	JSON      struct {
+		Temperature     respjson.Field
+		Type            respjson.Field
+		TopP            respjson.Field
+		TopK            respjson.Field
+		StopSequences   respjson.Field
+		MaxOutputTokens respjson.Field
+		Reasoning       respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// anyModelSpecCapability is implemented by each variant of
+// [ModelSpecCapabilityUnion] to add type safety for the return type of
+// [ModelSpecCapabilityUnion.AsAny]
+type anyModelSpecCapability interface {
+	implModelSpecCapabilityUnion()
+}
+
+func (ModelSpecCapabilityTemperature) implModelSpecCapabilityUnion()     {}
+func (ModelSpecCapabilityTopP) implModelSpecCapabilityUnion()            {}
+func (ModelSpecCapabilityTopK) implModelSpecCapabilityUnion()            {}
+func (ModelSpecCapabilityStopSequences) implModelSpecCapabilityUnion()   {}
+func (ModelSpecCapabilityMaxOutputTokens) implModelSpecCapabilityUnion() {}
+func (ModelSpecCapabilityReasoning) implModelSpecCapabilityUnion()       {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := ModelSpecCapabilityUnion.AsAny().(type) {
+//	case cadenya.ModelSpecCapabilityTemperature:
+//	case cadenya.ModelSpecCapabilityTopP:
+//	case cadenya.ModelSpecCapabilityTopK:
+//	case cadenya.ModelSpecCapabilityStopSequences:
+//	case cadenya.ModelSpecCapabilityMaxOutputTokens:
+//	case cadenya.ModelSpecCapabilityReasoning:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u ModelSpecCapabilityUnion) AsAny() anyModelSpecCapability {
+	switch u.Type {
+	case "temperature":
+		return u.AsTemperature()
+	case "topP":
+		return u.AsTopP()
+	case "topK":
+		return u.AsTopK()
+	case "stopSequences":
+		return u.AsStopSequences()
+	case "maxOutputTokens":
+		return u.AsMaxOutputTokens()
+	case "reasoning":
+		return u.AsReasoning()
+	}
+	return nil
+}
+
+func (u ModelSpecCapabilityUnion) AsTemperature() (v ModelSpecCapabilityTemperature) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ModelSpecCapabilityUnion) AsTopP() (v ModelSpecCapabilityTopP) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ModelSpecCapabilityUnion) AsTopK() (v ModelSpecCapabilityTopK) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ModelSpecCapabilityUnion) AsStopSequences() (v ModelSpecCapabilityStopSequences) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ModelSpecCapabilityUnion) AsMaxOutputTokens() (v ModelSpecCapabilityMaxOutputTokens) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ModelSpecCapabilityUnion) AsReasoning() (v ModelSpecCapabilityReasoning) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u ModelSpecCapabilityUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *ModelSpecCapabilityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityMaxOutputTokens struct {
+	// Per-request output token cap (ModelConfig.max_output_tokens). The effective
+	// ceiling is ModelSpec.max_output_tokens.
+	MaxOutputTokens CapabilityMaxOutputTokens `json:"maxOutputTokens" api:"required"`
+	// Any of "maxOutputTokens".
+	Type ModelSpecCapabilityMaxOutputTokensType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MaxOutputTokens respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityMaxOutputTokens) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityMaxOutputTokens) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityMaxOutputTokensType string
 
 const (
-	ModelSpecReasoningReasoningUnspecified ModelSpecReasoning = "REASONING_UNSPECIFIED"
-	ModelSpecReasoningReasoningNone        ModelSpecReasoning = "REASONING_NONE"
-	ModelSpecReasoningReasoningAdaptive    ModelSpecReasoning = "REASONING_ADAPTIVE"
-	ModelSpecReasoningReasoningBudget      ModelSpecReasoning = "REASONING_BUDGET"
+	ModelSpecCapabilityMaxOutputTokensTypeMaxOutputTokens ModelSpecCapabilityMaxOutputTokensType = "maxOutputTokens"
+)
+
+type ModelSpecCapabilityReasoning struct {
+	// Reasoning / extended thinking (ModelConfig.reasoning_effort). A model that does
+	// not reason simply omits this capability.
+	Reasoning CapabilityReasoning `json:"reasoning" api:"required"`
+	// Any of "reasoning".
+	Type ModelSpecCapabilityReasoningType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Reasoning   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityReasoning) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityReasoning) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityReasoningType string
+
+const (
+	ModelSpecCapabilityReasoningTypeReasoning ModelSpecCapabilityReasoningType = "reasoning"
+)
+
+type ModelSpecCapabilityStopSequences struct {
+	// Custom stop sequences (ModelConfig.stop_sequences).
+	StopSequences CapabilityStopSequences `json:"stopSequences" api:"required"`
+	// Any of "stopSequences".
+	Type ModelSpecCapabilityStopSequencesType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		StopSequences respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityStopSequences) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityStopSequences) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityStopSequencesType string
+
+const (
+	ModelSpecCapabilityStopSequencesTypeStopSequences ModelSpecCapabilityStopSequencesType = "stopSequences"
+)
+
+type ModelSpecCapabilityTemperature struct {
+	// Sampling temperature (ModelConfig.temperature).
+	Temperature CapabilityTemperature `json:"temperature" api:"required"`
+	// Any of "temperature".
+	Type ModelSpecCapabilityTemperatureType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Temperature respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityTemperature) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityTemperature) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityTemperatureType string
+
+const (
+	ModelSpecCapabilityTemperatureTypeTemperature ModelSpecCapabilityTemperatureType = "temperature"
+)
+
+type ModelSpecCapabilityTopK struct {
+	// Top-k sampling (ModelConfig.top_k).
+	TopK CapabilityTopK `json:"topK" api:"required"`
+	// Any of "topK".
+	Type ModelSpecCapabilityTopKType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		TopK        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityTopK) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityTopK) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityTopKType string
+
+const (
+	ModelSpecCapabilityTopKTypeTopK ModelSpecCapabilityTopKType = "topK"
+)
+
+type ModelSpecCapabilityTopP struct {
+	// Nucleus sampling (ModelConfig.top_p).
+	TopP CapabilityTopP `json:"topP" api:"required"`
+	// Any of "topP".
+	Type ModelSpecCapabilityTopPType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		TopP        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelSpecCapabilityTopP) RawJSON() string { return r.JSON.raw }
+func (r *ModelSpecCapabilityTopP) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelSpecCapabilityTopPType string
+
+const (
+	ModelSpecCapabilityTopPTypeTopP ModelSpecCapabilityTopPType = "topP"
 )
 
 type ModelSwapResponse = any

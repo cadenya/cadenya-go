@@ -74,8 +74,13 @@ func TestAgentNewWithOptionalParams(t *testing.T) {
 				Description:              cadenya.String("description"),
 				FirstUserMessageTemplate: cadenya.String("firstUserMessageTemplate"),
 				ModelConfig: cadenya.AgentVariationSpecModelConfigParam{
-					ModelID:     cadenya.String("claude/opus-4.6"),
-					Temperature: cadenya.Float(0),
+					ModelID:         "claude/opus-4.6",
+					MaxOutputTokens: cadenya.Int(0),
+					ReasoningEffort: cadenya.AgentVariationSpecModelConfigReasoningEffortReasoningEffortUnspecified,
+					StopSequences:   []string{"string"},
+					Temperature:     cadenya.Float(0),
+					TopK:            cadenya.Int(0),
+					TopP:            cadenya.Float(0),
 				},
 				ProgressiveDiscovery: cadenya.AgentVariationSpecProgressiveDiscoveryParam{
 					Hints:    []string{"string"},

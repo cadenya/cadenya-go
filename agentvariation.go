@@ -476,7 +476,10 @@ type AgentVariationSpec struct {
 	// result. If neither this template nor first_user_message is present, objective
 	// creation is rejected with InvalidArgument.
 	FirstUserMessageTemplate string `json:"firstUserMessageTemplate"`
-	// ModelConfig defines the model configuration for a variation
+	// ModelConfig defines the model configuration for a variation.
+	//
+	// Every knob besides model_id is honored only when the assigned model's
+	// spec.capabilities lists the matching capability.
 	ModelConfig AgentVariationSpecModelConfig `json:"modelConfig"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically
 	// discover tools that are not explicitly assigned to it. Max tools is the maximum
@@ -537,7 +540,10 @@ type AgentVariationSpecParam struct {
 	CompactionConfig AgentVariationSpecCompactionConfigParam `json:"compactionConfig,omitzero"`
 	// Execution constraints
 	Constraints AgentVariationSpecConstraintsParam `json:"constraints,omitzero"`
-	// ModelConfig defines the model configuration for a variation
+	// ModelConfig defines the model configuration for a variation.
+	//
+	// Every knob besides model_id is honored only when the assigned model's
+	// spec.capabilities lists the matching capability.
 	ModelConfig AgentVariationSpecModelConfigParam `json:"modelConfig,omitzero"`
 	// ProgressiveDiscovery is used to indicate that the agent should automatically
 	// discover tools that are not explicitly assigned to it. Max tools is the maximum
@@ -686,20 +692,49 @@ func (r *AgentVariationSpecConstraintsParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ModelConfig defines the model configuration for a variation
+// ModelConfig defines the model configuration for a variation.
+//
+// Every knob besides model_id is honored only when the assigned model's
+// spec.capabilities lists the matching capability.
 type AgentVariationSpecModelConfig struct {
 	// The model identifier in family/model format (e.g., "claude/opus-4.6",
 	// "claude/sonnet-4.5")
-	ModelID string `json:"modelId"`
+	ModelID string `json:"modelId" api:"required"`
+	// Cap on output tokens per LLM call. Must not exceed the model's
+	// spec.max_output_tokens. Requires the model's "maxOutputTokens" capability.
+	MaxOutputTokens int64 `json:"maxOutputTokens"`
+	// Reasoning effort. Requires the model's "reasoning" capability.
+	//
+	// Any of "REASONING_EFFORT_UNSPECIFIED", "REASONING_EFFORT_NONE",
+	// "REASONING_EFFORT_LOW", "REASONING_EFFORT_MEDIUM", "REASONING_EFFORT_HIGH".
+	ReasoningEffort AgentVariationSpecModelConfigReasoningEffort `json:"reasoningEffort"`
+	// Sequences that stop generation when produced. Empty means none. No count cap
+	// here — providers impose their own limits (surfaced as the "stopSequences"
+	// capability's `limit` on the model spec), and it is the caller's responsibility
+	// to stay within the selected model's limit. Requires the model's "stopSequences"
+	// capability.
+	StopSequences []string `json:"stopSequences"`
 	// Sampling temperature for model inference (0.0 to 1.0) Lower values produce more
-	// deterministic outputs, higher values increase randomness
+	// deterministic outputs, higher values increase randomness. Presence-tracked so a
+	// deliberate 0.0 (fully deterministic) is distinguishable from unset.
 	Temperature float64 `json:"temperature"`
+	// Only sample from the top_k most likely tokens. Requires the model's "topK"
+	// capability.
+	TopK int64 `json:"topK"`
+	// Nucleus sampling: only tokens comprising the top_p probability mass are
+	// considered. Requires the model's "topP" capability.
+	TopP float64 `json:"topP"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ModelID     respjson.Field
-		Temperature respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ModelID         respjson.Field
+		MaxOutputTokens respjson.Field
+		ReasoningEffort respjson.Field
+		StopSequences   respjson.Field
+		Temperature     respjson.Field
+		TopK            respjson.Field
+		TopP            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -719,14 +754,51 @@ func (r AgentVariationSpecModelConfig) ToParam() AgentVariationSpecModelConfigPa
 	return param.Override[AgentVariationSpecModelConfigParam](json.RawMessage(r.RawJSON()))
 }
 
-// ModelConfig defines the model configuration for a variation
+// Reasoning effort. Requires the model's "reasoning" capability.
+type AgentVariationSpecModelConfigReasoningEffort string
+
+const (
+	AgentVariationSpecModelConfigReasoningEffortReasoningEffortUnspecified AgentVariationSpecModelConfigReasoningEffort = "REASONING_EFFORT_UNSPECIFIED"
+	AgentVariationSpecModelConfigReasoningEffortReasoningEffortNone        AgentVariationSpecModelConfigReasoningEffort = "REASONING_EFFORT_NONE"
+	AgentVariationSpecModelConfigReasoningEffortReasoningEffortLow         AgentVariationSpecModelConfigReasoningEffort = "REASONING_EFFORT_LOW"
+	AgentVariationSpecModelConfigReasoningEffortReasoningEffortMedium      AgentVariationSpecModelConfigReasoningEffort = "REASONING_EFFORT_MEDIUM"
+	AgentVariationSpecModelConfigReasoningEffortReasoningEffortHigh        AgentVariationSpecModelConfigReasoningEffort = "REASONING_EFFORT_HIGH"
+)
+
+// ModelConfig defines the model configuration for a variation.
+//
+// Every knob besides model_id is honored only when the assigned model's
+// spec.capabilities lists the matching capability.
+//
+// The property ModelID is required.
 type AgentVariationSpecModelConfigParam struct {
 	// The model identifier in family/model format (e.g., "claude/opus-4.6",
 	// "claude/sonnet-4.5")
-	ModelID param.Opt[string] `json:"modelId,omitzero"`
+	ModelID string `json:"modelId" api:"required"`
+	// Cap on output tokens per LLM call. Must not exceed the model's
+	// spec.max_output_tokens. Requires the model's "maxOutputTokens" capability.
+	MaxOutputTokens param.Opt[int64] `json:"maxOutputTokens,omitzero"`
 	// Sampling temperature for model inference (0.0 to 1.0) Lower values produce more
-	// deterministic outputs, higher values increase randomness
+	// deterministic outputs, higher values increase randomness. Presence-tracked so a
+	// deliberate 0.0 (fully deterministic) is distinguishable from unset.
 	Temperature param.Opt[float64] `json:"temperature,omitzero"`
+	// Only sample from the top_k most likely tokens. Requires the model's "topK"
+	// capability.
+	TopK param.Opt[int64] `json:"topK,omitzero"`
+	// Nucleus sampling: only tokens comprising the top_p probability mass are
+	// considered. Requires the model's "topP" capability.
+	TopP param.Opt[float64] `json:"topP,omitzero"`
+	// Reasoning effort. Requires the model's "reasoning" capability.
+	//
+	// Any of "REASONING_EFFORT_UNSPECIFIED", "REASONING_EFFORT_NONE",
+	// "REASONING_EFFORT_LOW", "REASONING_EFFORT_MEDIUM", "REASONING_EFFORT_HIGH".
+	ReasoningEffort AgentVariationSpecModelConfigReasoningEffort `json:"reasoningEffort,omitzero"`
+	// Sequences that stop generation when produced. Empty means none. No count cap
+	// here — providers impose their own limits (surfaced as the "stopSequences"
+	// capability's `limit` on the model spec), and it is the caller's responsibility
+	// to stay within the selected model's limit. Requires the model's "stopSequences"
+	// capability.
+	StopSequences []string `json:"stopSequences,omitzero"`
 	paramObj
 }
 
