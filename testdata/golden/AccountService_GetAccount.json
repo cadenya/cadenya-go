@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/account",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"info\":{\"challengeToken\":\"sample\",\"webhookEventsHmacSecret\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"billingEmail\":\"sample\",\"description\":\"sample\",\"domain\":\"sample\",\"workspaces\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{},\"status\":\"STATUS_ENABLED\"}]}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

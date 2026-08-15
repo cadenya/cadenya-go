@@ -1,0 +1,92 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/memory_layers",
+        "query": {
+          "agentId": [
+            "sample"
+          ],
+          "cursor": [
+            "sample"
+          ],
+          "episodicKeyPrefix": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "type": [
+            "MEMORY_LAYER_TYPE_EPISODIC"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"entryCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"agentId\":\"sample\",\"episodicKey\":\"sample\",\"systemManaged\":true,\"type\":\"MEMORY_LAYER_TYPE_UNSPECIFIED\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/memory_layers",
+        "query": {
+          "agentId": [
+            "sample"
+          ],
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "episodicKeyPrefix": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "type": [
+            "MEMORY_LAYER_TYPE_EPISODIC"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"entryCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"agentId\":\"sample\",\"episodicKey\":\"sample\",\"systemManaged\":true,\"type\":\"MEMORY_LAYER_TYPE_UNSPECIFIED\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

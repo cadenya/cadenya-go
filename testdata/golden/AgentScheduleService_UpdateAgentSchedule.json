@@ -1,0 +1,25 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "schedule": {}
+          },
+          "updateMask": "sample"
+        },
+        "method": "PATCH",
+        "path": "/v1/workspaces/sample/agents/sample/schedules/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"info\":{\"totalFires\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"schedule\":{}},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

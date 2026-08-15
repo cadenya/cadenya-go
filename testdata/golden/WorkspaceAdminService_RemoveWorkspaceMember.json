@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "DELETE",
+        "path": "/v1/account/workspaces/sample/members/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "",
+        "contentType": "application/json",
+        "status": 204
+      }
+    }
+  ]
+}

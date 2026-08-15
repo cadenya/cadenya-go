@@ -1,0 +1,56 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/tool_sets/sample/usage",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "toolId": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"agent\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"agentVariation\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"assignedAt\":\"2026-01-01T00:00:00Z\",\"model\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/tool_sets/sample/usage",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "toolId": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"agent\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"agentVariation\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"assignedAt\":\"2026-01-01T00:00:00Z\",\"model\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

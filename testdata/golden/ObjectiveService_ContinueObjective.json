@@ -1,0 +1,20 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "enqueue": true,
+          "message": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/objectives/sample:continue",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"contextWindowId\":\"sample\",\"data\":{\"type\":\"userMessage\",\"userMessage\":{\"content\":\"sample\"}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

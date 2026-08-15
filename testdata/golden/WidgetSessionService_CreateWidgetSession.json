@@ -1,0 +1,25 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {},
+          "secrets": [
+            {}
+          ],
+          "spec": {
+            "widgetId": "sample"
+          }
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/widget_sessions",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"secrets\":[{\"name\":\"sample\"}],\"spec\":{\"token\":\"sample\",\"widgetId\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

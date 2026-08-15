@@ -1,0 +1,20 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "toolId": "sample",
+          "type": "toolId"
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/agents/sample/variations/sample/assignments",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"id\":\"sample\",\"tool\":{\"id\":\"sample\"},\"type\":\"tool\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

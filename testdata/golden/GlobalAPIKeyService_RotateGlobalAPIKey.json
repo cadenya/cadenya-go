@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "POST",
+        "path": "/v1/account/global_api_key:rotate",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"system\":true,\"token\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

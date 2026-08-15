@@ -1,0 +1,68 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/tool_calls",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "executionStatus": [
+            "TOOL_CALL_EXECUTION_STATUS_PENDING"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "status": [
+            "TOOL_CALL_STATUS_AUTO_APPROVED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_UNSPECIFIED\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/tool_calls",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "executionStatus": [
+            "TOOL_CALL_EXECUTION_STATUS_PENDING"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "status": [
+            "TOOL_CALL_STATUS_AUTO_APPROVED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_UNSPECIFIED\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

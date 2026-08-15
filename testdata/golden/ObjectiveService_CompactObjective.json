@@ -1,0 +1,19 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "compactionConfig": {}
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/objectives/sample:compact",
+        "query": {}
+      },
+      "response": {
+        "body": "{}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

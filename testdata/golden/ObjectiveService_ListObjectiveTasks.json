@@ -1,0 +1,50 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/tasks",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"completed\":true,\"number\":1,\"task\":\"sample\"},\"metadata\":{\"id\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/tasks",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"completed\":true,\"number\":1,\"task\":\"sample\"},\"metadata\":{\"id\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

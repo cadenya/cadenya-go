@@ -1,0 +1,32 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "config": {
+              "http": {
+                "requestMethod": "GET"
+              },
+              "type": "http"
+            },
+            "description": "sample",
+            "parameters": {},
+            "requiresApproval": true
+          }
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/tool_sets/sample/tools",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"config\":{\"http\":{\"requestMethod\":\"HTTP_METHOD_UNSPECIFIED\"},\"type\":\"http\"},\"description\":\"sample\",\"parameters\":{},\"requiresApproval\":true},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

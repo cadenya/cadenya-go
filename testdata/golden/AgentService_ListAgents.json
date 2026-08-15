@@ -1,0 +1,86 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/agents",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "state": [
+            "STATE_DRAFT"
+          ],
+          "variationSelectionMode": [
+            "VARIATION_SELECTION_MODE_RANDOM"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_UNSPECIFIED\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/agents",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "state": [
+            "STATE_DRAFT"
+          ],
+          "variationSelectionMode": [
+            "VARIATION_SELECTION_MODE_RANDOM"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_UNSPECIFIED\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

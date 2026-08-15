@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "DELETE",
+        "path": "/v1/workspaces/sample/memory_layers/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "",
+        "contentType": "application/json",
+        "status": 204
+      }
+    }
+  ]
+}

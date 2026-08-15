@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "POST",
+        "path": "/v1/workspaces/sample/tool_sets/sample:archive",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"adapter\":{\"mcp\":{},\"type\":\"mcp\"}},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

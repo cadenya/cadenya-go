@@ -1,0 +1,26 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "contentType": "sample",
+            "filename": "sample",
+            "sizeBytes": "sample"
+          }
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/uploads",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"info\":{\"status\":\"UPLOAD_STATUS_UNSPECIFIED\",\"uploadUrl\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"contentType\":\"sample\",\"filename\":\"sample\",\"sizeBytes\":\"sample\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

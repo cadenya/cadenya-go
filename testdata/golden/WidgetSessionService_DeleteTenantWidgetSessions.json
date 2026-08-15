@@ -1,0 +1,21 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "DELETE",
+        "path": "/v1/workspaces/sample/widget_sessions",
+        "query": {
+          "tenantId": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"objectivesDeleted\":1,\"sessionsDeleted\":1}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}
