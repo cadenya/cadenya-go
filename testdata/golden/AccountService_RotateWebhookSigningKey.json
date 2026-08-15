@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "POST",
+        "path": "/v1/account:rotateWebhookSigningKey",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"webhookEventsHmacSecret\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

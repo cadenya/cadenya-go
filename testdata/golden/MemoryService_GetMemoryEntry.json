@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/memory_layers/sample/entries/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"content\":\"sample\",\"info\":{},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"description\":\"sample\",\"key\":\"sample\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

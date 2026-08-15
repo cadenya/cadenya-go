@@ -1,0 +1,23 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {},
+          "updateMask": "sample"
+        },
+        "method": "PATCH",
+        "path": "/v1/workspaces/sample/agents/sample/variations/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"info\":{\"assignments\":[{\"id\":\"sample\",\"tool\":{\"id\":\"sample\"},\"type\":\"tool\"}],\"feedbackCount\":1,\"memoryLayerAssignments\":[{\"id\":\"sample\",\"memoryLayer\":{\"id\":\"sample\"},\"position\":1}],\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

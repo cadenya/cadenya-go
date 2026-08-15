@@ -1,0 +1,22 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {}
+        },
+        "method": "POST",
+        "path": "/v1/account/workspaces",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{},\"status\":\"STATUS_ENABLED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

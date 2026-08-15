@@ -1,0 +1,25 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "variationSelectionMode": "VARIATION_SELECTION_MODE_RANDOM"
+          },
+          "updateMask": "sample"
+        },
+        "method": "PATCH",
+        "path": "/v1/workspaces/sample/agents/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_UNSPECIFIED\"},\"state\":\"STATE_UNSPECIFIED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

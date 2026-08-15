@@ -1,0 +1,21 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "modelSwaps": [
+            {}
+          ]
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/models:swapModelOnVariations",
+        "query": {}
+      },
+      "response": {
+        "body": "",
+        "contentType": "application/json",
+        "status": 204
+      }
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/models",
+        "query": {
+          "aiProviderKeyId": [
+            "sample"
+          ],
+          "cursor": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "isAssigned": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "state": [
+            "STATE_ENABLED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"capabilities\":[{\"temperature\":{},\"type\":\"temperature\"}],\"family\":\"sample\",\"inputPricePerMillionTokens\":\"sample\",\"maxInputTokens\":1,\"maxOutputTokens\":1,\"outputPricePerMillionTokens\":\"sample\",\"provider\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/models",
+        "query": {
+          "aiProviderKeyId": [
+            "sample"
+          ],
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "isAssigned": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ],
+          "state": [
+            "STATE_ENABLED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"capabilities\":[{\"temperature\":{},\"type\":\"temperature\"}],\"family\":\"sample\",\"inputPricePerMillionTokens\":\"sample\",\"maxInputTokens\":1,\"maxOutputTokens\":1,\"outputPricePerMillionTokens\":\"sample\",\"provider\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

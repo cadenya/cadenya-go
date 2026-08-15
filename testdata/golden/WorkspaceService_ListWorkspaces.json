@@ -1,0 +1,62 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{},\"status\":\"STATUS_ENABLED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{},\"status\":\"STATUS_ENABLED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

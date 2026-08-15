@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/events:stream",
+        "query": {}
+      },
+      "response": {
+        "body": "id: e1\ndata: {\"contextWindowId\":\"sample\",\"data\":{\"type\":\"userMessage\",\"userMessage\":{\"content\":\"sample\"}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}\n\nevent: ping\ndata: not-json-housekeeping\n\nid: e2\ndata: {\"contextWindowId\":\"sample\",\"data\":{\"type\":\"userMessage\",\"userMessage\":{\"content\":\"sample\"}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}\n\n",
+        "contentType": "text/event-stream",
+        "status": 200
+      }
+    }
+  ]
+}

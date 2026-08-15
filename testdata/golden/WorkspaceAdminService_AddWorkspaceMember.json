@@ -1,0 +1,20 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "email": "sample",
+          "profileId": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/account/workspaces/sample/members",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"actorId\":\"sample\",\"email\":\"sample\",\"name\":\"sample\",\"profileId\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

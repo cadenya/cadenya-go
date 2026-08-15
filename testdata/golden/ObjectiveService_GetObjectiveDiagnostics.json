@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/diagnostics",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"diagnostics\":{\"cachedInputTokens\":1,\"contextLengths\":{\"assistantMessages\":1,\"availableTools\":1,\"episodicMemory\":1,\"skillsMemory\":1,\"systemPrompt\":1,\"toolDefinitions\":1,\"toolResults\":1,\"userMessages\":1},\"inputTokens\":1}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

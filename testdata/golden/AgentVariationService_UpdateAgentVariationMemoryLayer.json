@@ -1,0 +1,19 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "position": 1
+        },
+        "method": "PATCH",
+        "path": "/v1/workspaces/sample/agents/sample/variations/sample/memory_layer_assignments/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"id\":\"sample\",\"memoryLayer\":{\"id\":\"sample\"},\"position\":1}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

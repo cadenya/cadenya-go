@@ -1,0 +1,74 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/agents/sample/schedules",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"totalFires\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"schedule\":{}},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/agents/sample/schedules",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "prefix": [
+            "sample"
+          ],
+          "query": [
+            "sample"
+          ],
+          "sortOrder": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"info\":{\"totalFires\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"schedule\":{}},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

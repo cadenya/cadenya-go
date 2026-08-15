@@ -1,0 +1,56 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/context_windows",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"completionTokens\":1,\"objectiveId\":\"sample\",\"previousWindowContinueInstructions\":\"sample\",\"promptTokens\":1,\"sequence\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/context_windows",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "includeInfo": [
+            "true"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"completionTokens\":1,\"objectiveId\":\"sample\",\"previousWindowContinueInstructions\":\"sample\",\"promptTokens\":1,\"sequence\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

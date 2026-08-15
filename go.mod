@@ -2,13 +2,12 @@ module go.cadenya.com/cadenya-go
 
 go 1.22
 
-require (
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.1
-	github.com/tidwall/gjson v1.18.0
-	github.com/tidwall/sjson v1.2.5
-)
+require github.com/tmaxmax/go-sse v0.11.0
+
+require github.com/stretchr/testify v1.11.1
 
 require (
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
