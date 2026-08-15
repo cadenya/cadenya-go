@@ -21,6 +21,9 @@
           "names": [
             "sample"
           ],
+          "overlays": [
+            "sample"
+          ],
           "prefix": [
             "sample"
           ],
@@ -63,6 +66,9 @@
             "1"
           ],
           "names": [
+            "sample"
+          ],
+          "overlays": [
             "sample"
           ],
           "prefix": [

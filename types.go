@@ -1228,9 +1228,12 @@ type CreateObjectiveRequest struct {
 	//  rejected with InvalidArgument.
 	Subject *SubjectAssertion `json:"subject,omitempty"`
 	// Parameters forced onto this objective's tool calls. A pinned parameter
-	//  is an overlay on a tool's JSON schema: the parameter is removed from
-	//  what the LLM sees, and its value is always overwritten server-side with
-	//  the pinned value — the model cannot choose a different value for it.
+	//  is removed from the tool schema the LLM sees, and its value is always
+	//  overwritten server-side with the pinned value — the model cannot choose
+	//  a different value for it. By default a pinned key applies to every tool
+	//  with a top-level parameter of the same name; a tool set's overlays
+	//  (ToolSetSpec.overlays) can bind pinned keys to nested paths, differently
+	//  named parameters, or a subset of tools.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
 }
 
@@ -2912,6 +2915,79 @@ type PageModel struct {
 	NextCursor string `json:"nextCursor"`
 }
 
+// Default: ON_MISSING_FAIL.
+type ParameterActionPinOnMissing string
+
+const (
+	ParameterActionPinOnMissingOnMissingUnspecified ParameterActionPinOnMissing = "ON_MISSING_UNSPECIFIED"
+	ParameterActionPinOnMissingOnMissingFail        ParameterActionPinOnMissing = "ON_MISSING_FAIL"
+	ParameterActionPinOnMissingOnMissingSkip        ParameterActionPinOnMissing = "ON_MISSING_SKIP"
+)
+
+// Bind the parameter to one of the objective's pinned parameters. It is
+//
+//	deleted from the schema (including any `required` entry), and on every
+//	call the pinned value is written into the arguments, overwriting
+//	anything the model supplied.
+//	This is the authoritative-value action: the model never sees the
+//	parameter and cannot influence it.
+//
+//	`pin` differs from `set` with `{{ pinned_parameters.key }}` only in
+//	how a missing key is handled (see `on_missing`) and in intent —
+//	reading the tool set config, `pin` says "this comes from the caller".
+type ParameterAction_Pin struct {
+	Path string `json:"path"`
+	// Key into the objective's pinned_parameters map. Need not equal the
+	//  last segment of `path` — this is how a pinned `orgId` reaches a
+	//  tool whose parameter is named `organizationId`.
+	PinnedParameter string `json:"pinnedParameter"`
+	// Default: ON_MISSING_FAIL.
+	OnMissing ParameterActionPinOnMissing `json:"onMissing"`
+}
+
+// Remove the parameter entirely. It is deleted from the schema
+//
+//	(including any `required` entry) and stripped from the arguments if
+//	the model supplies it anyway. The tool receives no value for it — the
+//	upstream default, if any, applies. Use this to save context on
+//	parameters the model has no business setting (pagination cursors,
+//	expansion flags, debug toggles).
+type ParameterAction_Remove struct {
+	Path string `json:"path"`
+}
+
+// Force the parameter to a value. It is deleted from the schema
+//
+//	(including any `required` entry), and on every call the rendered
+//	value is written into the arguments, overwriting anything the model
+//	supplied.
+//
+//	`value_template` is a Liquid template rendered against the objective:
+//
+//	  {{ pinned_parameters.<key> }}  the objective's pinned parameters
+//	  {{ objective.id }}             the objective's id
+//	  {{ objective.external_id }}    the objective's external id
+//	  {{ objective.labels.<key> }}   the objective's labels
+//
+//	Templates render with strict variables: referencing a pinned
+//	parameter or label that does not exist fails the call rather than
+//	rendering an empty value.
+//
+//	Tool set secrets are intentionally not exposed here: overlay-set
+//	values are recorded as tool call arguments in events and tool call
+//	history, and would leak. Use adapter headers for credentials.
+//
+//	The rendered string is coerced to the parameter's declared schema
+//	type: for a non-string parameter (integer, number, boolean, object,
+//	array) the output is parsed as JSON. A value that fails to parse
+//	errors the tool call. Prefer `pin` when the value is simply a pinned
+//	parameter — it fails loudly when the key is absent instead of
+//	rendering an empty string.
+type ParameterAction_Set struct {
+	Path          string `json:"path"`
+	ValueTemplate string `json:"valueTemplate"`
+}
+
 // Pause agent schedule request.
 type PauseAgentScheduleRequest struct {
 	// Workspace ID.
@@ -3034,6 +3110,37 @@ type RestoreToolRequest struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// Default: ON_RENDER_ERROR_RAW_CONTENT.
+type ResultActionTransformOnRenderError string
+
+const (
+	ResultActionTransformOnRenderErrorOnRenderErrorUnspecified ResultActionTransformOnRenderError = "ON_RENDER_ERROR_UNSPECIFIED"
+	ResultActionTransformOnRenderErrorOnRenderErrorRawContent  ResultActionTransformOnRenderError = "ON_RENDER_ERROR_RAW_CONTENT"
+	ResultActionTransformOnRenderErrorOnRenderErrorFail        ResultActionTransformOnRenderError = "ON_RENDER_ERROR_FAIL"
+)
+
+// Replace the result content with a rendered Liquid template. Used to
+//
+//	compact verbose responses to the fields the model actually needs.
+//
+//	`content_template` is rendered against the call:
+//
+//	  {{ result }}             the result content. For HTTP and OpenAPI
+//	                           tools this is the response body, parsed
+//	                           when the response is JSON; for MCP tools it
+//	                           is the content blocks; for bare tools it is
+//	                           the content that was set.
+//	  {{ parameters }}         the final arguments the tool was called
+//	                           with, after parameter actions were applied
+//	  {{ tool.name }}          the tool's metadata.name
+//	  {{ tool.llm_tool_name }} the name the model called it by
+//	  {{ pinned_parameters }}  the objective's pinned parameters
+type ResultAction_Transform struct {
+	ContentTemplate string `json:"contentTemplate"`
+	// Default: ON_RENDER_ERROR_RAW_CONTENT.
+	OnRenderError ResultActionTransformOnRenderError `json:"onRenderError"`
+}
+
 // Resume agent schedule request.
 type ResumeAgentScheduleRequest struct {
 	// Workspace ID.
@@ -3109,6 +3216,93 @@ type SearchToolsOrToolSetsResponse struct {
 	Tools    []Tool    `json:"tools"`
 	ToolSets []ToolSet `json:"toolSets"`
 	Agents   []Agent   `json:"agents"`
+}
+
+// A single selector condition.
+// Selector_Condition is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type Selector_Condition struct {
+	Attribute    *Selector_Condition_Attribute    `json:"-"`
+	HasParameter *Selector_Condition_HasParameter `json:"-"`
+	Tools        *Selector_Condition_Tools        `json:"-"`
+}
+
+func (u Selector_Condition) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.Attribute != nil {
+		chosen = u.Attribute
+		count++
+	}
+	if u.HasParameter != nil {
+		chosen = u.HasParameter
+		count++
+	}
+	if u.Tools != nil {
+		chosen = u.Tools
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("Selector_Condition: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewSelector_ConditionAttribute returns a Selector_Condition with the Attribute variant selected.
+func NewSelector_ConditionAttribute(v Selector_Condition_Attribute) Selector_Condition {
+	v.Type = "attribute"
+	return Selector_Condition{Attribute: &v}
+}
+
+// NewSelector_ConditionHasParameter returns a Selector_Condition with the HasParameter variant selected.
+func NewSelector_ConditionHasParameter(v Selector_Condition_HasParameter) Selector_Condition {
+	v.Type = "hasParameter"
+	return Selector_Condition{HasParameter: &v}
+}
+
+// NewSelector_ConditionTools returns a Selector_Condition with the Tools variant selected.
+func NewSelector_ConditionTools(v Selector_Condition_Tools) Selector_Condition {
+	v.Type = "tools"
+	return Selector_Condition{Tools: &v}
+}
+
+func (u *Selector_Condition) UnmarshalJSON(data []byte) error {
+	*u = Selector_Condition{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "attribute":
+		u.Attribute = new(Selector_Condition_Attribute)
+		return json.Unmarshal(data, u.Attribute)
+	case "hasParameter":
+		u.HasParameter = new(Selector_Condition_HasParameter)
+		return json.Unmarshal(data, u.HasParameter)
+	case "tools":
+		u.Tools = new(Selector_Condition_Tools)
+		return json.Unmarshal(data, u.Tools)
+	}
+	return fmt.Errorf("Selector_Condition: unknown type %q", probe.Tag)
+}
+
+// An explicit list of tools, matched on spec.llm_tool_name — the name
+//
+//	the model calls the tool by. It identifies a tool across versions:
+//	just-in-time MCP sets keep one tool per signature and every version
+//	shares the LLM name, so the condition keeps matching as the source
+//	evolves. Any name in the list matches (OR). Names of tools not (or
+//	not yet) present in the set are allowed and match nothing.
+type Selector_ToolNames struct {
+	Names []string `json:"names,omitempty"`
 }
 
 // SetToolCallContentRequest lets an external API consumer supply the result
@@ -3478,8 +3672,264 @@ type ToolInfo struct {
 	// Content signature identifying the tool within its tool set: a hash of the
 	//  sanitized llm_tool_name, description, and canonical parameters. Two tools
 	//  with the same llm_tool_name but different parameters or description (as
-	//  MCP servers may return per user) have distinct signatures.
+	//  MCP servers may return per user) have distinct signatures. Computed over
+	//  the raw spec — overlays do not change a tool's signature.
 	Signature string `json:"signature"`
+	// Keys of the tool set's overlays whose selectors match this tool
+	//  (ToolSetSpec.overlays), in evaluation order. Disabled overlays are
+	//  excluded. An overlay is listed when its selector matches even if none
+	//  of its actions changed this tool's schema (all its paths were absent),
+	//  so this answers "which policies apply to this tool" — diff
+	//  effective_parameters against spec.parameters for "what changed".
+	//  Empty when no overlay applies.
+	Overlays []string `json:"overlays,omitempty"`
+	// The parameter schema as presented to the model: spec.parameters after
+	//  every matching overlay's parameter actions have been applied, in order,
+	//  including maintenance of the schema's `required` list. Actions whose
+	//  outcome depends on the objective (pin with ON_MISSING_SKIP) are applied
+	//  as if the pinned key were present, so this reflects the intended steady
+	//  state rather than any one objective. Equals spec.parameters when no
+	//  overlay applies. Result actions have no effect here.
+	EffectiveParameters map[string]any `json:"effectiveParameters,omitempty"`
+}
+
+// A tool overlay is a policy attached to a tool set that reshapes the tools
+//
+//	the model sees and calls. It pairs a selector (which tools it applies to)
+//	with actions that run before a call — rewriting the tool's parameter
+//	schema and the arguments the model supplied — and after a call —
+//	rewriting the result before it enters the model's context.
+//
+//	Overlays exist for two reasons:
+//
+//	  - Authority. Adapter-derived tool sets (OpenAPI especially) expose many
+//	    parameters the model must never guess — a workspace id, a tenant id,
+//	    an account scope. Overlays bind those parameters to the objective's
+//	    `pinned_parameters` (see CreateObjectiveRequest.pinned_parameters):
+//	    the parameter disappears from the schema and the value is forced
+//	    server-side, so the model has no opportunity to supply a different
+//	    one.
+//	  - Context. Large specs carry pagination cursors, expansion flags and
+//	    verbose responses that cost tokens without helping the model.
+//	    Overlays strip parameters, fix them to literals, and compact results.
+//
+//	Pinned parameters and overlays are complementary: pinned parameters are
+//	*data* supplied per objective (or per widget session) by the caller;
+//	overlays are *policy* authored once on the tool set. Pinning by name
+//	still works without an overlay — a pinned key that matches a top-level
+//	parameter name is applied to every tool in the objective — overlays are
+//	for the cases that needs more: nested paths, renamed keys, a subset of
+//	tools, or values that are literals rather than caller-supplied.
+//
+//	Evaluation model:
+//
+//	  - Overlays are evaluated in list order; within an overlay, actions are
+//	    evaluated in list order. Later actions win on the same path (a `set`
+//	    followed by a `remove` leaves the parameter removed).
+//	  - The parameter schema the model sees is computed when tools are
+//	    assembled for an objective, so pre-call actions can consult that
+//	    objective's pinned parameters (this is what makes `pin` with
+//	    ON_MISSING_SKIP meaningful). Argument rewriting runs on every call.
+//	  - An action whose `path` does not exist in the tool's parameter schema
+//	    changes nothing in the schema the model sees. This is deliberate: a
+//	    broad selector (every `list_*` tool) may match tools with different
+//	    shapes, and one overlay should be able to cover all of them without
+//	    erroring on the ones that lack a given parameter. At call time the
+//	    model's arguments can still not widen what it controls: `remove`
+//	    strips the path whether or not it is declared, and `set`/`pin`
+//	    overwrite a value the model sent at an undeclared path (a schema this
+//	    evaluator cannot see through, e.g. behind $ref/allOf) while injecting
+//	    nothing into tools that lack the parameter.
+//	  - Overlays apply to just-in-time tool sets as well; the tools are
+//	    evaluated against overlays at the moment they are loaded.
+type ToolOverlay struct {
+	// Identifies the overlay within its tool set. Unique across the tool
+	//  set's overlays (enforced by the server), stable across reorders, and
+	//  surfaced in tool call diagnostics ("parameter removed by overlay
+	//  strip-list-knobs") so an operator can trace a rewritten call back to
+	//  the policy that rewrote it. Referenced by ToolInfo.overlays and the
+	//  ListToolsRequest.overlays filter.
+	Key string `json:"key"`
+	// Which tools this overlay applies to. Required; an empty selector
+	//  (no conditions) matches every tool in the set.
+	Selector *ToolOverlay_Selector `json:"selector"`
+	// Pre-call actions, applied in order. See ParameterAction.
+	ParameterActions []ToolOverlay_ParameterAction `json:"parameterActions,omitempty"`
+	// Post-call actions, applied in order. See ResultAction.
+	ResultActions []ToolOverlay_ResultAction `json:"resultActions,omitempty"`
+	// When true the overlay is retained in the spec but not evaluated. Lets an
+	//  operator switch a policy off to diagnose a misbehaving tool without
+	//  deleting it and losing the configuration.
+	Disabled bool `json:"disabled"`
+}
+
+// A pre-call action. Parameter actions rewrite the tool's parameter
+//
+//	schema as presented to the model and the arguments the model supplies
+//	when it calls the tool. Both sides are always kept in agreement: a
+//	parameter that is hidden from the schema is also stripped from (or
+//	forced in) the arguments, so the model can neither see nor smuggle it.
+//
+// ToolOverlay_ParameterAction is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type ToolOverlay_ParameterAction struct {
+	Remove *ToolOverlay_ParameterAction_Remove `json:"-"`
+	Set    *ToolOverlay_ParameterAction_Set    `json:"-"`
+	Pin    *ToolOverlay_ParameterAction_Pin    `json:"-"`
+}
+
+func (u ToolOverlay_ParameterAction) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.Remove != nil {
+		chosen = u.Remove
+		count++
+	}
+	if u.Set != nil {
+		chosen = u.Set
+		count++
+	}
+	if u.Pin != nil {
+		chosen = u.Pin
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("ToolOverlay_ParameterAction: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewToolOverlay_ParameterActionRemove returns a ToolOverlay_ParameterAction with the Remove variant selected.
+func NewToolOverlay_ParameterActionRemove(v ToolOverlay_ParameterAction_Remove) ToolOverlay_ParameterAction {
+	v.Type = "remove"
+	return ToolOverlay_ParameterAction{Remove: &v}
+}
+
+// NewToolOverlay_ParameterActionSet returns a ToolOverlay_ParameterAction with the Set variant selected.
+func NewToolOverlay_ParameterActionSet(v ToolOverlay_ParameterAction_Set) ToolOverlay_ParameterAction {
+	v.Type = "set"
+	return ToolOverlay_ParameterAction{Set: &v}
+}
+
+// NewToolOverlay_ParameterActionPin returns a ToolOverlay_ParameterAction with the Pin variant selected.
+func NewToolOverlay_ParameterActionPin(v ToolOverlay_ParameterAction_Pin) ToolOverlay_ParameterAction {
+	v.Type = "pin"
+	return ToolOverlay_ParameterAction{Pin: &v}
+}
+
+func (u *ToolOverlay_ParameterAction) UnmarshalJSON(data []byte) error {
+	*u = ToolOverlay_ParameterAction{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "remove":
+		u.Remove = new(ToolOverlay_ParameterAction_Remove)
+		return json.Unmarshal(data, u.Remove)
+	case "set":
+		u.Set = new(ToolOverlay_ParameterAction_Set)
+		return json.Unmarshal(data, u.Set)
+	case "pin":
+		u.Pin = new(ToolOverlay_ParameterAction_Pin)
+		return json.Unmarshal(data, u.Pin)
+	}
+	return fmt.Errorf("ToolOverlay_ParameterAction: unknown type %q", probe.Tag)
+}
+
+// A dotted path into a tool's parameter schema. Each segment is a property
+//
+//	name; the path `filter.workspaceId` addresses
+//	`properties.filter.properties.workspaceId` in the schema and
+//	`arguments.filter.workspaceId` in the call. Only object properties are
+//	addressable — there is no array indexing, wildcarding or filtering.
+//
+//	This is deliberately not JSONPath: every action needs a single,
+//	unambiguous location in both the schema and the arguments so that
+//	removing a parameter from the schema and stripping it from the call are
+//	guaranteed to agree.
+type ToolOverlay_ParameterPath struct {
+	Path string `json:"path"`
+}
+
+// A post-call action. Result actions rewrite a tool call's result after
+//
+//	the adapter returns and before the content is handed to the model. They
+//	do not affect what is recorded on the tool call — the raw result is
+//	still stored; the transformed content is what the model reads.
+//
+// ToolOverlay_ResultAction is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type ToolOverlay_ResultAction struct {
+	Transform *ToolOverlay_ResultAction_Transform `json:"-"`
+}
+
+func (u ToolOverlay_ResultAction) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.Transform != nil {
+		chosen = u.Transform
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("ToolOverlay_ResultAction: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewToolOverlay_ResultActionTransform returns a ToolOverlay_ResultAction with the Transform variant selected.
+func NewToolOverlay_ResultActionTransform(v ToolOverlay_ResultAction_Transform) ToolOverlay_ResultAction {
+	v.Type = "transform"
+	return ToolOverlay_ResultAction{Transform: &v}
+}
+
+func (u *ToolOverlay_ResultAction) UnmarshalJSON(data []byte) error {
+	*u = ToolOverlay_ResultAction{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "transform":
+		u.Transform = new(ToolOverlay_ResultAction_Transform)
+		return json.Unmarshal(data, u.Transform)
+	}
+	return fmt.Errorf("ToolOverlay_ResultAction: unknown type %q", probe.Tag)
+}
+
+// Default: OPERATOR_AND.
+type ToolOverlaySelectorOperator string
+
+const (
+	ToolOverlaySelectorOperatorOperatorUnspecified ToolOverlaySelectorOperator = "OPERATOR_UNSPECIFIED"
+	ToolOverlaySelectorOperatorOperatorAnd         ToolOverlaySelectorOperator = "OPERATOR_AND"
+	ToolOverlaySelectorOperatorOperatorOr          ToolOverlaySelectorOperator = "OPERATOR_OR"
+)
+
+// Which tools in the tool set an overlay applies to. Conditions are
+//
+//	combined with `operator`; an overlay with no conditions matches every
+//	tool in the set.
+type ToolOverlay_Selector struct {
+	Conditions []Selector_Condition `json:"conditions,omitempty"`
+	// Default: OPERATOR_AND.
+	Operator ToolOverlaySelectorOperator `json:"operator"`
 }
 
 type ToolResult struct {
@@ -3669,6 +4119,7 @@ const (
 	ToolSetAdapterAttributeFilterAttributeAttributeName        ToolSetAdapterAttributeFilterAttribute = "ATTRIBUTE_NAME"
 	ToolSetAdapterAttributeFilterAttributeAttributeTitle       ToolSetAdapterAttributeFilterAttribute = "ATTRIBUTE_TITLE"
 	ToolSetAdapterAttributeFilterAttributeAttributeDescription ToolSetAdapterAttributeFilterAttribute = "ATTRIBUTE_DESCRIPTION"
+	ToolSetAdapterAttributeFilterAttributeAttributeLlmToolName ToolSetAdapterAttributeFilterAttribute = "ATTRIBUTE_LLM_TOOL_NAME"
 )
 
 // Single attribute filter
@@ -4018,6 +4469,13 @@ type ToolSetSecretSpec struct {
 type ToolSetSpec struct {
 	Description *string         `json:"description,omitempty"`
 	Adapter     *ToolSetAdapter `json:"adapter"`
+	// Overlays applied to this tool set's tools, evaluated in order. See
+	//  ToolOverlay. Overlay keys must be unique within the list.
+	//
+	//  As a repeated field this is replaced wholesale on update: an
+	//  update_mask of `spec.overlays` swaps the entire list for the one in the
+	//  request. Read-modify-write to add or remove a single overlay.
+	Overlays []ToolOverlay `json:"overlays,omitempty"`
 }
 
 // ToolSetUsage describes one agent variation that uses the tool set (or, when
@@ -4737,13 +5195,13 @@ type WidgetSessionSpec struct {
 	//  which bounds the session itself.
 	TokenExpiresAt *time.Time `json:"tokenExpiresAt,omitempty"`
 	// Parameters forced onto tool calls made by this session's conversations.
-	//  A pinned parameter is an overlay on a tool's JSON schema: the parameter
-	//  is removed from what the LLM sees, and its value is always overwritten
-	//  server-side with the pinned value — so the model cannot be tricked into
-	//  calling a tool with a different id than the one the session was minted
-	//  for (e.g. pin "workspaceId" for an OpenAPI tool with a
-	//  /workspaces/{workspaceId} path). Flows to every objective the session
-	//  creates.
+	//  A pinned parameter is removed from the tool schema the LLM sees, and its
+	//  value is always overwritten server-side with the pinned value — so the
+	//  model cannot be tricked into calling a tool with a different id than the
+	//  one the session was minted for (e.g. pin "workspaceId" for an OpenAPI
+	//  tool with a /workspaces/{workspaceId} path). Flows to every objective
+	//  the session creates. See ToolSetSpec.overlays for binding pinned keys to
+	//  nested or differently named parameters.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
 }
 
@@ -4998,6 +5456,49 @@ type ToolSetAdapter_OpenAPI_UploadID struct {
 	//  when base_url is not set. If unset, the first server is used.
 	//  Ignored when base_url is set.
 	ServerName *string `json:"serverName,omitempty"`
+}
+
+type Selector_Condition_Attribute struct {
+	Type string `json:"type"`
+	// Match on a tool attribute (name, title, description,
+	//  llm_tool_name) with a string matcher — the same filter used by
+	//  the adapter's include/exclude lists.
+	Attribute *ToolSetAdapter_AttributeFilter `json:"attribute"`
+}
+
+type Selector_Condition_HasParameter struct {
+	Type string `json:"type"`
+	// Match tools whose parameter schema contains the given path. This
+	//  is the usual way to target "every tool that takes a workspaceId"
+	//  without enumerating tools by name.
+	HasParameter *ToolOverlay_ParameterPath `json:"hasParameter"`
+}
+
+type Selector_Condition_Tools struct {
+	Type string `json:"type"`
+	// Match specific tools by LLM tool name. The direct way to assign an
+	//  overlay to one tool (or a handful) without writing a matcher.
+	Tools *Selector_ToolNames `json:"tools"`
+}
+
+type ToolOverlay_ParameterAction_Remove struct {
+	Type   string                  `json:"type"`
+	Remove *ParameterAction_Remove `json:"remove"`
+}
+
+type ToolOverlay_ParameterAction_Set struct {
+	Type string               `json:"type"`
+	Set  *ParameterAction_Set `json:"set"`
+}
+
+type ToolOverlay_ParameterAction_Pin struct {
+	Type string               `json:"type"`
+	Pin  *ParameterAction_Pin `json:"pin"`
+}
+
+type ToolOverlay_ResultAction_Transform struct {
+	Type      string                  `json:"type"`
+	Transform *ResultAction_Transform `json:"transform"`
 }
 
 type ToolSpec_Config_HTTP struct {
@@ -5522,13 +6023,13 @@ type WidgetSessionSpecParam struct {
 	//  unset.
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 	// Parameters forced onto tool calls made by this session's conversations.
-	//  A pinned parameter is an overlay on a tool's JSON schema: the parameter
-	//  is removed from what the LLM sees, and its value is always overwritten
-	//  server-side with the pinned value — so the model cannot be tricked into
-	//  calling a tool with a different id than the one the session was minted
-	//  for (e.g. pin "workspaceId" for an OpenAPI tool with a
-	//  /workspaces/{workspaceId} path). Flows to every objective the session
-	//  creates.
+	//  A pinned parameter is removed from the tool schema the LLM sees, and its
+	//  value is always overwritten server-side with the pinned value — so the
+	//  model cannot be tricked into calling a tool with a different id than the
+	//  one the session was minted for (e.g. pin "workspaceId" for an OpenAPI
+	//  tool with a /workspaces/{workspaceId} path). Flows to every objective
+	//  the session creates. See ToolSetSpec.overlays for binding pinned keys to
+	//  nested or differently named parameters.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
 }
 

@@ -771,7 +771,7 @@ func main() {
 		return err
 	})
 	run("ToolService_ListTools", func() error {
-		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_UNSPECIFIED"],"workspaceId":"sample"}`))
+		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"overlays":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_UNSPECIFIED"],"workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
