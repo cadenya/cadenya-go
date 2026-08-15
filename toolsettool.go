@@ -232,10 +232,17 @@ func (r *ToolSetToolService) Restore(ctx context.Context, toolSetID string, id s
 // parent tool set being a Bare tool set. Present so a webhook consumer can tell a
 // tool is bare from the tool data alone, without cross-referencing the tool set.
 type ConfigBare struct {
+	// When set, the tool call's result is recorded immediately as this fixed text
+	// instead of parking the call to wait for externally supplied content. The
+	// tool_called event is still emitted. Useful for tools whose dispatch is the
+	// intent (e.g. a frontend renders a component from the call parameters) but whose
+	// LLM turn still needs tool-result content.
+	AlwaysSetResult string `json:"alwaysSetResult"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ExtraFields map[string]respjson.Field
-		raw         string
+		AlwaysSetResult respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -258,6 +265,12 @@ func (r ConfigBare) ToParam() ConfigBareParam {
 // parent tool set being a Bare tool set. Present so a webhook consumer can tell a
 // tool is bare from the tool data alone, without cross-referencing the tool set.
 type ConfigBareParam struct {
+	// When set, the tool call's result is recorded immediately as this fixed text
+	// instead of parking the call to wait for externally supplied content. The
+	// tool_called event is still emitted. Useful for tools whose dispatch is the
+	// intent (e.g. a frontend renders a component from the call parameters) but whose
+	// LLM turn still needs tool-result content.
+	AlwaysSetResult param.Opt[string] `json:"alwaysSetResult,omitzero"`
 	paramObj
 }
 
