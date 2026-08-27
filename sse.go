@@ -8,6 +8,7 @@ package cadenya
 // err := stream.Err(); defer stream.Close().
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -29,6 +30,10 @@ type streamItem struct {
 
 // Stream iterates decoded SSE payloads of type T.
 type Stream[T any] struct {
+	// The request context: once it is done the stream is over — no
+	// reconnect can succeed against it, and callers (a CLI's Ctrl-C) expect
+	// Next to return promptly rather than after the whole backoff budget.
+	ctx         context.Context
 	resp        *http.Response
 	items       chan streamItem
 	cancel      chan struct{}
@@ -56,8 +61,12 @@ const maxReconnects = 5
 // The parser must own that one state machine, so the seed is injected as a
 // synthetic `id:` line ahead of the body rather than tracked separately
 // (separate tracking cannot distinguish "cleared" from "absent").
-func newStream[T any](resp *http.Response, lastEventID string, skipEvents []string, reconnect func(string) (*http.Response, error)) *Stream[T] {
+func newStream[T any](ctx context.Context, resp *http.Response, lastEventID string, skipEvents []string, reconnect func(string) (*http.Response, error)) *Stream[T] {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	s := &Stream[T]{
+		ctx:         ctx,
 		resp:        resp,
 		cancel:      make(chan struct{}),
 		lastEventID: lastEventID,
@@ -96,7 +105,7 @@ func (s *Stream[T]) start(resp *http.Response, seedID string) {
 // Transport handshake failures consume budget and retry; HTTP-level
 // failures (*APIError — e.g. expired credentials) propagate immediately.
 func (s *Stream[T]) tryReconnect() (bool, error) {
-	for s.reconnect != nil && !s.canceled() && s.reconnectAttempts < maxReconnects {
+	for s.reconnect != nil && !s.canceled() && s.ctx.Err() == nil && s.reconnectAttempts < maxReconnects {
 		delay := 500 * time.Millisecond << s.reconnectAttempts
 		if delay > 10*time.Second {
 			delay = 10 * time.Second
@@ -104,6 +113,8 @@ func (s *Stream[T]) tryReconnect() (bool, error) {
 		s.reconnectAttempts++
 		select {
 		case <-s.cancel:
+			return false, nil
+		case <-s.ctx.Done():
 			return false, nil
 		case <-time.After(delay):
 		}
@@ -153,6 +164,13 @@ func (s *Stream[T]) Next() bool {
 			}
 			// Drain the dead connection's channel, then attempt resume.
 			for range s.items {
+			}
+			// A done request context is the caller ending the stream (Ctrl-C,
+			// deadline): report the cancellation itself, immediately — never
+			// the transport's wrapped read error after a futile backoff.
+			if err := s.ctx.Err(); err != nil {
+				s.finish(err)
+				return false
 			}
 			ok, rerr := s.tryReconnect()
 			if rerr != nil {
