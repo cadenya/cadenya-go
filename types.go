@@ -683,10 +683,8 @@ type AgentVariationSpec_Constraints struct {
 	//  When not set, objectives are still swept at the system-wide 24 hour
 	//  maximum — every objective eventually reaches a terminal state.
 	//
-	//  Note: no gnostic integer hint here on purpose. The Envoy gRPC-JSON
-	//  transcoder only accepts the canonical protobuf JSON form for
-	//  Durations — a "<seconds>s" string — so the SDKs must type this as a
-	//  string (like AgentScheduleSpec.every), not an integer.
+	//  SDKs represent this as a duration string, like AgentScheduleSpec.every,
+	//  rather than an integer.
 	InactivityTimeout *string `json:"inactivityTimeout,omitempty"`
 }
 
@@ -706,7 +704,7 @@ const (
 //	Every knob besides model_id is honored only when the assigned model's
 //	spec.capabilities lists the matching capability.
 type AgentVariationSpec_ModelConfig struct {
-	// The model identifier in family/model format (e.g., "claude/opus-4.6", "claude/sonnet-4.5")
+	// The model identifier for the agent variation to use. Should be either the reference key (ai-provider.model-name) or the canonical model ID (e.g.: "model_ABC123")
 	ModelID string `json:"modelId"`
 	// Sampling temperature for model inference (0.0 to 1.0)
 	//  Lower values produce more deterministic outputs, higher values increase randomness.
@@ -1411,7 +1409,7 @@ type EnableModelRequest struct {
 }
 
 type GetObjectiveDiagnosticsResponse struct {
-	// Diagnostics from the objective's most recent iteration.
+	// Context usage from the objective's most recent iteration.
 	Diagnostics *ObjectiveDiagnostics `json:"diagnostics"`
 }
 
@@ -2051,7 +2049,7 @@ const (
 	NoticeLevelLevelWarn        NoticeLevel = "LEVEL_WARN"
 )
 
-// Notice is a non-terminal diagnostic emitted by the runtime when something
+// Notice is a non-terminal event emitted by the runtime when something
 //
 //	noteworthy but non-fatal happens during an objective — for example a
 //	just-in-time tool set failing to load, or a previously loaded tool being
@@ -2184,11 +2182,11 @@ type ObjectiveContextWindowInfo struct {
 	CreatedBy *Profile           `json:"createdBy,omitempty"`
 }
 
-// ObjectiveDiagnostics is the context-usage breakdown measured for a single
+// Context-usage breakdown measured for a single iteration at request-assembly
 //
-//	iteration at request-assembly time. It reports how much of the context
-//	window each component occupies so tool parameters, memory cascades, and
-//	prompts can be tuned against real token usage.
+//	time. It reports how much of the context window each component occupies so
+//	tool parameters, memory cascades, and prompts can be tuned against real
+//	token usage.
 type ObjectiveDiagnostics struct {
 	// Measured character lengths per context component.
 	ContextLengths *ContextLengths `json:"contextLengths"`
@@ -2699,6 +2697,10 @@ type ObjectiveToolCallInfo struct {
 //	(text, image, audio). Media blocks are stored by Cadenya and served as
 //	short-lived signed URLs rather than inline bytes.
 type ObjectiveToolCallResult struct {
+	// The result content as recorded — which is what the model was shown.
+	//  When a tool set overlay transformed the result (ToolOverlay
+	//  result_actions), this is the transformed content; the adapter's raw
+	//  response is kept in the tool call's debug log, not here.
 	Content []ObjectiveToolCallResult_ContentBlock `json:"content"`
 }
 
@@ -3110,35 +3112,64 @@ type RestoreToolRequest struct {
 	ID *string `json:"id,omitempty"`
 }
 
-// Default: ON_RENDER_ERROR_RAW_CONTENT.
-type ResultActionTransformOnRenderError string
+// Default: ON_ERROR_RAW_CONTENT.
+type ResultActionTransformOnError string
 
 const (
-	ResultActionTransformOnRenderErrorOnRenderErrorUnspecified ResultActionTransformOnRenderError = "ON_RENDER_ERROR_UNSPECIFIED"
-	ResultActionTransformOnRenderErrorOnRenderErrorRawContent  ResultActionTransformOnRenderError = "ON_RENDER_ERROR_RAW_CONTENT"
-	ResultActionTransformOnRenderErrorOnRenderErrorFail        ResultActionTransformOnRenderError = "ON_RENDER_ERROR_FAIL"
+	ResultActionTransformOnErrorOnErrorUnspecified ResultActionTransformOnError = "ON_ERROR_UNSPECIFIED"
+	ResultActionTransformOnErrorOnErrorRawContent  ResultActionTransformOnError = "ON_ERROR_RAW_CONTENT"
+	ResultActionTransformOnErrorOnErrorFail        ResultActionTransformOnError = "ON_ERROR_FAIL"
 )
 
-// Replace the result content with a rendered Liquid template. Used to
+// Replace the result's text content with a rendered Liquid template.
 //
-//	compact verbose responses to the fields the model actually needs.
+//	Used to compact verbose responses to the fields the model actually
+//	needs, or to rewrite a JSON response into a smaller JSON document.
 //
 //	`content_template` is rendered against the call:
 //
-//	  {{ result }}             the result content. For HTTP and OpenAPI
-//	                           tools this is the response body, parsed
-//	                           when the response is JSON; for MCP tools it
-//	                           is the content blocks; for bare tools it is
-//	                           the content that was set.
-//	  {{ parameters }}         the final arguments the tool was called
-//	                           with, after parameter actions were applied
+//	  {{ result.text }}        the result's text content (text blocks
+//	                           joined with newlines)
+//	  {{ result.json }}        result.text parsed as JSON — objects and
+//	                           arrays are navigable (`result.json.items`,
+//	                           `| map: "id"`); absent when the text is not
+//	                           valid JSON
+//	  {{ result.blocks }}      every content block: [{type, text?,
+//	                           mime_type?, size_bytes?}]
+//	  {{ parameters }}         the arguments the tool was called with,
+//	                           after parameter actions were applied
 //	  {{ tool.name }}          the tool's metadata.name
 //	  {{ tool.llm_tool_name }} the name the model called it by
 //	  {{ pinned_parameters }}  the objective's pinned parameters
+//	  {{ objective.id }} / {{ objective.external_id }} /
+//	  {{ objective.labels.<key> }}
+//
+//	Templates render with strict variables: referencing `result.json` on
+//	a non-JSON result, or any other undefined variable, is a render error
+//	and `on_error` decides the outcome. The `json` filter pretty-prints a
+//	value as JSON; `sanitized_json` emits it compact and escaped for
+//	embedding.
+//
+//	Transforms are text-only. `result.text` and `result.json` are built
+//	from the result's text blocks; media blocks (images, audio) are opaque
+//	to the template and pass through unchanged. The rendered text replaces
+//	the text blocks as a single text block. A result with no text blocks
+//	at all (an image-only or audio-only result) is out of scope: the
+//	transform is skipped, the result is recorded as returned, and the
+//	skip is noted in the tool call's debug log — this is not an `on_error`
+//	case, nothing was attempted. The one exception is `expect_json`, where
+//	a result with no text is a violated precondition and `on_error`
+//	applies.
 type ResultAction_Transform struct {
 	ContentTemplate string `json:"contentTemplate"`
-	// Default: ON_RENDER_ERROR_RAW_CONTENT.
-	OnRenderError ResultActionTransformOnRenderError `json:"onRenderError"`
+	// Default: ON_ERROR_RAW_CONTENT.
+	OnError ResultActionTransformOnError `json:"onError"`
+	// Require the tool result to have text content that parses as JSON
+	//  before rendering. A non-JSON (or text-less) result is then an error
+	//  subject to `on_error` even if the template never reads
+	//  `result.json`. Off by default: `result.json` is simply absent for
+	//  non-JSON results, and text-less results skip the transform.
+	ExpectJSON bool `json:"expectJson"`
 }
 
 // Resume agent schedule request.
@@ -3651,6 +3682,10 @@ type ToolCalled struct {
 	Config *ToolSpec_Config `json:"config,omitempty"`
 	// The arguments passed to the tool.
 	Arguments map[string]any `json:"arguments,omitempty"`
+	// Whether the runtime authorized this call's arguments to be exposed in
+	//  public widget events. This records the resolved policy at call time so
+	//  consumers do not need to re-evaluate the tool set's current overlays.
+	ArgumentsExposedInWidgets *bool `json:"argumentsExposedInWidgets,omitempty"`
 }
 
 type ToolDenied struct {
@@ -3698,9 +3733,11 @@ type ToolInfo struct {
 //	the model sees and calls. It pairs a selector (which tools it applies to)
 //	with actions that run before a call — rewriting the tool's parameter
 //	schema and the arguments the model supplied — and after a call —
-//	rewriting the result before it enters the model's context.
+//	rewriting the result before it enters the model's context. It can also
+//	explicitly allow the final call arguments to cross the otherwise-private
+//	widget API boundary.
 //
-//	Overlays exist for two reasons:
+//	Overlays exist for three reasons:
 //
 //	  - Authority. Adapter-derived tool sets (OpenAPI especially) expose many
 //	    parameters the model must never guess — a workspace id, a tenant id,
@@ -3712,6 +3749,10 @@ type ToolInfo struct {
 //	  - Context. Large specs carry pagination cursors, expansion flags and
 //	    verbose responses that cost tokens without helping the model.
 //	    Overlays strip parameters, fix them to literals, and compact results.
+//	  - Widget presentation. Tool arguments are private by default. An overlay
+//	    can opt matching tools into exposing their final call arguments in
+//	    visitor-facing widget events so an embedding UI can select a custom
+//	    renderer or presentation.
 //
 //	Pinned parameters and overlays are complementary: pinned parameters are
 //	*data* supplied per objective (or per widget session) by the caller;
@@ -3742,10 +3783,14 @@ type ToolInfo struct {
 //	    nothing into tools that lack the parameter.
 //	  - Overlays apply to just-in-time tool sets as well; the tools are
 //	    evaluated against overlays at the moment they are loaded.
+//	  - Result actions run once, when the tool call's result is recorded; the
+//	    stored result is the transformed one, so every reader (the model,
+//	    compaction, the API) sees the same content. They are not supported on
+//	    bare tool sets.
 type ToolOverlay struct {
 	// Identifies the overlay within its tool set. Unique across the tool
 	//  set's overlays (enforced by the server), stable across reorders, and
-	//  surfaced in tool call diagnostics ("parameter removed by overlay
+	//  surfaced in tool call messages ("parameter removed by overlay
 	//  strip-list-knobs") so an operator can trace a rewritten call back to
 	//  the policy that rewrote it. Referenced by ToolInfo.overlays and the
 	//  ListToolsRequest.overlays filter.
@@ -3761,6 +3806,14 @@ type ToolOverlay struct {
 	//  operator switch a policy off to diagnose a misbehaving tool without
 	//  deleting it and losing the configuration.
 	Disabled bool `json:"disabled"`
+	// Arguments may carry sensitive customer data, including values injected by
+	//  parameter actions, so they stay private unless an overlay enables them.
+	//
+	//  Unset means this overlay has no opinion. When several enabled overlays
+	//  match a tool, they are evaluated in list order and the last overlay that
+	//  supplies this policy wins. If none supplies it, arguments stay private.
+	//  Disabled overlays never participate.
+	WidgetArgumentExposure *ToolOverlay_WidgetArgumentExposure `json:"widgetArgumentExposure,omitempty"`
 }
 
 // A pre-call action. Parameter actions rewrite the tool's parameter
@@ -3862,9 +3915,19 @@ type ToolOverlay_ParameterPath struct {
 
 // A post-call action. Result actions rewrite a tool call's result after
 //
-//	the adapter returns and before the content is handed to the model. They
-//	do not affect what is recorded on the tool call — the raw result is
-//	still stored; the transformed content is what the model reads.
+//	the adapter returns and before it is recorded: the transformed content
+//	is what is stored and what the model reads (ObjectiveToolCallResult
+//	content). The adapter's raw response is kept in the tool call's debug
+//	log for operators; it is not otherwise retained.
+//
+//	Result actions apply to MCP, OpenAPI and HTTP tool sets. They are not
+//	supported on bare tool sets — a bare tool's content is supplied by an
+//	external consumer, so there is nothing for the platform to reshape —
+//	and a tool set whose adapter is `bare` rejects overlays that carry
+//	result actions.
+//
+//	When several matching overlays carry transforms they run in overlay
+//	order, each one reading the previous one's output.
 //
 // ToolOverlay_ResultAction is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
@@ -3930,6 +3993,14 @@ type ToolOverlay_Selector struct {
 	Conditions []Selector_Condition `json:"conditions,omitempty"`
 	// Default: OPERATOR_AND.
 	Operator ToolOverlaySelectorOperator `json:"operator"`
+}
+
+// Controls whether matching tool calls may expose their final arguments to
+//
+//	visitor-facing widget events. The containing message's presence means the
+//	overlay has an opinion; enabled selects whether that opinion is on or off.
+type ToolOverlay_WidgetArgumentExposure struct {
+	Enabled bool `json:"enabled"`
 }
 
 type ToolResult struct {
@@ -4142,6 +4213,25 @@ type ToolSetAdapter_Bare struct {
 }
 
 type ToolSetAdapter_HTTP struct {
+	// Base URL for dispatching tool calls.
+	//
+	//  May be templated. Two reference forms are supported, and they resolve
+	//  in a single pass each so neither can inject into the other:
+	//
+	//    ${SECRET_NAME}                 a workspace or tool set secret
+	//    {{ pinned_parameters.<key> }}  the objective's pinned parameters
+	//      (see CreateObjectiveRequest.pinned_parameters)
+	//
+	//  Pinned parameters are what make a per-tenant host possible: one tool
+	//  set can serve every customer of a product that assigns each of them
+	//  their own subdomain, e.g.
+	//
+	//    https://{{ pinned_parameters.tenant }}.example.com
+	//
+	//  Because the value may be a template rather than a literal URL, this
+	//  field is not constrained to a URI shape. It is validated as an
+	//  absolute http(s) URL after references are resolved, both on write
+	//  (with references stubbed) and again before each tool call.
 	BaseURL *string           `json:"baseUrl,omitempty"`
 	Headers map[string]string `json:"headers,omitempty"`
 }
@@ -4500,8 +4590,9 @@ type ToolSpec struct {
 	//  than defaulting it means a misspelled field name (`inputSchema`, say) is a
 	//  400 instead of a silently parameterless tool.
 	Parameters map[string]any `json:"parameters"`
-	// Configuration for this specific tool. Transport/Protocol are derived from the tool set adapter, while specifics
-	//  such as endpoint, method, etc, are stored on the tool itself.
+	// Configuration for this specific tool. Its transport is derived from the
+	//  tool set adapter, while details such as endpoint and method are stored on
+	//  the tool itself.
 	//
 	//  Required, and exactly one adapter must be set.
 	Config *ToolSpec_Config `json:"config"`
@@ -5431,6 +5522,17 @@ type ToolSetAdapter_OpenAPI_URL struct {
 	ToolApprovals *ToolSetAdapter_ApprovalRequirementFilter `json:"toolApprovals,omitempty"`
 	// Base URL for dispatching tool calls. If set, overrides the server
 	//  resolved from the spec's servers array.
+	//
+	//  May be templated with the same two reference forms the HTTP adapter's
+	//  base_url accepts:
+	//
+	//    ${SECRET_NAME}                 a workspace or tool set secret
+	//    {{ pinned_parameters.<key> }}  the objective's pinned parameters
+	//
+	//  A spec written against a single host can therefore be dispatched to a
+	//  per-tenant one, e.g. https://{{ pinned_parameters.tenant }}.example.com,
+	//  without cloning the tool set per customer. Validated as an absolute
+	//  http(s) URL after references are resolved rather than as a literal URI.
 	BaseURL *string `json:"baseUrl,omitempty"`
 	// Name of the server entry in the spec's servers array (OpenAPI 3.2
 	//  server.name field). Used to select which server URL to dispatch to
@@ -5450,6 +5552,17 @@ type ToolSetAdapter_OpenAPI_UploadID struct {
 	ToolApprovals *ToolSetAdapter_ApprovalRequirementFilter `json:"toolApprovals,omitempty"`
 	// Base URL for dispatching tool calls. If set, overrides the server
 	//  resolved from the spec's servers array.
+	//
+	//  May be templated with the same two reference forms the HTTP adapter's
+	//  base_url accepts:
+	//
+	//    ${SECRET_NAME}                 a workspace or tool set secret
+	//    {{ pinned_parameters.<key> }}  the objective's pinned parameters
+	//
+	//  A spec written against a single host can therefore be dispatched to a
+	//  per-tenant one, e.g. https://{{ pinned_parameters.tenant }}.example.com,
+	//  without cloning the tool set per customer. Validated as an absolute
+	//  http(s) URL after references are resolved rather than as a literal URI.
 	BaseURL *string `json:"baseUrl,omitempty"`
 	// Name of the server entry in the spec's servers array (OpenAPI 3.2
 	//  server.name field). Used to select which server URL to dispatch to

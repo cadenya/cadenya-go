@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -27,6 +28,7 @@ type clientOptions struct {
 	baseURL       *string
 	webhookSecret *string
 	httpClient    *http.Client
+	debugLog      io.Writer
 	maxRetries    int
 	defaults      map[string]*string
 }
@@ -50,6 +52,11 @@ func WithHTTPClient(c *http.Client) Option { return func(o *clientOptions) { o.h
 
 // WithMaxRetries sets automatic retries for retryable failures (default 0).
 func WithMaxRetries(n int) Option { return func(o *clientOptions) { o.maxRetries = n } }
+
+// WithDebugLog dumps every HTTP exchange to w (request line, headers,
+// bodies) for troubleshooting. The credential header is redacted; SSE
+// response bodies are not consumed. w is typically os.Stderr.
+func WithDebugLog(w io.Writer) Option { return func(o *clientOptions) { o.debugLog = w } }
 
 // WithWorkspaceID sets the default workspaceId for every call that takes one
 // (default: the CADENYA_WORKSPACE_ID env var).
@@ -124,6 +131,12 @@ func NewClient(opts ...Option) (*Client, error) {
 		// response bodies. Ordinary JSON calls get a 60s context deadline in
 		// the core instead; streams rely on caller contexts.
 		o.httpClient = &http.Client{}
+	}
+	if o.debugLog != nil {
+		// Clone: never mutate a caller-supplied http.Client.
+		clone := *o.httpClient
+		clone.Transport = &debugTransport{base: o.httpClient.Transport, w: o.debugLog}
+		o.httpClient = &clone
 	}
 	{
 		v, err := resolveOption("workspaceId", o.defaults["workspaceId"], "CADENYA_WORKSPACE_ID")

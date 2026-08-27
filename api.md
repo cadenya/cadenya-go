@@ -435,7 +435,7 @@ List objective context windows
 ```go
 client.Objectives().ListContextWindows(ctx context.Context, objectiveID string, params *ObjectiveListContextWindowsParams, opts ...RequestOption) (*Page[ObjectiveContextWindow], error)
 ```
-Get objective context diagnostics
+Get objective context usage
 
 ```go
 client.Objectives().RetrieveDiagnostics(ctx context.Context, objectiveID string, params *ObjectiveRetrieveDiagnosticsParams, opts ...RequestOption) (*GetObjectiveDiagnosticsResponse, error)

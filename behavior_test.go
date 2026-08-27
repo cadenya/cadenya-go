@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -198,4 +199,54 @@ func TestPerRequestHeaders(t *testing.T) {
 	_, err := client.Accounts().Retrieve(ctx, cadenya.WithRequestHeader("X-Request-ID", "rid-1"))
 	require.NoError(t, err)
 	require.Equal(t, "rid-1", (*headers).Get("X-Request-Id"))
+}
+
+// WithDebugLog dumps each HTTP exchange (request line, redacted headers,
+// bodies) to the supplied writer without changing behavior. The credential
+// must never appear in the dump.
+func TestDebugLog(t *testing.T) {
+	server, _, _ := sequenceServer(t, cannedResponse{status: 200, contentType: "application/json", body: `{"info":{"challengeToken":"sample","webhookEventsHmacSecret":"sample"},"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{"billingEmail":"sample","description":"sample","domain":"sample","workspaces":[{"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{},"status":"STATUS_ENABLED"}]}}`})
+	var buf strings.Builder
+	client := newTestClient(t, server.URL, cadenya.WithDebugLog(&buf))
+	ctx := context.Background()
+	_, err := client.Accounts().Retrieve(ctx)
+	require.NoError(t, err)
+	dump := buf.String()
+	require.Contains(t, dump, "> GET ", "request line logged")
+	require.Contains(t, dump, "< HTTP ", "response status logged")
+	require.Contains(t, dump, "Authorization: [redacted]", "auth header redacted, not omitted")
+	require.NotContains(t, dump, "test-key", "credential leaked into debug output")
+}
+
+// A cancelled request context ends a stream PROMPTLY: no reconnect attempts
+// (the context is dead — every retry would fail and burn the backoff budget)
+// and the cancellation surfaces through Err. A CLI's Ctrl-C depends on this.
+func TestStreamCancellationStopsPromptly(t *testing.T) {
+	var hits atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(200)
+		_, _ = w.Write([]byte("id: e1\ndata: {}\n\n"))
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		<-r.Context().Done()
+	}))
+	t.Cleanup(server.Close)
+	client := newTestClient(t, server.URL)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	stream, err := client.Objectives().StreamEvents(ctx, "sample", (&cadenya.ObjectiveStreamEventsBuilder{}).
+		WorkspaceID("sample").
+		ToParams())
+	require.NoError(t, err)
+	defer stream.Close()
+	require.True(t, stream.Next(), "first event arrives: %v", stream.Err())
+	cancel()
+	started := time.Now()
+	require.False(t, stream.Next(), "stream ends after cancellation")
+	require.Less(t, time.Since(started), 2*time.Second, "cancellation must not wait out the reconnect backoff")
+	require.True(t, errors.Is(stream.Err(), context.Canceled), "got %v", stream.Err())
+	require.Equal(t, int32(1), hits.Load(), "no reconnect against a cancelled context")
 }
