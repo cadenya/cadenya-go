@@ -20,8 +20,11 @@ jobs:
         with:
           go-version-file: ./go.mod
 
-      - name: Run lints
-        run: ./scripts/lint
+      - name: Build
+        run: go build ./...
+
+      - name: Check tests compile
+        run: go test -run=^$ ./...
   test:
     timeout-minutes: 10
     name: test
@@ -35,8 +38,5 @@ jobs:
         with:
           go-version-file: ./go.mod
 
-      - name: Bootstrap
-        run: ./scripts/bootstrap
-
       - name: Run tests
-        run: ./scripts/test
+        run: go test ./...
