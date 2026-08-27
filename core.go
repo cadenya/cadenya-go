@@ -12,10 +12,78 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// debugTransport logs each HTTP exchange to w — request line, headers with
+// the credential redacted, and both bodies — without changing behavior.
+// Streaming (SSE) response bodies are not consumed: the stream itself is
+// the output, so only its status and headers are logged.
+type debugTransport struct {
+	base http.RoundTripper
+	w    io.Writer
+}
+
+func (d *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	fmt.Fprintf(d.w, "> %s %s\n", req.Method, req.URL)
+	d.dumpHeaders(">", req.Header)
+	if req.Body != nil && req.GetBody != nil {
+		if body, err := req.GetBody(); err == nil {
+			data, _ := io.ReadAll(body)
+			body.Close()
+			if len(data) > 0 {
+				fmt.Fprintf(d.w, "> %s\n", data)
+			}
+		}
+	}
+	base := d.base
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	resp, err := base.RoundTrip(req)
+	if err != nil {
+		fmt.Fprintf(d.w, "< transport error: %v\n", err)
+		return resp, err
+	}
+	fmt.Fprintf(d.w, "< HTTP %s\n", resp.Status)
+	d.dumpHeaders("<", resp.Header)
+	if strings.HasPrefix(resp.Header.Get("Content-Type"), "text/event-stream") {
+		fmt.Fprintf(d.w, "< (streaming body not shown)\n")
+		return resp, nil
+	}
+	data, readErr := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if len(data) > 0 {
+		fmt.Fprintf(d.w, "< %s\n", data)
+	}
+	resp.Body = io.NopCloser(bytes.NewReader(data))
+	if readErr != nil {
+		return resp, readErr
+	}
+	return resp, nil
+}
+
+func (d *debugTransport) dumpHeaders(prefix string, h http.Header) {
+	keys := make([]string, 0, len(h))
+	for k := range h {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		// Redacted, not omitted: the dump must show the header WAS sent
+		// without ever writing the credential to a log.
+		if k == "Authorization" || strings.EqualFold(k, "X-Api-Key") {
+			fmt.Fprintf(d.w, "%s %s: [redacted]\n", prefix, k)
+			continue
+		}
+		for _, v := range h[k] {
+			fmt.Fprintf(d.w, "%s %s: %s\n", prefix, k, v)
+		}
+	}
+}
 
 // APIError is a non-2xx response carrying the API's rpc Status payload.
 type APIError struct {

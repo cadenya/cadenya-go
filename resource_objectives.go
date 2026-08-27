@@ -774,7 +774,7 @@ type ObjectiveResources interface {
 	Retrieve(ctx context.Context, id string, params *ObjectiveRetrieveParams, opts ...RequestOption) (*Objective, error)
 	// List objective context windows
 	ListContextWindows(ctx context.Context, objectiveID string, params *ObjectiveListContextWindowsParams, opts ...RequestOption) (*Page[ObjectiveContextWindow], error)
-	// Get objective context diagnostics
+	// Get objective context usage
 	RetrieveDiagnostics(ctx context.Context, objectiveID string, params *ObjectiveRetrieveDiagnosticsParams, opts ...RequestOption) (*GetObjectiveDiagnosticsResponse, error)
 	// List objective events
 	ListEvents(ctx context.Context, objectiveID string, params *ObjectiveListEventsParams, opts ...RequestOption) (*Page[ObjectiveEvent], error)
@@ -1126,7 +1126,7 @@ func (s *objectivesService) StreamEvents(ctx context.Context, objectiveID string
 	if rc.reconnect != nil && !*rc.reconnect {
 		_reconnect = nil
 	}
-	return newStream[ObjectiveEvent](resp, rc.headers.Get("Last-Event-ID"), []string{"ping", "open"}, _reconnect), nil
+	return newStream[ObjectiveEvent](ctx, resp, rc.headers.Get("Last-Event-ID"), []string{"ping", "open"}, _reconnect), nil
 }
 
 func (s *objectivesService) ListFeedback(ctx context.Context, objectiveID string, params *ObjectiveListFeedbackParams, opts ...RequestOption) (*Page[ObjectiveFeedback], error) {
