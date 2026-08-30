@@ -27,7 +27,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_UNSPECIFIED\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_WORKSPACE\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_PENDING\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_AUTO_APPROVED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -59,7 +59,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_UNSPECIFIED\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"data\":{\"arguments\":{},\"callable\":{\"tool\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"type\":\"tool\"},\"resolvedSecrets\":[{\"key\":\"sample\",\"source\":\"RESOLVED_SECRET_SOURCE_WORKSPACE\"}]},\"executionStatus\":\"TOOL_CALL_EXECUTION_STATUS_PENDING\",\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"status\":\"TOOL_CALL_STATUS_AUTO_APPROVED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

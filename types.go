@@ -819,7 +819,7 @@ type BareMetadata struct {
 	ID string `json:"id"`
 	// Human-readable name of the referenced resource, populated by the server
 	//  on reads for convenience. Absent on references to resources that do not
-	//  have a name (e.g., objective tasks).
+	//  have a name.
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1499,11 +1499,6 @@ type ListObjectiveEventsResponse struct {
 type ListObjectiveFeedbackResponse struct {
 	Items      []ObjectiveFeedback `json:"items"`
 	Pagination *PageModel          `json:"pagination,omitempty"`
-}
-
-type ListObjectiveTasksResponse struct {
-	Items      []ObjectiveTask `json:"items"`
-	Pagination *PageModel      `json:"pagination,omitempty"`
 }
 
 type ListObjectiveToolCallsResponse struct {
@@ -2595,25 +2590,6 @@ type ObjectiveInfo struct {
 	// The widget this objective's conversation ran through, when it was
 	//  created via a widget session.
 	Widget *BareMetadata `json:"widget,omitempty"`
-}
-
-// ObjectiveTask represents a task within an objective, typically created and managed by an AI agent
-//
-//	to track progress toward completing the objective.
-type ObjectiveTask struct {
-	Metadata *BareMetadata      `json:"metadata"`
-	Data     *ObjectiveTaskData `json:"data"`
-}
-
-type ObjectiveTaskData struct {
-	// The sequential number of this task within the objective (auto-assigned, 1-based)
-	Number int32 `json:"number"`
-	// Description of the task to be completed
-	Task string `json:"task"`
-	// Whether the task has been completed
-	Completed bool `json:"completed"`
-	// Timestamp when the task was marked as completed
-	CompletedAt *time.Time `json:"completedAt,omitempty"`
 }
 
 // ObjectiveTimedOut is the terminal event written when an objective is

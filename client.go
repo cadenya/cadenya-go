@@ -153,7 +153,7 @@ func NewClient(opts ...Option) (*Client, error) {
 			httpClient: o.httpClient,
 			maxRetries: o.maxRetries,
 			defaults:   defaults,
-			userAgent:  "cadenya-go/1.0.0 (api 1.0)",
+			userAgent:  "cadenya-go/1.0.1 (api 1.0)",
 		},
 		webhookSecret: webhookSecret,
 	}, nil

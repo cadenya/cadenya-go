@@ -18,7 +18,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{},\"info\":{\"submittedBy\":{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_UNSPECIFIED\"}}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"data\":{},\"info\":{\"submittedBy\":{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_USER\"}}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -41,7 +41,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{},\"info\":{\"submittedBy\":{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_UNSPECIFIED\"}}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"data\":{},\"info\":{\"submittedBy\":{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_USER\"}}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

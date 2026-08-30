@@ -193,7 +193,7 @@ func main() {
 		return nil
 	})
 	run("AgentService_ListAgents", func() error {
-		page, err := client.Agents().List(ctx, decode[sdk.AgentListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_UNSPECIFIED","variationSelectionMode":"VARIATION_SELECTION_MODE_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.Agents().List(ctx, decode[sdk.AgentListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_DRAFT","variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -207,11 +207,11 @@ func main() {
 		return nil
 	})
 	run("AgentService_CreateAgent", func() error {
-		_, err := client.Agents().Create(ctx, decode[sdk.AgentCreateParams](`{"defaultVariation":{"metadata":{"name":"sample"},"spec":{}},"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_UNSPECIFIED"},"workspaceId":"sample"}`))
+		_, err := client.Agents().Create(ctx, decode[sdk.AgentCreateParams](`{"defaultVariation":{"metadata":{"name":"sample"},"spec":{}},"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM"},"workspaceId":"sample"}`))
 		return err
 	})
 	run("AgentService_ListAgentFeedback", func() error {
-		page, err := client.Agents().ListFeedback(ctx, "sample", decode[sdk.AgentListFeedbackParams](`{"agentVariationId":"sample","createdAfter":"2026-01-01T00:00:00Z","createdBefore":"2026-01-01T00:00:00Z","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"query":"sample","sentiment":"FEEDBACK_SENTIMENT_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.Agents().ListFeedback(ctx, "sample", decode[sdk.AgentListFeedbackParams](`{"agentVariationId":"sample","createdAfter":"2026-01-01T00:00:00Z","createdBefore":"2026-01-01T00:00:00Z","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"query":"sample","sentiment":"FEEDBACK_SENTIMENT_POSITIVE","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -225,7 +225,7 @@ func main() {
 		return nil
 	})
 	run("AgentService_ListAgentWebhookDeliveries", func() error {
-		page, err := client.Agents().ListWebhookDeliveries(ctx, "sample", decode[sdk.AgentListWebhookDeliveriesParams](`{"cursor":"sample","eventType":"OBJECTIVE_EVENT_TYPE_UNSPECIFIED","labels":"sample","limit":1,"objectiveId":"sample","workspaceId":"sample"}`))
+		page, err := client.Agents().ListWebhookDeliveries(ctx, "sample", decode[sdk.AgentListWebhookDeliveriesParams](`{"cursor":"sample","eventType":"OBJECTIVE_EVENT_TYPE_USER_MESSAGE","labels":"sample","limit":1,"objectiveId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -246,7 +246,7 @@ func main() {
 		return client.Agents().Delete(ctx, "sample", decode[sdk.AgentDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("AgentService_UpdateAgent", func() error {
-		_, err := client.Agents().Update(ctx, "sample", decode[sdk.AgentUpdateParams](`{"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_UNSPECIFIED"},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.Agents().Update(ctx, "sample", decode[sdk.AgentUpdateParams](`{"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM"},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("AgentService_ArchiveAgent", func() error {
@@ -383,7 +383,7 @@ func main() {
 		return err
 	})
 	run("MemoryService_ListMemoryLayers", func() error {
-		page, err := client.MemoryLayers().List(ctx, decode[sdk.MemoryLayerListParams](`{"agentId":"sample","cursor":"sample","episodicKeyPrefix":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","type":"MEMORY_LAYER_TYPE_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.MemoryLayers().List(ctx, decode[sdk.MemoryLayerListParams](`{"agentId":"sample","cursor":"sample","episodicKeyPrefix":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","type":"MEMORY_LAYER_TYPE_EPISODIC","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -397,7 +397,7 @@ func main() {
 		return nil
 	})
 	run("MemoryService_CreateMemoryLayer", func() error {
-		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_UNSPECIFIED"},"workspaceId":"sample"}`))
+		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"workspaceId":"sample"}`))
 		return err
 	})
 	run("MemoryService_GetMemoryLayer", func() error {
@@ -408,7 +408,7 @@ func main() {
 		return client.MemoryLayers().Delete(ctx, "sample", decode[sdk.MemoryLayerDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("MemoryService_UpdateMemoryLayer", func() error {
-		_, err := client.MemoryLayers().Update(ctx, "sample", decode[sdk.MemoryLayerUpdateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_UNSPECIFIED"},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.MemoryLayers().Update(ctx, "sample", decode[sdk.MemoryLayerUpdateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("MemoryService_ListMemoryEntries", func() error {
@@ -441,7 +441,7 @@ func main() {
 		return err
 	})
 	run("ModelService_ListModels", func() error {
-		page, err := client.Models().List(ctx, decode[sdk.ModelListParams](`{"aiProviderKeyId":"sample","cursor":"sample","includeInfo":true,"isAssigned":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.Models().List(ctx, decode[sdk.ModelListParams](`{"aiProviderKeyId":"sample","cursor":"sample","includeInfo":true,"isAssigned":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_ENABLED","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -470,7 +470,7 @@ func main() {
 		return client.Models().SwapOnVariations(ctx, decode[sdk.ModelSwapOnVariationsParams](`{"modelSwaps":[{}],"workspaceId":"sample"}`))
 	})
 	run("ObjectiveService_ListObjectives", func() error {
-		page, err := client.Objectives().List(ctx, decode[sdk.ObjectiveListParams](`{"agentId":"sample","agentScheduleId":"sample","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"parentObjectiveId":"sample","profileId":"sample","sortOrder":"sample","state":"STATE_UNSPECIFIED","subjectId":"sample","tenantId":"sample","widgetId":"sample","widgetSessionId":"sample","workspaceId":"sample"}`))
+		page, err := client.Objectives().List(ctx, decode[sdk.ObjectiveListParams](`{"agentId":"sample","agentScheduleId":"sample","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"parentObjectiveId":"sample","profileId":"sample","sortOrder":"sample","state":"STATE_PENDING","subjectId":"sample","tenantId":"sample","widgetId":"sample","widgetSessionId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -558,26 +558,8 @@ func main() {
 		_, err := client.Objectives().CreateFeedback(ctx, "sample", decode[sdk.ObjectiveCreateFeedbackParams](`{"data":{},"metadata":{},"workspaceId":"sample"}`))
 		return err
 	})
-	run("ObjectiveService_ListObjectiveTasks", func() error {
-		page, err := client.Objectives().ListTasks(ctx, "sample", decode[sdk.ObjectiveListTasksParams](`{"cursor":"sample","limit":1,"sortOrder":"sample","workspaceId":"sample"}`))
-		if err != nil {
-			return err
-		}
-		items, err := page.All(ctx)
-		if err != nil {
-			return err
-		}
-		if len(items) != 2 {
-			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
-		}
-		return nil
-	})
-	run("ObjectiveService_GetObjectiveTask", func() error {
-		_, err := client.Objectives().RetrieveTask(ctx, "sample", "sample", decode[sdk.ObjectiveRetrieveTaskParams](`{"workspaceId":"sample"}`))
-		return err
-	})
 	run("ObjectiveService_ListObjectiveToolCalls", func() error {
-		page, err := client.Objectives().ListToolCalls(ctx, "sample", decode[sdk.ObjectiveListToolCallsParams](`{"cursor":"sample","executionStatus":"TOOL_CALL_EXECUTION_STATUS_UNSPECIFIED","includeInfo":true,"labels":"sample","limit":1,"status":"TOOL_CALL_STATUS_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.Objectives().ListToolCalls(ctx, "sample", decode[sdk.ObjectiveListToolCallsParams](`{"cursor":"sample","executionStatus":"TOOL_CALL_EXECUTION_STATUS_PENDING","includeInfo":true,"labels":"sample","limit":1,"status":"TOOL_CALL_STATUS_AUTO_APPROVED","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -673,7 +655,7 @@ func main() {
 		return nil
 	})
 	run("ToolService_ListToolSets", func() error {
-		page, err := client.ToolSets().List(ctx, decode[sdk.ToolSetListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_UNSPECIFIED","workspaceId":"sample"}`))
+		page, err := client.ToolSets().List(ctx, decode[sdk.ToolSetListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_ACTIVE","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -771,7 +753,7 @@ func main() {
 		return err
 	})
 	run("ToolService_ListTools", func() error {
-		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"overlays":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_UNSPECIFIED"],"workspaceId":"sample"}`))
+		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"overlays":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_AVAILABLE"],"workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -785,7 +767,7 @@ func main() {
 		return nil
 	})
 	run("ToolService_CreateTool", func() error {
-		_, err := client.ToolSets().Tools().Create(ctx, "sample", decode[sdk.ToolCreateParams](`{"metadata":{"name":"sample"},"spec":{"config":{"http":{"requestMethod":"HTTP_METHOD_UNSPECIFIED"},"type":"http"},"description":"sample","parameters":{},"requiresApproval":true},"workspaceId":"sample"}`))
+		_, err := client.ToolSets().Tools().Create(ctx, "sample", decode[sdk.ToolCreateParams](`{"metadata":{"name":"sample"},"spec":{"config":{"http":{"requestMethod":"GET"},"type":"http"},"description":"sample","parameters":{},"requiresApproval":true},"workspaceId":"sample"}`))
 		return err
 	})
 	run("ToolService_GetTool", func() error {
@@ -796,7 +778,7 @@ func main() {
 		return client.ToolSets().Tools().Delete(ctx, "sample", "sample", decode[sdk.ToolDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("ToolService_UpdateTool", func() error {
-		_, err := client.ToolSets().Tools().Update(ctx, "sample", "sample", decode[sdk.ToolUpdateParams](`{"metadata":{"name":"sample"},"spec":{"config":{"http":{"requestMethod":"HTTP_METHOD_UNSPECIFIED"},"type":"http"},"description":"sample","parameters":{},"requiresApproval":true},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.ToolSets().Tools().Update(ctx, "sample", "sample", decode[sdk.ToolUpdateParams](`{"metadata":{"name":"sample"},"spec":{"config":{"http":{"requestMethod":"GET"},"type":"http"},"description":"sample","parameters":{},"requiresApproval":true},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("ToolService_OmitTool", func() error {
@@ -816,7 +798,7 @@ func main() {
 		return err
 	})
 	run("WidgetSessionService_ListWidgetSessions", func() error {
-		page, err := client.WidgetSessions().List(ctx, decode[sdk.WidgetSessionListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"sortOrder":"sample","state":"STATE_UNSPECIFIED","subjectId":"sample","tenantId":"sample","widgetId":"sample","workspaceId":"sample"}`))
+		page, err := client.WidgetSessions().List(ctx, decode[sdk.WidgetSessionListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"sortOrder":"sample","state":"STATE_ACTIVE","subjectId":"sample","tenantId":"sample","widgetId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}

@@ -460,16 +460,6 @@ Submit feedback for an objective
 ```go
 client.Objectives().CreateFeedback(ctx context.Context, objectiveID string, params *ObjectiveCreateFeedbackParams, opts ...RequestOption) (*ObjectiveFeedback, error)
 ```
-List objective tasks
-
-```go
-client.Objectives().ListTasks(ctx context.Context, objectiveID string, params *ObjectiveListTasksParams, opts ...RequestOption) (*Page[ObjectiveTask], error)
-```
-Get an objective task by ID
-
-```go
-client.Objectives().RetrieveTask(ctx context.Context, objectiveID string, id string, params *ObjectiveRetrieveTaskParams, opts ...RequestOption) (*ObjectiveTask, error)
-```
 List objective tool calls
 
 ```go

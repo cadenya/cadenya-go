@@ -36,7 +36,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"secrets\":[{\"name\":\"sample\"}],\"spec\":{\"token\":\"sample\",\"widgetId\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"secrets\":[{\"name\":\"sample\"}],\"spec\":{\"token\":\"sample\",\"widgetId\":\"sample\"},\"state\":\"STATE_ACTIVE\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -77,7 +77,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"secrets\":[{\"name\":\"sample\"}],\"spec\":{\"token\":\"sample\",\"widgetId\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"secrets\":[{\"name\":\"sample\"}],\"spec\":{\"token\":\"sample\",\"widgetId\":\"sample\"},\"state\":\"STATE_ACTIVE\"}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

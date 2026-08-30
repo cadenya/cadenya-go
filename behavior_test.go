@@ -179,7 +179,7 @@ func TestMutationRetryPolicy(t *testing.T) {
 		require.Equal(t, int32(1), hits.Load())
 	})
 	t.Run("the CALLER opts one call in via WithRequestRetries", func(t *testing.T) {
-		server, hits, _ := sequenceServer(t, retryable, cannedResponse{status: 200, contentType: "application/json", body: `{"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{"system":true,"token":"sample"},"state":"STATE_UNSPECIFIED"}`})
+		server, hits, _ := sequenceServer(t, retryable, cannedResponse{status: 200, contentType: "application/json", body: `{"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{"system":true,"token":"sample"},"state":"STATE_ENABLED"}`})
 		client := newTestClient(t, server.URL)
 		ctx := context.Background()
 		_, err := client.APIKeys().Create(ctx, (&cadenya.APIKeyCreateBuilder{}).

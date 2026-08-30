@@ -16,7 +16,7 @@
         "query": {}
       },
       "response": {
-        "body": "{\"info\":{\"totalFires\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"schedule\":{}},\"state\":\"STATE_UNSPECIFIED\"}",
+        "body": "{\"info\":{\"totalFires\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"schedule\":{}},\"state\":\"STATE_ACTIVE\"}",
         "contentType": "application/json",
         "status": 200
       }
