@@ -8,7 +8,7 @@
         "query": {}
       },
       "response": {
-        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"capabilities\":[{\"temperature\":{},\"type\":\"temperature\"}],\"family\":\"sample\",\"inputPricePerMillionTokens\":\"sample\",\"maxInputTokens\":1,\"maxOutputTokens\":1,\"outputPricePerMillionTokens\":\"sample\",\"provider\":\"sample\"},\"state\":\"STATE_UNSPECIFIED\"}",
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"capabilities\":[{\"temperature\":{},\"type\":\"temperature\"}],\"family\":\"sample\",\"inputPricePerMillionTokens\":\"sample\",\"maxInputTokens\":1,\"maxOutputTokens\":1,\"outputPricePerMillionTokens\":\"sample\",\"provider\":\"sample\"},\"state\":\"STATE_ENABLED\"}",
         "contentType": "application/json",
         "status": 200
       }

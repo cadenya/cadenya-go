@@ -442,64 +442,6 @@ func (b *ObjectiveCreateFeedbackBuilder) ToParams() *ObjectiveCreateFeedbackPara
 	return &p
 }
 
-type ObjectiveListTasksParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	Limit       *int32  `json:"limit,omitempty"`
-	Cursor      *string `json:"cursor,omitempty"`
-	SortOrder   *string `json:"sortOrder,omitempty"`
-}
-
-// ObjectiveListTasksBuilder builds a ObjectiveListTasksParams fluently.
-type ObjectiveListTasksBuilder struct {
-	params ObjectiveListTasksParams
-}
-
-func (b *ObjectiveListTasksBuilder) WorkspaceID(v string) *ObjectiveListTasksBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-func (b *ObjectiveListTasksBuilder) Limit(v int32) *ObjectiveListTasksBuilder {
-	b.params.Limit = &v
-	return b
-}
-
-func (b *ObjectiveListTasksBuilder) Cursor(v string) *ObjectiveListTasksBuilder {
-	b.params.Cursor = &v
-	return b
-}
-
-func (b *ObjectiveListTasksBuilder) SortOrder(v string) *ObjectiveListTasksBuilder {
-	b.params.SortOrder = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *ObjectiveListTasksBuilder) ToParams() *ObjectiveListTasksParams {
-	p := b.params
-	return &p
-}
-
-type ObjectiveRetrieveTaskParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-}
-
-// ObjectiveRetrieveTaskBuilder builds a ObjectiveRetrieveTaskParams fluently.
-type ObjectiveRetrieveTaskBuilder struct {
-	params ObjectiveRetrieveTaskParams
-}
-
-func (b *ObjectiveRetrieveTaskBuilder) WorkspaceID(v string) *ObjectiveRetrieveTaskBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *ObjectiveRetrieveTaskBuilder) ToParams() *ObjectiveRetrieveTaskParams {
-	p := b.params
-	return &p
-}
-
 type ObjectiveListToolCallsParams struct {
 	WorkspaceID     *string                                                `json:"workspaceId,omitempty"`
 	Limit           *int32                                                 `json:"limit,omitempty"`
@@ -784,10 +726,6 @@ type ObjectiveResources interface {
 	ListFeedback(ctx context.Context, objectiveID string, params *ObjectiveListFeedbackParams, opts ...RequestOption) (*Page[ObjectiveFeedback], error)
 	// Submit feedback for an objective
 	CreateFeedback(ctx context.Context, objectiveID string, params *ObjectiveCreateFeedbackParams, opts ...RequestOption) (*ObjectiveFeedback, error)
-	// List objective tasks
-	ListTasks(ctx context.Context, objectiveID string, params *ObjectiveListTasksParams, opts ...RequestOption) (*Page[ObjectiveTask], error)
-	// Get an objective task by ID
-	RetrieveTask(ctx context.Context, objectiveID string, id string, params *ObjectiveRetrieveTaskParams, opts ...RequestOption) (*ObjectiveTask, error)
 	// List objective tool calls
 	ListToolCalls(ctx context.Context, objectiveID string, params *ObjectiveListToolCallsParams, opts ...RequestOption) (*Page[ObjectiveToolCall], error)
 	// Get an objective tool call by ID
@@ -1199,78 +1137,6 @@ func (s *objectivesService) CreateFeedback(ctx context.Context, objectiveID stri
 	}
 	var out ObjectiveFeedback
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (s *objectivesService) ListTasks(ctx context.Context, objectiveID string, params *ObjectiveListTasksParams, opts ...RequestOption) (*Page[ObjectiveTask], error) {
-	if params == nil {
-		params = &ObjectiveListTasksParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segObjectiveID, err := pathSegment("objectiveId", objectiveID)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s/tasks", segWorkspaceID, segObjectiveID)
-	q := url.Values{}
-	if params.Limit != nil {
-		q.Set("limit", strconv.FormatInt(int64(*params.Limit), 10))
-	}
-	if params.Cursor != nil {
-		q.Set("cursor", (*params.Cursor))
-	}
-	if params.SortOrder != nil {
-		q.Set("sortOrder", (*params.SortOrder))
-	}
-	var out ListObjectiveTasksResponse
-	if err := s.core.do(ctx, "GET", path, q, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	nextCursor := ""
-	if out.Pagination != nil {
-		nextCursor = out.Pagination.NextCursor
-	}
-	base := *params
-	fetch := func(ctx context.Context, cursor string) (*Page[ObjectiveTask], error) {
-		p := base
-		p.Cursor = &cursor
-		return s.ListTasks(ctx, objectiveID, &p, opts...)
-	}
-	return newPage(out.Items, nextCursor, fetch), nil
-}
-
-func (s *objectivesService) RetrieveTask(ctx context.Context, objectiveID string, id string, params *ObjectiveRetrieveTaskParams, opts ...RequestOption) (*ObjectiveTask, error) {
-	if params == nil {
-		params = &ObjectiveRetrieveTaskParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segObjectiveID, err := pathSegment("objectiveId", objectiveID)
-	if err != nil {
-		return nil, err
-	}
-	segID, err := pathSegment("id", id)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s/tasks/%s", segWorkspaceID, segObjectiveID, segID)
-	var out ObjectiveTask
-	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil

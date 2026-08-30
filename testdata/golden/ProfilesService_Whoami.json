@@ -8,7 +8,7 @@
         "query": {}
       },
       "response": {
-        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_UNSPECIFIED\"}}",
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"email\":\"sample\",\"name\":\"sample\",\"type\":\"PROFILE_TYPE_USER\"}}",
         "contentType": "application/json",
         "status": 200
       }

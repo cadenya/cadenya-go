@@ -42,7 +42,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"config\":{\"http\":{\"requestMethod\":\"HTTP_METHOD_UNSPECIFIED\"},\"type\":\"http\"},\"description\":\"sample\",\"parameters\":{},\"requiresApproval\":true},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"config\":{\"http\":{\"requestMethod\":\"GET\"},\"type\":\"http\"},\"description\":\"sample\",\"parameters\":{},\"requiresApproval\":true},\"state\":\"STATE_AVAILABLE\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -89,7 +89,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"config\":{\"http\":{\"requestMethod\":\"HTTP_METHOD_UNSPECIFIED\"},\"type\":\"http\"},\"description\":\"sample\",\"parameters\":{},\"requiresApproval\":true},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"config\":{\"http\":{\"requestMethod\":\"GET\"},\"type\":\"http\"},\"description\":\"sample\",\"parameters\":{},\"requiresApproval\":true},\"state\":\"STATE_AVAILABLE\"}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

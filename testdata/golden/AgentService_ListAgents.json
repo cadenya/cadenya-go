@@ -36,7 +36,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_UNSPECIFIED\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_RANDOM\"},\"state\":\"STATE_DRAFT\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -77,7 +77,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_UNSPECIFIED\"},\"state\":\"STATE_UNSPECIFIED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_RANDOM\"},\"state\":\"STATE_DRAFT\"}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

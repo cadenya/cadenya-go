@@ -325,60 +325,6 @@ func (s *ObjectivesSuite) TestCreateFeedback() {
 	})
 }
 
-func (s *ObjectivesSuite) TestListTasks() {
-	g := loadGolden(s.T(), "ObjectiveService_ListObjectiveTasks")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	page, err := client.Objectives().ListTasks(ctx, "sample", (&cadenya.ObjectiveListTasksBuilder{}).
-		WorkspaceID("sample").
-		Limit(1).
-		Cursor("sample").
-		SortOrder("sample").
-		ToParams())
-	s.Require().NoError(err)
-	items, err := page.All(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(items, 2)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives/sample/tasks", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.Objectives().ListTasks(ctx, "sample", (&cadenya.ObjectiveListTasksBuilder{}).
-			Limit(1).
-			Cursor("sample").
-			SortOrder("sample").
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
-}
-
-func (s *ObjectivesSuite) TestRetrieveTask() {
-	g := loadGolden(s.T(), "ObjectiveService_GetObjectiveTask")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	result, err := client.Objectives().RetrieveTask(ctx, "sample", "sample", (&cadenya.ObjectiveRetrieveTaskBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
-	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives/sample/tasks/sample", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.Objectives().RetrieveTask(ctx, "sample", "sample", (&cadenya.ObjectiveRetrieveTaskBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
-}
-
 func (s *ObjectivesSuite) TestListToolCalls() {
 	g := loadGolden(s.T(), "ObjectiveService_ListObjectiveToolCalls")
 	server, served := goldenServer(s.T(), g)

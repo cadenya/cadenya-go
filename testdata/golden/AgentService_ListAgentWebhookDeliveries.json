@@ -24,7 +24,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{\"agentId\":\"sample\",\"attemptCount\":1,\"errorMessage\":\"sample\",\"eventType\":\"OBJECTIVE_EVENT_TYPE_UNSPECIFIED\",\"httpStatusCode\":1,\"lastAttemptAt\":\"2026-01-01T00:00:00Z\",\"latencyMs\":1,\"objectiveEventId\":\"sample\",\"objectiveId\":\"sample\",\"responseContentLength\":\"sample\",\"responseHeaders\":{},\"status\":\"WEBHOOK_DELIVERY_STATUS_UNSPECIFIED\",\"webhookId\":\"sample\",\"webhookUrl\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"data\":{\"agentId\":\"sample\",\"attemptCount\":1,\"errorMessage\":\"sample\",\"eventType\":\"OBJECTIVE_EVENT_TYPE_USER_MESSAGE\",\"httpStatusCode\":1,\"lastAttemptAt\":\"2026-01-01T00:00:00Z\",\"latencyMs\":1,\"objectiveEventId\":\"sample\",\"objectiveId\":\"sample\",\"responseContentLength\":\"sample\",\"responseHeaders\":{},\"status\":\"WEBHOOK_DELIVERY_STATUS_PENDING\",\"webhookId\":\"sample\",\"webhookUrl\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -53,7 +53,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"data\":{\"agentId\":\"sample\",\"attemptCount\":1,\"errorMessage\":\"sample\",\"eventType\":\"OBJECTIVE_EVENT_TYPE_UNSPECIFIED\",\"httpStatusCode\":1,\"lastAttemptAt\":\"2026-01-01T00:00:00Z\",\"latencyMs\":1,\"objectiveEventId\":\"sample\",\"objectiveId\":\"sample\",\"responseContentLength\":\"sample\",\"responseHeaders\":{},\"status\":\"WEBHOOK_DELIVERY_STATUS_UNSPECIFIED\",\"webhookId\":\"sample\",\"webhookUrl\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"data\":{\"agentId\":\"sample\",\"attemptCount\":1,\"errorMessage\":\"sample\",\"eventType\":\"OBJECTIVE_EVENT_TYPE_USER_MESSAGE\",\"httpStatusCode\":1,\"lastAttemptAt\":\"2026-01-01T00:00:00Z\",\"latencyMs\":1,\"objectiveEventId\":\"sample\",\"objectiveId\":\"sample\",\"responseContentLength\":\"sample\",\"responseHeaders\":{},\"status\":\"WEBHOOK_DELIVERY_STATUS_PENDING\",\"webhookId\":\"sample\",\"webhookUrl\":\"sample\"},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

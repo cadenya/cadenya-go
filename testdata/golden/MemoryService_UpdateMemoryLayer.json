@@ -16,7 +16,7 @@
         "query": {}
       },
       "response": {
-        "body": "{\"info\":{\"entryCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"agentId\":\"sample\",\"episodicKey\":\"sample\",\"systemManaged\":true,\"type\":\"MEMORY_LAYER_TYPE_UNSPECIFIED\"}}",
+        "body": "{\"info\":{\"entryCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"agentId\":\"sample\",\"episodicKey\":\"sample\",\"systemManaged\":true,\"type\":\"MEMORY_LAYER_TYPE_EPISODIC\"}}",
         "contentType": "application/json",
         "status": 200
       }
