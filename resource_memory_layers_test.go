@@ -70,10 +70,7 @@ func (s *MemoryLayersSuite) TestCreate() {
 	result, err := client.MemoryLayers().Create(ctx, (&cadenya.MemoryLayerCreateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.MemoryLayerSpecParam{
-			Type:        cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC"),
-			EpisodicKey: "customer/42",
-		}).
+		Spec(&cadenya.MemoryLayerSpecParam{Type: cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC")}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -145,11 +142,8 @@ func (s *MemoryLayersSuite) TestUpdate() {
 	result, err := client.MemoryLayers().Update(ctx, "sample", (&cadenya.MemoryLayerUpdateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.MemoryLayerSpecParam{
-			Type:        cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC"),
-			EpisodicKey: "customer/42",
-		}).
-		UpdateMask("spec.episodic_key").
+		Spec(&cadenya.MemoryLayerSpecParam{Type: cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC")}).
+		UpdateMask("sample").
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)

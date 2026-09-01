@@ -1803,8 +1803,8 @@ type MemoryLayerSpec struct {
 	// Server-set on episodic layers: the agent this layer belongs to. Unset for
 	//  non-episodic layers.
 	AgentID string `json:"agentId"`
-	// For episodic layers, the caller-supplied episodic key the layer was created
-	//  for. Unset for non-episodic layers.
+	// Server-set on episodic layers: the caller-supplied episodic key the layer
+	//  was created for. Unset for non-episodic layers.
 	EpisodicKey string `json:"episodicKey"`
 }
 
@@ -6082,9 +6082,6 @@ type MemoryLayerSpecParam struct {
 	// Human-readable description of the layer's purpose. Encouraged for
 	//  user-created layers; system-managed layers may have a generated description.
 	Description *string `json:"description,omitempty"`
-	// For episodic layers, the caller-supplied episodic key the layer was created
-	//  for. Unset for non-episodic layers.
-	EpisodicKey string `json:"episodicKey"`
 }
 
 // ObjectiveEpisodicConfigParam is the request-direction view of ObjectiveEpisodicConfig:
