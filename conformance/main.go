@@ -397,7 +397,7 @@ func main() {
 		return nil
 	})
 	run("MemoryService_CreateMemoryLayer", func() error {
-		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"workspaceId":"sample"}`))
+		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"episodicKey":"customer/42","type":"MEMORY_LAYER_TYPE_EPISODIC"},"workspaceId":"sample"}`))
 		return err
 	})
 	run("MemoryService_GetMemoryLayer", func() error {
@@ -408,7 +408,7 @@ func main() {
 		return client.MemoryLayers().Delete(ctx, "sample", decode[sdk.MemoryLayerDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("MemoryService_UpdateMemoryLayer", func() error {
-		_, err := client.MemoryLayers().Update(ctx, "sample", decode[sdk.MemoryLayerUpdateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.MemoryLayers().Update(ctx, "sample", decode[sdk.MemoryLayerUpdateParams](`{"metadata":{"name":"sample"},"spec":{"episodicKey":"customer/42","type":"MEMORY_LAYER_TYPE_EPISODIC"},"updateMask":"spec.episodic_key","workspaceId":"sample"}`))
 		return err
 	})
 	run("MemoryService_ListMemoryEntries", func() error {

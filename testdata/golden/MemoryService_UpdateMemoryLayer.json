@@ -7,9 +7,10 @@
             "name": "sample"
           },
           "spec": {
+            "episodicKey": "customer/42",
             "type": "MEMORY_LAYER_TYPE_EPISODIC"
           },
-          "updateMask": "sample"
+          "updateMask": "spec.episodic_key"
         },
         "method": "PATCH",
         "path": "/v1/workspaces/sample/memory_layers/sample",
