@@ -69,7 +69,7 @@ func (s *AgentsSuite) TestCreate() {
 	result, err := client.Agents().Create(ctx, (&cadenya.AgentCreateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.AgentSpec{VariationSelectionMode: cadenya.AgentSpecVariationSelectionMode("VARIATION_SELECTION_MODE_RANDOM")}).
+		Spec(&cadenya.AgentSpec{}).
 		DefaultVariation(&cadenya.CreateAgentVariationRequestParam{Metadata: &cadenya.CreateResourceMetadata{Name: "sample"}, Spec: &cadenya.AgentVariationSpec{}}).
 		ToParams())
 	s.Require().NoError(err)
@@ -82,7 +82,7 @@ func (s *AgentsSuite) TestCreate() {
 		ctx := context.Background()
 		_, err := client.Agents().Create(ctx, (&cadenya.AgentCreateBuilder{}).
 			Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.AgentSpec{VariationSelectionMode: cadenya.AgentSpecVariationSelectionMode("VARIATION_SELECTION_MODE_RANDOM")}).
+			Spec(&cadenya.AgentSpec{}).
 			DefaultVariation(&cadenya.CreateAgentVariationRequestParam{Metadata: &cadenya.CreateResourceMetadata{Name: "sample"}, Spec: &cadenya.AgentVariationSpec{}}).
 			ToParams())
 		s.Require().NoError(err)
@@ -221,7 +221,7 @@ func (s *AgentsSuite) TestUpdate() {
 	result, err := client.Agents().Update(ctx, "sample", (&cadenya.AgentUpdateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.AgentSpec{VariationSelectionMode: cadenya.AgentSpecVariationSelectionMode("VARIATION_SELECTION_MODE_RANDOM")}).
+		Spec(&cadenya.AgentSpec{}).
 		UpdateMask("sample").
 		ToParams())
 	s.Require().NoError(err)
@@ -234,7 +234,7 @@ func (s *AgentsSuite) TestUpdate() {
 		ctx := context.Background()
 		_, err := client.Agents().Update(ctx, "sample", (&cadenya.AgentUpdateBuilder{}).
 			Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.AgentSpec{VariationSelectionMode: cadenya.AgentSpecVariationSelectionMode("VARIATION_SELECTION_MODE_RANDOM")}).
+			Spec(&cadenya.AgentSpec{}).
 			UpdateMask("sample").
 			ToParams())
 		s.Require().NoError(err)

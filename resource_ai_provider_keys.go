@@ -111,6 +111,7 @@ func (b *AIProviderKeyCreateBuilder) ToParams() *AIProviderKeyCreateParams {
 
 type AIProviderKeyRetrieveParams struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
+	IncludeInfo *bool   `json:"includeInfo,omitempty"`
 }
 
 // AIProviderKeyRetrieveBuilder builds a AIProviderKeyRetrieveParams fluently.
@@ -120,6 +121,11 @@ type AIProviderKeyRetrieveBuilder struct {
 
 func (b *AIProviderKeyRetrieveBuilder) WorkspaceID(v string) *AIProviderKeyRetrieveBuilder {
 	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *AIProviderKeyRetrieveBuilder) IncludeInfo(v bool) *AIProviderKeyRetrieveBuilder {
+	b.params.IncludeInfo = &v
 	return b
 }
 
@@ -150,10 +156,11 @@ func (b *AIProviderKeyDeleteBuilder) ToParams() *AIProviderKeyDeleteParams {
 }
 
 type AIProviderKeyUpdateParams struct {
-	WorkspaceID *string                 `json:"workspaceId,omitempty"`
-	Metadata    *UpdateResourceMetadata `json:"metadata,omitempty"`
-	Spec        *AIProviderKeySpec      `json:"spec,omitempty"`
-	UpdateMask  *string                 `json:"updateMask,omitempty"`
+	WorkspaceID     *string                    `json:"workspaceId,omitempty"`
+	Metadata        *UpdateResourceMetadata    `json:"metadata,omitempty"`
+	Spec            *AIProviderKeySpec         `json:"spec,omitempty"`
+	UpdateMask      *string                    `json:"updateMask,omitempty"`
+	CredentialPatch *AIProviderCredentialPatch `json:"credentialPatch,omitempty"`
 }
 
 // AIProviderKeyUpdateBuilder builds a AIProviderKeyUpdateParams fluently.
@@ -178,6 +185,11 @@ func (b *AIProviderKeyUpdateBuilder) Spec(v *AIProviderKeySpec) *AIProviderKeyUp
 
 func (b *AIProviderKeyUpdateBuilder) UpdateMask(v string) *AIProviderKeyUpdateBuilder {
 	b.params.UpdateMask = &v
+	return b
+}
+
+func (b *AIProviderKeyUpdateBuilder) CredentialPatch(v *AIProviderCredentialPatch) *AIProviderKeyUpdateBuilder {
+	b.params.CredentialPatch = v
 	return b
 }
 
@@ -304,8 +316,12 @@ func (s *aiProviderKeysService) Retrieve(ctx context.Context, id string, params 
 		return nil, err
 	}
 	path := fmt.Sprintf("/v1/workspaces/%s/ai_provider_keys/%s", segWorkspaceID, segID)
+	q := url.Values{}
+	if params.IncludeInfo != nil {
+		q.Set("includeInfo", strconv.FormatBool(*params.IncludeInfo))
+	}
 	var out AIProviderKey
-	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
+	if err := s.core.do(ctx, "GET", path, q, nil, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -357,6 +373,9 @@ func (s *aiProviderKeysService) Update(ctx context.Context, id string, params *A
 	}
 	if params.UpdateMask != nil {
 		body["updateMask"] = params.UpdateMask
+	}
+	if params.CredentialPatch != nil {
+		body["credentialPatch"] = params.CredentialPatch
 	}
 	var out AIProviderKey
 	if err := s.core.do(ctx, "PATCH", path, nil, body, &out, opts...); err != nil {

@@ -21,6 +21,8 @@ type AIProviderConfig struct {
 	OpenRouter       *AIProviderConfig_OpenRouter       `json:"-"`
 	OpenAI           *AIProviderConfig_OpenAI           `json:"-"`
 	OpenAICompatible *AIProviderConfig_OpenAICompatible `json:"-"`
+	Vertex           *AIProviderConfig_Vertex           `json:"-"`
+	Bedrock          *AIProviderConfig_Bedrock          `json:"-"`
 }
 
 func (u AIProviderConfig) MarshalJSON() ([]byte, error) {
@@ -36,6 +38,14 @@ func (u AIProviderConfig) MarshalJSON() ([]byte, error) {
 	}
 	if u.OpenAICompatible != nil {
 		chosen = u.OpenAICompatible
+		count++
+	}
+	if u.Vertex != nil {
+		chosen = u.Vertex
+		count++
+	}
+	if u.Bedrock != nil {
+		chosen = u.Bedrock
 		count++
 	}
 	if count == 0 {
@@ -65,6 +75,18 @@ func NewAIProviderConfigOpenAICompatible(v AIProviderConfig_OpenAICompatible) AI
 	return AIProviderConfig{OpenAICompatible: &v}
 }
 
+// NewAIProviderConfigVertex returns a AIProviderConfig with the Vertex variant selected.
+func NewAIProviderConfigVertex(v AIProviderConfig_Vertex) AIProviderConfig {
+	v.Type = "vertex"
+	return AIProviderConfig{Vertex: &v}
+}
+
+// NewAIProviderConfigBedrock returns a AIProviderConfig with the Bedrock variant selected.
+func NewAIProviderConfigBedrock(v AIProviderConfig_Bedrock) AIProviderConfig {
+	v.Type = "bedrock"
+	return AIProviderConfig{Bedrock: &v}
+}
+
 func (u *AIProviderConfig) UnmarshalJSON(data []byte) error {
 	*u = AIProviderConfig{}
 	var probe struct {
@@ -86,6 +108,12 @@ func (u *AIProviderConfig) UnmarshalJSON(data []byte) error {
 	case "openaiCompatible":
 		u.OpenAICompatible = new(AIProviderConfig_OpenAICompatible)
 		return json.Unmarshal(data, u.OpenAICompatible)
+	case "vertex":
+		u.Vertex = new(AIProviderConfig_Vertex)
+		return json.Unmarshal(data, u.Vertex)
+	case "bedrock":
+		u.Bedrock = new(AIProviderConfig_Bedrock)
+		return json.Unmarshal(data, u.Bedrock)
 	}
 	return fmt.Errorf("AIProviderConfig: unknown type %q", probe.Tag)
 }
@@ -93,13 +121,16 @@ func (u *AIProviderConfig) UnmarshalJSON(data []byte) error {
 // AIProviderCredential is the secret material used to authenticate with a
 //
 //	provider. The set case must correspond to AIProviderKeySpec.provider. The
-//	server encrypts the serialized message at rest and never returns it on reads.
+//	server classifies and encrypts sensitive fields at rest and never returns
+//	secret values on reads.
 //
 // AIProviderCredential is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type AIProviderCredential struct {
-	APIKey  *AIProviderCredential_APIKey  `json:"-"`
-	Headers *AIProviderCredential_Headers `json:"-"`
+	APIKey               *AIProviderCredential_APIKey               `json:"-"`
+	Headers              *AIProviderCredential_Headers              `json:"-"`
+	GoogleServiceAccount *AIProviderCredential_GoogleServiceAccount `json:"-"`
+	AwsAccessKey         *AIProviderCredential_AwsAccessKey         `json:"-"`
 }
 
 func (u AIProviderCredential) MarshalJSON() ([]byte, error) {
@@ -111,6 +142,14 @@ func (u AIProviderCredential) MarshalJSON() ([]byte, error) {
 	}
 	if u.Headers != nil {
 		chosen = u.Headers
+		count++
+	}
+	if u.GoogleServiceAccount != nil {
+		chosen = u.GoogleServiceAccount
+		count++
+	}
+	if u.AwsAccessKey != nil {
+		chosen = u.AwsAccessKey
 		count++
 	}
 	if count == 0 {
@@ -134,6 +173,18 @@ func NewAIProviderCredentialHeaders(v AIProviderCredential_Headers) AIProviderCr
 	return AIProviderCredential{Headers: &v}
 }
 
+// NewAIProviderCredentialGoogleServiceAccount returns a AIProviderCredential with the GoogleServiceAccount variant selected.
+func NewAIProviderCredentialGoogleServiceAccount(v AIProviderCredential_GoogleServiceAccount) AIProviderCredential {
+	v.Type = "googleServiceAccount"
+	return AIProviderCredential{GoogleServiceAccount: &v}
+}
+
+// NewAIProviderCredentialAwsAccessKey returns a AIProviderCredential with the AwsAccessKey variant selected.
+func NewAIProviderCredentialAwsAccessKey(v AIProviderCredential_AwsAccessKey) AIProviderCredential {
+	v.Type = "awsAccessKey"
+	return AIProviderCredential{AwsAccessKey: &v}
+}
+
 func (u *AIProviderCredential) UnmarshalJSON(data []byte) error {
 	*u = AIProviderCredential{}
 	var probe struct {
@@ -152,8 +203,42 @@ func (u *AIProviderCredential) UnmarshalJSON(data []byte) error {
 	case "headers":
 		u.Headers = new(AIProviderCredential_Headers)
 		return json.Unmarshal(data, u.Headers)
+	case "googleServiceAccount":
+		u.GoogleServiceAccount = new(AIProviderCredential_GoogleServiceAccount)
+		return json.Unmarshal(data, u.GoogleServiceAccount)
+	case "awsAccessKey":
+		u.AwsAccessKey = new(AIProviderCredential_AwsAccessKey)
+		return json.Unmarshal(data, u.AwsAccessKey)
 	}
 	return fmt.Errorf("AIProviderCredential: unknown type %q", probe.Tag)
+}
+
+// AIProviderCredentialFieldStatus is the safe read representation of one
+//
+//	credential field. Value is populated only when sensitive is false.
+type AIProviderCredentialFieldStatus struct {
+	Name       *string `json:"name,omitempty"`
+	Sensitive  *bool   `json:"sensitive,omitempty"`
+	Configured *bool   `json:"configured,omitempty"`
+	Value      *string `json:"value,omitempty"`
+}
+
+// AIProviderCredentialPatch changes selected fields of the current credential.
+//
+//	Omitted values are retained and clear_fields explicitly removes optional
+//	fields. Changing type replaces the credential and requires all mandatory
+//	fields for the new type.
+type AIProviderCredentialPatch struct {
+	Credentials *AIProviderCredential `json:"credentials,omitempty"`
+	ClearFields []string              `json:"clearFields,omitempty"`
+}
+
+// AIProviderCredentialStatus describes the stored authentication method and
+//
+//	its fields without returning secret material.
+type AIProviderCredentialStatus struct {
+	Type   *string                           `json:"type,omitempty"`
+	Fields []AIProviderCredentialFieldStatus `json:"fields,omitempty"`
 }
 
 // AIProviderKey is a credential for an AI provider, scoped to a workspace.
@@ -170,6 +255,17 @@ type AIProviderKey struct {
 	Info *AIProviderKeyInfo `json:"info,omitempty"`
 }
 
+// How models on this key are maintained; see ModelManagement.
+type AIProviderKeyInfoModelManagement string
+
+const (
+	AIProviderKeyInfoModelManagementModelManagementUnspecified  AIProviderKeyInfoModelManagement = "MODEL_MANAGEMENT_UNSPECIFIED"
+	AIProviderKeyInfoModelManagementModelManagementCadenya      AIProviderKeyInfoModelManagement = "MODEL_MANAGEMENT_CADENYA"
+	AIProviderKeyInfoModelManagementModelManagementSynced       AIProviderKeyInfoModelManagement = "MODEL_MANAGEMENT_SYNCED"
+	AIProviderKeyInfoModelManagementModelManagementCustomizable AIProviderKeyInfoModelManagement = "MODEL_MANAGEMENT_CUSTOMIZABLE"
+	AIProviderKeyInfoModelManagementModelManagementManual       AIProviderKeyInfoModelManagement = "MODEL_MANAGEMENT_MANUAL"
+)
+
 // AIProviderKeyInfo carries server-derived, read-only details about a key, for
 //
 //	AI provider management UIs.
@@ -181,6 +277,11 @@ type AIProviderKeyInfo struct {
 	// Cadenya includes promotional keys (one for onboarding, and potentially more in the future).
 	//  These are not added or maintained by account administrators.
 	IsPromotional bool `json:"isPromotional"`
+	// Safe-to-display credential state. Secret values are never populated;
+	//  configured reports whether a value is present without revealing it.
+	CredentialStatus *AIProviderCredentialStatus `json:"credentialStatus,omitempty"`
+	// How models on this key are maintained; see ModelManagement.
+	ModelManagement AIProviderKeyInfoModelManagement `json:"modelManagement"`
 }
 
 // The AI provider this key authenticates against.
@@ -193,6 +294,8 @@ const (
 	AIProviderKeySpecProviderAIProviderAnthropic        AIProviderKeySpecProvider = "AI_PROVIDER_ANTHROPIC"
 	AIProviderKeySpecProviderAIProviderGemini           AIProviderKeySpecProvider = "AI_PROVIDER_GEMINI"
 	AIProviderKeySpecProviderAIProviderOpenAICompatible AIProviderKeySpecProvider = "AI_PROVIDER_OPENAI_COMPATIBLE"
+	AIProviderKeySpecProviderAIProviderVertex           AIProviderKeySpecProvider = "AI_PROVIDER_VERTEX"
+	AIProviderKeySpecProviderAIProviderBedrock          AIProviderKeySpecProvider = "AI_PROVIDER_BEDROCK"
 )
 
 type AIProviderKeySpec struct {
@@ -202,8 +305,9 @@ type AIProviderKeySpec struct {
 	//  responses (the server returns an empty value to avoid leaking the secret).
 	Credentials *AIProviderCredential `json:"credentials,omitempty"`
 	// Non-secret, provider-specific settings (OpenAI org/project, OpenRouter
-	//  region, OpenAI-compatible base URL). The set case must correspond to
-	//  `provider`. Returned on reads. Optional: omit to accept provider defaults.
+	//  region, OpenAI-compatible base URL, Vertex project/location, or Bedrock
+	//  Region). The set case must correspond to `provider`. Returned on reads.
+	//  Optional for providers that have usable defaults.
 	Config *AIProviderConfig `json:"config,omitempty"`
 }
 
@@ -554,7 +658,7 @@ type AgentScheduleSpec_Schedule struct {
 
 // Controls how variations are automatically selected when creating objectives
 //
-//	Defaults to RANDOM when unspecified
+//	Defaults to WEIGHTED when unspecified
 type AgentSpecVariationSelectionMode string
 
 const (
@@ -570,8 +674,8 @@ type AgentSpec struct {
 	// The URL that Cadenya will send events for any objective assigned to the agent.
 	WebhookEventsURL *string `json:"webhookEventsUrl,omitempty"`
 	// Controls how variations are automatically selected when creating objectives
-	//  Defaults to RANDOM when unspecified
-	VariationSelectionMode AgentSpecVariationSelectionMode `json:"variationSelectionMode"`
+	//  Defaults to WEIGHTED when unspecified
+	VariationSelectionMode *AgentSpecVariationSelectionMode `json:"variationSelectionMode,omitempty"`
 	// SystemPromptDataSchema enforces the shape of system_prompt_data when objectives are created. This is valuable when using liquid formatting in agent
 	//  variation system prompt templates. The schema is also used when the agent is attached as a sub-agent, as it becomes the tool's input parameter schema.
 	//  If omitted, the sub-agent schema will be loaded with a simple "prompt" free text string as its schema.
@@ -821,6 +925,11 @@ type BareMetadata struct {
 	//  on reads for convenience. Absent on references to resources that do not
 	//  have a name.
 	Name *string `json:"name,omitempty"`
+}
+
+// BedrockConfig selects the AWS source Region used for Bedrock Runtime calls.
+type BedrockConfig struct {
+	Region *string `json:"region,omitempty"`
 }
 
 // CallableTool is a union that represents a tool that can be called by an agent. In Cadenya, a tool that is used within an agent objective
@@ -1168,6 +1277,21 @@ type CreateMemoryLayerRequest struct {
 	Spec        *MemoryLayerSpec        `json:"spec"`
 }
 
+// Create model request. The model is created on the given AI provider key with
+//
+//	PROVENANCE_MANUALLY_ENTERED and STATE_ENABLED. The key must be customer
+//	provided and its provider must accept manual definitions (see
+//	AIProviderKeyInfo.model_management).
+type CreateModelRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// The AI provider key the model routes through. Accepts the canonical
+	//  `aipk_…` form or the `external_id:<value>` form.
+	AIProviderKeyID *string                 `json:"aiProviderKeyId,omitempty"`
+	Metadata        *CreateResourceMetadata `json:"metadata"`
+	Spec            *ModelSpec              `json:"spec"`
+}
+
 // Request to submit feedback for an objective
 type CreateObjectiveFeedbackRequest struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
@@ -1351,6 +1475,22 @@ type CreateWorkspaceSecretRequest struct {
 // CredentialAPIKey carries a single bearer/header API key.
 type CredentialAPIKey struct {
 	APIKey *string `json:"apiKey,omitempty"`
+}
+
+// CredentialAWSAccessKey carries AWS SigV4 credentials. Optional presence is
+//
+//	used by credential patches so omitted values remain unchanged.
+type CredentialAwsAccessKey struct {
+	AccessKeyID     *string `json:"accessKeyId,omitempty"`
+	SecretAccessKey *string `json:"secretAccessKey,omitempty"`
+	SessionToken    *string `json:"sessionToken,omitempty"`
+}
+
+// CredentialGoogleServiceAccount carries an in-memory Google service-account
+//
+//	credential document.
+type CredentialGoogleServiceAccount struct {
+	JSON *string `json:"json,omitempty"`
 }
 
 // CredentialHeaders carries arbitrary HTTP headers sent with every request to
@@ -1854,6 +1994,18 @@ const (
 	ModelStateStateDisabled    ModelState = "STATE_DISABLED"
 )
 
+// Where this definition came from. Output only; set at creation. Synced
+//
+//	models reject edits to metadata.name and spec, manually entered models
+//	accept them.
+type ModelProvenance string
+
+const (
+	ModelProvenanceProvenanceUnspecified        ModelProvenance = "PROVENANCE_UNSPECIFIED"
+	ModelProvenanceProvenanceSyncedFromProvider ModelProvenance = "PROVENANCE_SYNCED_FROM_PROVIDER"
+	ModelProvenanceProvenanceManuallyEntered    ModelProvenance = "PROVENANCE_MANUALLY_ENTERED"
+)
+
 type Model struct {
 	// Resource metadata
 	Metadata *ResourceMetadata `json:"metadata"`
@@ -1865,6 +2017,29 @@ type Model struct {
 	// Whether the model is usable in this workspace. Output only. Use the
 	//  :enable and :disable actions to transition.
 	State ModelState `json:"state"`
+	// Where this definition came from. Output only; set at creation. Synced
+	//  models reject edits to metadata.name and spec, manually entered models
+	//  accept them.
+	Provenance ModelProvenance `json:"provenance"`
+	// Customer price overrides. Output only here; set through UpdateModel with
+	//  pricing_override.* mask paths. When an override is present, spec's price
+	//  fields already reflect it (they are the effective prices).
+	PricingOverride *ModelPricingOverride `json:"pricingOverride,omitempty"`
+	// The rates before any customer override: the catalog rate for a synced
+	//  model, the entered rate for a manually entered one. Output only. When a
+	//  side matches the spec price, an override may still be present; inspect
+	//  pricing_override field presence to determine whether an override is set.
+	BasePricing *ModelBasePricing `json:"basePricing"`
+}
+
+// ModelBasePricing is a model's default rates in cents per million tokens,
+//
+//	unaffected by pricing overrides. Zero means the rate is not known.
+type ModelBasePricing struct {
+	// Default input token rate, in cents per million tokens.
+	InputPricePerMillionTokens string `json:"inputPricePerMillionTokens"`
+	// Default output token rate, in cents per million tokens.
+	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
 }
 
 // ModelInfo carries server-derived, read-only details about a model.
@@ -1881,6 +2056,17 @@ type ModelInfo struct {
 	LastUsedAt *time.Time `json:"lastUsedAt,omitempty"`
 }
 
+// ModelPricingOverride replaces the catalog prices for a model. Each field is
+//
+//	independent: an absent field keeps the catalog price, a present field (zero
+//	included) replaces it. Prices are cents per million tokens.
+type ModelPricingOverride struct {
+	// Override for input token price, in cents per million tokens.
+	InputPricePerMillionTokens *string `json:"inputPricePerMillionTokens,omitempty"`
+	// Override for output token price, in cents per million tokens.
+	OutputPricePerMillionTokens *string `json:"outputPricePerMillionTokens,omitempty"`
+}
+
 type ModelSpec struct {
 	// The model provider (e.g., "anthropic", "openai", "google")
 	Provider string `json:"provider"`
@@ -1890,14 +2076,26 @@ type ModelSpec struct {
 	MaxInputTokens int32 `json:"maxInputTokens"`
 	// Maximum number of output tokens the model can generate
 	MaxOutputTokens int32 `json:"maxOutputTokens"`
-	// Cost per million input tokens in cents (e.g., 300 = $3.00)
+	// Cost per million input tokens in cents (e.g., 300 = $3.00). On reads this
+	//  is the effective price: the catalog price unless
+	//  Model.pricing_override replaces it. Writes only apply to manually
+	//  entered models; use UpdateModel's pricing_override paths to override a
+	//  synced model's price.
 	InputPricePerMillionTokens string `json:"inputPricePerMillionTokens"`
-	// Cost per million output tokens in cents (e.g., 1500 = $15.00)
+	// Cost per million output tokens in cents (e.g., 1500 = $15.00). Effective
+	//  price on reads, see input_price_per_million_tokens.
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
 	// The inference knobs this model supports. Catalog data; drives which
 	//  ModelConfig fields a variation on this model may set. Reasoning support
 	//  (and its mode) lives here too, as the "reasoning" capability.
 	Capabilities []ModelSpec_Capability `json:"capabilities"`
+	// The identifier the provider expects in inference requests, exactly as the
+	//  provider spells it: an OpenAI model name, a Vertex publisher model
+	//  resource, a Bedrock inference-profile ID or ARN, or an OpenAI-compatible
+	//  endpoint's model ID. Distinct from metadata.external_id, which is
+	//  Cadenya's slug. Verified with a minimal provider completion on creation
+	//  and whenever the identifier changes.
+	ProviderModelID string `json:"providerModelId"`
 }
 
 // Capability describes one inference knob this model supports, with any
@@ -2783,6 +2981,9 @@ type ObjectiveToolCallResult_ImageBlock struct {
 
 type ObjectiveToolCallResult_TextBlock struct {
 	Text string `json:"text"`
+	// Size of the stored text in bytes. Filled by the server at record time;
+	//  zero on results recorded before this field existed.
+	SizeBytes *string `json:"sizeBytes,omitempty"`
 }
 
 // Current status of the tool call
@@ -4715,6 +4916,9 @@ type UpdateAIProviderKeyRequest struct {
 	Spec     *AIProviderKeySpec      `json:"spec,omitempty"`
 	// Fields to update.
 	UpdateMask *string `json:"updateMask,omitempty"`
+	// Field-level credential changes. This is independent of update_mask;
+	//  legacy clients may continue replacing spec.credentials atomically.
+	CredentialPatch *AIProviderCredentialPatch `json:"credentialPatch,omitempty"`
 }
 
 type UpdateAPIKeyRequest struct {
@@ -4818,6 +5022,31 @@ type UpdateMemoryLayerRequest struct {
 	Metadata   *UpdateResourceMetadata `json:"metadata,omitempty"`
 	Spec       *MemoryLayerSpec        `json:"spec,omitempty"`
 	UpdateMask *string                 `json:"updateMask,omitempty"`
+}
+
+// Update model request. update_mask must list leaf paths: metadata.name,
+//
+//	metadata.external_id, metadata.labels, spec.provider_model_id,
+//	spec.provider, spec.family, spec.max_input_tokens, spec.max_output_tokens,
+//	spec.capabilities, pricing_override.input_price_per_million_tokens, and
+//	pricing_override.output_price_per_million_tokens. Synced models
+//	(PROVENANCE_SYNCED_FROM_PROVIDER) reject metadata.name and spec.* paths.
+//	spec price fields are never writable; price changes go through
+//	pricing_override, where a masked-but-absent field clears the override.
+//	Metadata and spec must be present when their respective paths are masked.
+type UpdateModelRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Model ID. Accepts the canonical `model_…` form or the `external_id:<value>` form.
+	ID       *string                 `json:"id,omitempty"`
+	Metadata *UpdateResourceMetadata `json:"metadata,omitempty"`
+	// When any spec.* path is masked, send the complete spec (current values
+	//  plus edits); it is validated as a whole.
+	Spec *ModelSpec `json:"spec,omitempty"`
+	// Customer price overrides, applied per masked path.
+	PricingOverride *ModelPricingOverride `json:"pricingOverride,omitempty"`
+	// Fields to update. Required; leaf paths only.
+	UpdateMask *string `json:"updateMask,omitempty"`
 }
 
 // UpdateResourceMetadata contains the user-provided fields for updating
@@ -5072,6 +5301,14 @@ type VariationMemoryLayerAssignment struct {
 	//  collide with an existing assignment's position is rejected with
 	//  InvalidArgument.
 	Position int32 `json:"position"`
+}
+
+// VertexConfig configures the Google Cloud project and location used by the
+//
+//	Vertex AI backend. Both are required for service-account authentication.
+type VertexConfig struct {
+	ProjectID *string `json:"projectId,omitempty"`
+	Location  *string `json:"location,omitempty"`
 }
 
 type WebhookDelivery struct {
@@ -5798,6 +6035,20 @@ type AIProviderCredential_Headers struct {
 	Headers *CredentialHeaders `json:"headers"`
 }
 
+type AIProviderCredential_GoogleServiceAccount struct {
+	Type string `json:"type"`
+	// Google service-account JSON for Vertex AI. The server accepts only the
+	//  service_account credential type and never writes the JSON to plaintext
+	//  storage.
+	GoogleServiceAccount *CredentialGoogleServiceAccount `json:"googleServiceAccount"`
+}
+
+type AIProviderCredential_AwsAccessKey struct {
+	Type string `json:"type"`
+	// AWS access credentials for Bedrock SigV4 authentication.
+	AwsAccessKey *CredentialAwsAccessKey `json:"awsAccessKey"`
+}
+
 type AIProviderConfig_OpenRouter struct {
 	Type       string            `json:"type"`
 	OpenRouter *OpenRouterConfig `json:"openrouter"`
@@ -5811,6 +6062,16 @@ type AIProviderConfig_OpenAI struct {
 type AIProviderConfig_OpenAICompatible struct {
 	Type             string                  `json:"type"`
 	OpenAICompatible *OpenAICompatibleConfig `json:"openaiCompatible"`
+}
+
+type AIProviderConfig_Vertex struct {
+	Type   string        `json:"type"`
+	Vertex *VertexConfig `json:"vertex"`
+}
+
+type AIProviderConfig_Bedrock struct {
+	Type    string         `json:"type"`
+	Bedrock *BedrockConfig `json:"bedrock"`
 }
 
 type ModelSpec_Capability_Temperature struct {

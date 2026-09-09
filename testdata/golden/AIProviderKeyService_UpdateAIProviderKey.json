@@ -3,6 +3,7 @@
     {
       "request": {
         "body": {
+          "credentialPatch": {},
           "metadata": {
             "name": "sample"
           },

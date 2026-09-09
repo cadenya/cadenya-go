@@ -207,7 +207,7 @@ func main() {
 		return nil
 	})
 	run("AgentService_CreateAgent", func() error {
-		_, err := client.Agents().Create(ctx, decode[sdk.AgentCreateParams](`{"defaultVariation":{"metadata":{"name":"sample"},"spec":{}},"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM"},"workspaceId":"sample"}`))
+		_, err := client.Agents().Create(ctx, decode[sdk.AgentCreateParams](`{"defaultVariation":{"metadata":{"name":"sample"},"spec":{}},"metadata":{"name":"sample"},"spec":{},"workspaceId":"sample"}`))
 		return err
 	})
 	run("AgentService_ListAgentFeedback", func() error {
@@ -246,7 +246,7 @@ func main() {
 		return client.Agents().Delete(ctx, "sample", decode[sdk.AgentDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("AgentService_UpdateAgent", func() error {
-		_, err := client.Agents().Update(ctx, "sample", decode[sdk.AgentUpdateParams](`{"metadata":{"name":"sample"},"spec":{"variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM"},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.Agents().Update(ctx, "sample", decode[sdk.AgentUpdateParams](`{"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("AgentService_ArchiveAgent", func() error {
@@ -372,15 +372,52 @@ func main() {
 		return err
 	})
 	run("AIProviderKeyService_GetAIProviderKey", func() error {
-		_, err := client.AIProviderKeys().Retrieve(ctx, "sample", decode[sdk.AIProviderKeyRetrieveParams](`{"workspaceId":"sample"}`))
+		_, err := client.AIProviderKeys().Retrieve(ctx, "sample", decode[sdk.AIProviderKeyRetrieveParams](`{"includeInfo":true,"workspaceId":"sample"}`))
 		return err
 	})
 	run("AIProviderKeyService_DeleteAIProviderKey", func() error {
 		return client.AIProviderKeys().Delete(ctx, "sample", decode[sdk.AIProviderKeyDeleteParams](`{"workspaceId":"sample"}`))
 	})
 	run("AIProviderKeyService_UpdateAIProviderKey", func() error {
-		_, err := client.AIProviderKeys().Update(ctx, "sample", decode[sdk.AIProviderKeyUpdateParams](`{"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.AIProviderKeys().Update(ctx, "sample", decode[sdk.AIProviderKeyUpdateParams](`{"credentialPatch":{},"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
+	})
+	run("ModelService_CreateModel", func() error {
+		_, err := client.Models().Create(ctx, "sample", decode[sdk.ModelCreateParams](`{"metadata":{"name":"sample"},"spec":{"capabilities":[{"temperature":{},"type":"temperature"}],"family":"sample","inputPricePerMillionTokens":"sample","maxInputTokens":1,"maxOutputTokens":1,"outputPricePerMillionTokens":"sample","provider":"sample","providerModelId":"sample"},"workspaceId":"sample"}`))
+		return err
+	})
+	run("ModelService_ListModels", func() error {
+		page, err := client.Models().List(ctx, decode[sdk.ModelListParams](`{"aiProviderKeyId":"sample","cursor":"sample","includeInfo":true,"isAssigned":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_ENABLED","workspaceId":"sample"}`))
+		if err != nil {
+			return err
+		}
+		items, err := page.All(ctx)
+		if err != nil {
+			return err
+		}
+		if len(items) != 2 {
+			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
+		}
+		return nil
+	})
+	run("ModelService_GetModel", func() error {
+		_, err := client.Models().Retrieve(ctx, "sample", decode[sdk.ModelRetrieveParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ModelService_UpdateModel", func() error {
+		_, err := client.Models().Update(ctx, "sample", decode[sdk.ModelUpdateParams](`{"metadata":{"name":"sample"},"pricingOverride":{},"spec":{"capabilities":[{"temperature":{},"type":"temperature"}],"family":"sample","inputPricePerMillionTokens":"sample","maxInputTokens":1,"maxOutputTokens":1,"outputPricePerMillionTokens":"sample","provider":"sample","providerModelId":"sample"},"updateMask":"sample","workspaceId":"sample"}`))
+		return err
+	})
+	run("ModelService_DisableModel", func() error {
+		_, err := client.Models().Disable(ctx, "sample", decode[sdk.ModelDisableParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ModelService_EnableModel", func() error {
+		_, err := client.Models().Enable(ctx, "sample", decode[sdk.ModelEnableParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ModelService_SwapModelOnVariations", func() error {
+		return client.Models().SwapOnVariations(ctx, decode[sdk.ModelSwapOnVariationsParams](`{"modelSwaps":[{}],"workspaceId":"sample"}`))
 	})
 	run("MemoryService_ListMemoryLayers", func() error {
 		page, err := client.MemoryLayers().List(ctx, decode[sdk.MemoryLayerListParams](`{"agentId":"sample","cursor":"sample","episodicKeyPrefix":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","type":"MEMORY_LAYER_TYPE_EPISODIC","workspaceId":"sample"}`))
@@ -439,35 +476,6 @@ func main() {
 	run("MemoryService_UpdateMemoryEntry", func() error {
 		_, err := client.MemoryLayers().Entries().Update(ctx, "sample", "sample", decode[sdk.MemoryEntryUpdateParams](`{"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
 		return err
-	})
-	run("ModelService_ListModels", func() error {
-		page, err := client.Models().List(ctx, decode[sdk.ModelListParams](`{"aiProviderKeyId":"sample","cursor":"sample","includeInfo":true,"isAssigned":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_ENABLED","workspaceId":"sample"}`))
-		if err != nil {
-			return err
-		}
-		items, err := page.All(ctx)
-		if err != nil {
-			return err
-		}
-		if len(items) != 2 {
-			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
-		}
-		return nil
-	})
-	run("ModelService_GetModel", func() error {
-		_, err := client.Models().Retrieve(ctx, "sample", decode[sdk.ModelRetrieveParams](`{"workspaceId":"sample"}`))
-		return err
-	})
-	run("ModelService_DisableModel", func() error {
-		_, err := client.Models().Disable(ctx, "sample", decode[sdk.ModelDisableParams](`{"workspaceId":"sample"}`))
-		return err
-	})
-	run("ModelService_EnableModel", func() error {
-		_, err := client.Models().Enable(ctx, "sample", decode[sdk.ModelEnableParams](`{"workspaceId":"sample"}`))
-		return err
-	})
-	run("ModelService_SwapModelOnVariations", func() error {
-		return client.Models().SwapOnVariations(ctx, decode[sdk.ModelSwapOnVariationsParams](`{"modelSwaps":[{}],"workspaceId":"sample"}`))
 	})
 	run("ObjectiveService_ListObjectives", func() error {
 		page, err := client.Objectives().List(ctx, decode[sdk.ObjectiveListParams](`{"agentId":"sample","agentScheduleId":"sample","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"parentObjectiveId":"sample","profileId":"sample","sortOrder":"sample","state":"STATE_PENDING","subjectId":"sample","tenantId":"sample","widgetId":"sample","widgetSessionId":"sample","workspaceId":"sample"}`))

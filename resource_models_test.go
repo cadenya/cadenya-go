@@ -17,6 +17,33 @@ func TestModelsSuite(t *testing.T) {
 	suite.Run(t, new(ModelsSuite))
 }
 
+func (s *ModelsSuite) TestCreate() {
+	g := loadGolden(s.T(), "ModelService_CreateModel")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Models().Create(ctx, "sample", (&cadenya.ModelCreateBuilder{}).
+		WorkspaceID("sample").
+		Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
+		Spec(&cadenya.ModelSpec{Provider: "sample", Family: "sample", MaxInputTokens: 1, MaxOutputTokens: 1, InputPricePerMillionTokens: "sample", OutputPricePerMillionTokens: "sample", Capabilities: []cadenya.ModelSpec_Capability{cadenya.ModelSpec_Capability{Temperature: &cadenya.ModelSpec_Capability_Temperature{Type: "temperature", Temperature: &cadenya.Capability_Temperature{}}}}, ProviderModelID: "sample"}).
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/ai_provider_keys/sample/models", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Models().Create(ctx, "sample", (&cadenya.ModelCreateBuilder{}).
+			Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
+			Spec(&cadenya.ModelSpec{Provider: "sample", Family: "sample", MaxInputTokens: 1, MaxOutputTokens: 1, InputPricePerMillionTokens: "sample", OutputPricePerMillionTokens: "sample", Capabilities: []cadenya.ModelSpec_Capability{cadenya.ModelSpec_Capability{Temperature: &cadenya.ModelSpec_Capability_Temperature{Type: "temperature", Temperature: &cadenya.Capability_Temperature{}}}}, ProviderModelID: "sample"}).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
 func (s *ModelsSuite) TestList() {
 	g := loadGolden(s.T(), "ModelService_ListModels")
 	server, served := goldenServer(s.T(), g)
@@ -79,6 +106,37 @@ func (s *ModelsSuite) TestRetrieve() {
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		_, err := client.Models().Retrieve(ctx, "sample", (&cadenya.ModelRetrieveBuilder{}).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
+func (s *ModelsSuite) TestUpdate() {
+	g := loadGolden(s.T(), "ModelService_UpdateModel")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Models().Update(ctx, "sample", (&cadenya.ModelUpdateBuilder{}).
+		WorkspaceID("sample").
+		Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
+		Spec(&cadenya.ModelSpec{Provider: "sample", Family: "sample", MaxInputTokens: 1, MaxOutputTokens: 1, InputPricePerMillionTokens: "sample", OutputPricePerMillionTokens: "sample", Capabilities: []cadenya.ModelSpec_Capability{cadenya.ModelSpec_Capability{Temperature: &cadenya.ModelSpec_Capability_Temperature{Type: "temperature", Temperature: &cadenya.Capability_Temperature{}}}}, ProviderModelID: "sample"}).
+		PricingOverride(&cadenya.ModelPricingOverride{}).
+		UpdateMask("sample").
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/models/sample", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Models().Update(ctx, "sample", (&cadenya.ModelUpdateBuilder{}).
+			Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
+			Spec(&cadenya.ModelSpec{Provider: "sample", Family: "sample", MaxInputTokens: 1, MaxOutputTokens: 1, InputPricePerMillionTokens: "sample", OutputPricePerMillionTokens: "sample", Capabilities: []cadenya.ModelSpec_Capability{cadenya.ModelSpec_Capability{Temperature: &cadenya.ModelSpec_Capability_Temperature{Type: "temperature", Temperature: &cadenya.Capability_Temperature{}}}}, ProviderModelID: "sample"}).
+			PricingOverride(&cadenya.ModelPricingOverride{}).
+			UpdateMask("sample").
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())

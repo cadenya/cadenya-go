@@ -92,6 +92,7 @@ func (s *AiProviderKeysSuite) TestRetrieve() {
 	ctx := context.Background()
 	result, err := client.AIProviderKeys().Retrieve(ctx, "sample", (&cadenya.AIProviderKeyRetrieveBuilder{}).
 		WorkspaceID("sample").
+		IncludeInfo(true).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -102,6 +103,7 @@ func (s *AiProviderKeysSuite) TestRetrieve() {
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		_, err := client.AIProviderKeys().Retrieve(ctx, "sample", (&cadenya.AIProviderKeyRetrieveBuilder{}).
+			IncludeInfo(true).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -140,6 +142,7 @@ func (s *AiProviderKeysSuite) TestUpdate() {
 		Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
 		Spec(&cadenya.AIProviderKeySpec{}).
 		UpdateMask("sample").
+		CredentialPatch(&cadenya.AIProviderCredentialPatch{}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -153,6 +156,7 @@ func (s *AiProviderKeysSuite) TestUpdate() {
 			Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
 			Spec(&cadenya.AIProviderKeySpec{}).
 			UpdateMask("sample").
+			CredentialPatch(&cadenya.AIProviderCredentialPatch{}).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
