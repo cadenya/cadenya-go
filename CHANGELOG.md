@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/cadenya/cadenya-go/compare/v1.0.1...v1.1.0) (2026-09-09)
+
+
+### Features
+
+* add provider credentials and model management ([a7279c6](https://github.com/cadenya/cadenya-go/commit/a7279c63dfabd316ebc1a78f710e60b8363a42c6))
+
+
+### Chores
+
+* assorted updates ([#91](https://github.com/cadenya/cadenya-go/issues/91)) ([bb82d68](https://github.com/cadenya/cadenya-go/commit/bb82d685d861ba72901347558a0c54893cd345a4))
+
 ## [1.0.1](https://github.com/cadenya/cadenya-go/compare/v1.0.0...v1.0.1) (2026-08-27)
 
 
