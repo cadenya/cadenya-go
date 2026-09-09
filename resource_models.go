@@ -9,6 +9,38 @@ import (
 	"strconv"
 )
 
+type ModelCreateParams struct {
+	WorkspaceID *string                 `json:"workspaceId,omitempty"`
+	Metadata    *CreateResourceMetadata `json:"metadata"`
+	Spec        *ModelSpec              `json:"spec"`
+}
+
+// ModelCreateBuilder builds a ModelCreateParams fluently.
+type ModelCreateBuilder struct {
+	params ModelCreateParams
+}
+
+func (b *ModelCreateBuilder) WorkspaceID(v string) *ModelCreateBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ModelCreateBuilder) Metadata(v *CreateResourceMetadata) *ModelCreateBuilder {
+	b.params.Metadata = v
+	return b
+}
+
+func (b *ModelCreateBuilder) Spec(v *ModelSpec) *ModelCreateBuilder {
+	b.params.Spec = v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ModelCreateBuilder) ToParams() *ModelCreateParams {
+	p := b.params
+	return &p
+}
+
 type ModelListParams struct {
 	WorkspaceID     *string                      `json:"workspaceId,omitempty"`
 	Limit           *int32                       `json:"limit,omitempty"`
@@ -109,6 +141,50 @@ func (b *ModelRetrieveBuilder) ToParams() *ModelRetrieveParams {
 	return &p
 }
 
+type ModelUpdateParams struct {
+	WorkspaceID     *string                 `json:"workspaceId,omitempty"`
+	Metadata        *UpdateResourceMetadata `json:"metadata,omitempty"`
+	Spec            *ModelSpec              `json:"spec,omitempty"`
+	PricingOverride *ModelPricingOverride   `json:"pricingOverride,omitempty"`
+	UpdateMask      *string                 `json:"updateMask,omitempty"`
+}
+
+// ModelUpdateBuilder builds a ModelUpdateParams fluently.
+type ModelUpdateBuilder struct {
+	params ModelUpdateParams
+}
+
+func (b *ModelUpdateBuilder) WorkspaceID(v string) *ModelUpdateBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ModelUpdateBuilder) Metadata(v *UpdateResourceMetadata) *ModelUpdateBuilder {
+	b.params.Metadata = v
+	return b
+}
+
+func (b *ModelUpdateBuilder) Spec(v *ModelSpec) *ModelUpdateBuilder {
+	b.params.Spec = v
+	return b
+}
+
+func (b *ModelUpdateBuilder) PricingOverride(v *ModelPricingOverride) *ModelUpdateBuilder {
+	b.params.PricingOverride = v
+	return b
+}
+
+func (b *ModelUpdateBuilder) UpdateMask(v string) *ModelUpdateBuilder {
+	b.params.UpdateMask = &v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ModelUpdateBuilder) ToParams() *ModelUpdateParams {
+	p := b.params
+	return &p
+}
+
 type ModelDisableParams struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 }
@@ -177,10 +253,14 @@ func (b *ModelSwapOnVariationsBuilder) ToParams() *ModelSwapOnVariationsParams {
 
 // ModelResources is implemented by the SDK and easy to mock in tests.
 type ModelResources interface {
+	// Create a model
+	Create(ctx context.Context, aiProviderKeyID string, params *ModelCreateParams, opts ...RequestOption) (*Model, error)
 	// List models
 	List(ctx context.Context, params *ModelListParams, opts ...RequestOption) (*Page[Model], error)
 	// Get a model by ID
 	Retrieve(ctx context.Context, id string, params *ModelRetrieveParams, opts ...RequestOption) (*Model, error)
+	// Update a model
+	Update(ctx context.Context, id string, params *ModelUpdateParams, opts ...RequestOption) (*Model, error)
 	// Disable a model
 	Disable(ctx context.Context, id string, params *ModelDisableParams, opts ...RequestOption) (*Model, error)
 	// Enable a model
@@ -192,6 +272,37 @@ type ModelResources interface {
 type modelsService struct{ core *core }
 
 var _ ModelResources = (*modelsService)(nil)
+
+func (s *modelsService) Create(ctx context.Context, aiProviderKeyID string, params *ModelCreateParams, opts ...RequestOption) (*Model, error) {
+	if params == nil {
+		params = &ModelCreateParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segAIProviderKeyID, err := pathSegment("aiProviderKeyId", aiProviderKeyID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/ai_provider_keys/%s/models", segWorkspaceID, segAIProviderKeyID)
+	body := map[string]any{}
+	if params.Metadata != nil {
+		body["metadata"] = params.Metadata
+	}
+	if params.Spec != nil {
+		body["spec"] = params.Spec
+	}
+	var out Model
+	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
 
 func (s *modelsService) List(ctx context.Context, params *ModelListParams, opts ...RequestOption) (*Page[Model], error) {
 	if params == nil {
@@ -273,6 +384,43 @@ func (s *modelsService) Retrieve(ctx context.Context, id string, params *ModelRe
 	path := fmt.Sprintf("/v1/workspaces/%s/models/%s", segWorkspaceID, segID)
 	var out Model
 	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *modelsService) Update(ctx context.Context, id string, params *ModelUpdateParams, opts ...RequestOption) (*Model, error) {
+	if params == nil {
+		params = &ModelUpdateParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segID, err := pathSegment("id", id)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/models/%s", segWorkspaceID, segID)
+	body := map[string]any{}
+	if params.Metadata != nil {
+		body["metadata"] = params.Metadata
+	}
+	if params.Spec != nil {
+		body["spec"] = params.Spec
+	}
+	if params.PricingOverride != nil {
+		body["pricingOverride"] = params.PricingOverride
+	}
+	if params.UpdateMask != nil {
+		body["updateMask"] = params.UpdateMask
+	}
+	var out Model
+	if err := s.core.do(ctx, "PATCH", path, nil, body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil

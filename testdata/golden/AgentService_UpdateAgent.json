@@ -6,9 +6,7 @@
           "metadata": {
             "name": "sample"
           },
-          "spec": {
-            "variationSelectionMode": "VARIATION_SELECTION_MODE_RANDOM"
-          },
+          "spec": {},
           "updateMask": "sample"
         },
         "method": "PATCH",
@@ -16,7 +14,7 @@
         "query": {}
       },
       "response": {
-        "body": "{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"variationSelectionMode\":\"VARIATION_SELECTION_MODE_RANDOM\"},\"state\":\"STATE_DRAFT\"}",
+        "body": "{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{},\"state\":\"STATE_DRAFT\"}",
         "contentType": "application/json",
         "status": 200
       }

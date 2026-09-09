@@ -182,11 +182,11 @@ func (c *Client) Agents() AgentResources { return &agentsService{core: c.core} }
 // AIProviderKeys returns the ai_provider_keys resource group.
 func (c *Client) AIProviderKeys() AIProviderKeyResources { return &aiProviderKeysService{core: c.core} }
 
-// MemoryLayers returns the memory_layers resource group.
-func (c *Client) MemoryLayers() MemoryLayerResources { return &memoryLayersService{core: c.core} }
-
 // Models returns the models resource group.
 func (c *Client) Models() ModelResources { return &modelsService{core: c.core} }
+
+// MemoryLayers returns the memory_layers resource group.
+func (c *Client) MemoryLayers() MemoryLayerResources { return &memoryLayersService{core: c.core} }
 
 // Objectives returns the objectives resource group.
 func (c *Client) Objectives() ObjectiveResources { return &objectivesService{core: c.core} }

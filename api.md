@@ -329,6 +329,44 @@ Update an AI provider key
 client.AIProviderKeys().Update(ctx context.Context, id string, params *AIProviderKeyUpdateParams, opts ...RequestOption) (*AIProviderKey, error)
 ```
 
+## models
+
+Create a model
+
+```go
+client.Models().Create(ctx context.Context, aiProviderKeyID string, params *ModelCreateParams, opts ...RequestOption) (*Model, error)
+```
+List models
+
+```go
+client.Models().List(ctx context.Context, params *ModelListParams, opts ...RequestOption) (*Page[Model], error)
+```
+Get a model by ID
+
+```go
+client.Models().Retrieve(ctx context.Context, id string, params *ModelRetrieveParams, opts ...RequestOption) (*Model, error)
+```
+Update a model
+
+```go
+client.Models().Update(ctx context.Context, id string, params *ModelUpdateParams, opts ...RequestOption) (*Model, error)
+```
+Disable a model
+
+```go
+client.Models().Disable(ctx context.Context, id string, params *ModelDisableParams, opts ...RequestOption) (*Model, error)
+```
+Enable a model
+
+```go
+client.Models().Enable(ctx context.Context, id string, params *ModelEnableParams, opts ...RequestOption) (*Model, error)
+```
+Swap models on agent variations
+
+```go
+client.Models().SwapOnVariations(ctx context.Context, params *ModelSwapOnVariationsParams, opts ...RequestOption) error
+```
+
 ## memory_layers
 
 List memory layers
@@ -383,34 +421,6 @@ Update a memory entry
 
 ```go
 client.MemoryLayers().Entries().Update(ctx context.Context, memoryLayerID string, id string, params *MemoryEntryUpdateParams, opts ...RequestOption) (*MemoryEntryDetail, error)
-```
-
-## models
-
-List models
-
-```go
-client.Models().List(ctx context.Context, params *ModelListParams, opts ...RequestOption) (*Page[Model], error)
-```
-Get a model by ID
-
-```go
-client.Models().Retrieve(ctx context.Context, id string, params *ModelRetrieveParams, opts ...RequestOption) (*Model, error)
-```
-Disable a model
-
-```go
-client.Models().Disable(ctx context.Context, id string, params *ModelDisableParams, opts ...RequestOption) (*Model, error)
-```
-Enable a model
-
-```go
-client.Models().Enable(ctx context.Context, id string, params *ModelEnableParams, opts ...RequestOption) (*Model, error)
-```
-Swap models on agent variations
-
-```go
-client.Models().SwapOnVariations(ctx context.Context, params *ModelSwapOnVariationsParams, opts ...RequestOption) error
 ```
 
 ## objectives
