@@ -422,7 +422,8 @@ type AccountSpec struct {
 // Attach a single tool, tool set, or sub-agent to a variation. Exactly one
 //
 //	of the target fields must be set; the assignment kind is inferred from the
-//	populated field.
+//	populated field. Adding an existing target returns AlreadyExists.
+//	All targets must be in the variation's workspace and eligible for assignment.
 //
 // AddAgentVariationAssignmentRequest is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
@@ -499,11 +500,13 @@ func (u *AddAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("AddAgentVariationAssignmentRequest: unknown type %q", probe.Tag)
 }
 
-// Attach a memory layer to a variation. The request is rejected when:
-//   - the layer is system-managed (FailedPrecondition)
-//   - the layer is already assigned to this variation (AlreadyExists)
-//   - the variation is already at the 10-assignment cap (FailedPrecondition)
-//   - the position is already in use on this variation (InvalidArgument)
+// Attach a memory layer to a variation. Use UpdateAgentVariationMemoryLayer or
+//
+//	replace the spec list to reposition an existing layer. Rejected when:
+//	  - the layer is already assigned, regardless of position (AlreadyExists)
+//	  - the layer is system-managed (FailedPrecondition)
+//	  - the variation is already at the 10-assignment cap (FailedPrecondition)
+//	  - the position is already in use on this variation (InvalidArgument)
 type AddAgentVariationMemoryLayerRequest struct {
 	// Workspace ID.
 	WorkspaceID *string `json:"workspaceId,omitempty"`
@@ -723,19 +726,23 @@ type AgentVariationInfo struct {
 	Score float32 `json:"score"`
 	// Total number of objective feedbacks received for this variation
 	FeedbackCount int32 `json:"feedbackCount"`
-	// All tools, tool sets, and sub-agents assigned to this variation.
-	//  Populated on reads so clients can render a variation's full assignment
-	//  list without calling the add/remove endpoints just to enumerate.
-	Assignments []VariationAssignment `json:"assignments"`
-	// Read-only list of memory layer assignments for this variation,
-	//  returned in ascending `position` (most specific first — resolution
-	//  order). Capped at 10 entries.
-	MemoryLayerAssignments []VariationMemoryLayerAssignment `json:"memoryLayerAssignments"`
 	// Count of memory layer assignments.
 	MemoryLayerCount int32 `json:"memoryLayerCount"`
+	// Number of distinct callable tools available through this variation's
+	//  assignments after normalization. Expands tool sets and deduplicates tools
+	//  also assigned directly. Each sub-agent contributes one callable tool;
+	//  its own assignments are not expanded. Counts the full normalized set,
+	//  regardless of which tools progressive discovery has loaded.
+	EffectiveToolCount int32 `json:"effectiveToolCount"`
 }
 
-// AgentVariationSpec defines the operational configuration for a variation
+// AgentVariationSpec defines the complete operational configuration for a
+//
+//	variation, including assignments. Reads always populate both assignment lists,
+//	even when include_info is false. Create and update validate and persist the
+//	configuration atomically: any invalid target or cascade rejects the entire
+//	request. Targets must belong to the variation's workspace and pass the same
+//	eligibility checks as the dedicated add methods.
 type AgentVariationSpec struct {
 	// Liquid template for the system prompt of objectives using this variation.
 	//  Rendered with CreateObjectiveRequest.system_prompt_data into Objective.system_prompt.
@@ -761,6 +768,18 @@ type AgentVariationSpec struct {
 	//  result. If neither this template nor first_user_message is present, objective
 	//  creation is rejected with InvalidArgument.
 	FirstUserMessageTemplate *string `json:"firstUserMessageTemplate,omitempty"`
+	// Complete set of assigned tools, tool sets, and sub-agents. Order has no
+	//  meaning. Duplicate (target kind, canonical target ID) pairs are collapsed.
+	//  On create, omitted or empty means no assignments. On update, selecting
+	//  spec.assignments in update_mask replaces the entire set; empty clears it.
+	Assignments []VariationAssignment `json:"assignments,omitempty"`
+	// Complete baseline memory cascade, returned in ascending position. At most
+	//  10 whole layers; system-managed layers cannot be assigned. Duplicate layer
+	//  IDs (after alias resolution) or positions are InvalidArgument. Validate the
+	//  final cascade, so swapping two positions in one update is supported.
+	//  On create, omitted or empty means no layers. On update, selecting
+	//  spec.memory_layer_assignments replaces the entire list; empty clears it.
+	MemoryLayerAssignments []VariationMemoryLayerAssignment `json:"memoryLayerAssignments,omitempty"`
 }
 
 // CompactionConfig defines how context window compaction behaves for objectives using this variation.
@@ -1239,7 +1258,9 @@ type CreateAgentRequest struct {
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
 	Metadata    *CreateResourceMetadata `json:"metadata"`
 	Spec        *AgentSpec              `json:"spec"`
-	// Optional default variation to add to the agent on create
+	// Optional default variation to add to the agent on create. Its spec accepts
+	//  assignments and memory_layer_assignments using the same atomic validation
+	//  as CreateAgentVariation. Failure rejects the entire agent creation.
 	DefaultVariation *CreateAgentVariationRequest `json:"defaultVariation,omitempty"`
 }
 
@@ -2262,14 +2283,14 @@ type Notice struct {
 type ObjectiveState string
 
 const (
-	ObjectiveStateStateUnspecified ObjectiveState = "STATE_UNSPECIFIED"
-	ObjectiveStateStatePending     ObjectiveState = "STATE_PENDING"
-	ObjectiveStateStateRunning     ObjectiveState = "STATE_RUNNING"
-	ObjectiveStateStateWaiting     ObjectiveState = "STATE_WAITING"
-	ObjectiveStateStateFailed      ObjectiveState = "STATE_FAILED"
-	ObjectiveStateStateCancelled   ObjectiveState = "STATE_CANCELLED"
-	ObjectiveStateStateFinalized   ObjectiveState = "STATE_FINALIZED"
-	ObjectiveStateStateTimedOut    ObjectiveState = "STATE_TIMED_OUT"
+	ObjectiveStateObjectiveStateUnspecified ObjectiveState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateObjectiveStatePending     ObjectiveState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateObjectiveStateRunning     ObjectiveState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateObjectiveStateWaiting     ObjectiveState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateObjectiveStateFailed      ObjectiveState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateObjectiveStateCancelled   ObjectiveState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateObjectiveStateFinalized   ObjectiveState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateObjectiveStateTimedOut    ObjectiveState = "OBJECTIVE_STATE_TIMED_OUT"
 )
 
 // Objective is the data for an objective. It contains the snapshotted fields for the selected agent and variation. Secrets are returned
@@ -2315,7 +2336,7 @@ type Objective struct {
 	//  InvalidArgument.
 	MemoryCascade []MemoryReference `json:"memoryCascade"`
 	// The output of the objective, populated when the objective completes. Will match the schema of output_json_schema or output_json_inferred.
-	//  This will only be set if the state of the objective is set to STATE_FINALIZED
+	//  This will only be set if the state of the objective is set to OBJECTIVE_STATE_FINALIZED
 	Output map[string]any `json:"output,omitempty"`
 	// Arbitrary data rendered into the variation's first_user_message_template
 	FirstUserMessageData map[string]any `json:"firstUserMessageData,omitempty"`
@@ -2444,6 +2465,7 @@ type ObjectiveEventData struct {
 	Notice                 *ObjectiveEventData_Notice                 `json:"-"`
 	TimedOut               *ObjectiveEventData_TimedOut               `json:"-"`
 	Reasoning              *ObjectiveEventData_Reasoning              `json:"-"`
+	StateChanged           *ObjectiveEventData_StateChanged           `json:"-"`
 }
 
 func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
@@ -2519,6 +2541,10 @@ func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
 	}
 	if u.Reasoning != nil {
 		chosen = u.Reasoning
+		count++
+	}
+	if u.StateChanged != nil {
+		chosen = u.StateChanged
 		count++
 	}
 	if count == 0 {
@@ -2638,6 +2664,12 @@ func NewObjectiveEventDataReasoning(v ObjectiveEventData_Reasoning) ObjectiveEve
 	return ObjectiveEventData{Reasoning: &v}
 }
 
+// NewObjectiveEventDataStateChanged returns a ObjectiveEventData with the StateChanged variant selected.
+func NewObjectiveEventDataStateChanged(v ObjectiveEventData_StateChanged) ObjectiveEventData {
+	v.Type = "stateChanged"
+	return ObjectiveEventData{StateChanged: &v}
+}
+
 func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	*u = ObjectiveEventData{}
 	var probe struct {
@@ -2704,6 +2736,9 @@ func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	case "reasoning":
 		u.Reasoning = new(ObjectiveEventData_Reasoning)
 		return json.Unmarshal(data, u.Reasoning)
+	case "stateChanged":
+		u.StateChanged = new(ObjectiveEventData_StateChanged)
+		return json.Unmarshal(data, u.StateChanged)
 	}
 	return fmt.Errorf("ObjectiveEventData: unknown type %q", probe.Tag)
 }
@@ -2788,6 +2823,53 @@ type ObjectiveInfo struct {
 	// The widget this objective's conversation ran through, when it was
 	//  created via a widget session.
 	Widget *BareMetadata `json:"widget,omitempty"`
+}
+
+// The state before this write. OBJECTIVE_STATE_UNSPECIFIED when the
+//
+//	objective was just created.
+type ObjectiveStateChangedFromState string
+
+const (
+	ObjectiveStateChangedFromStateObjectiveStateUnspecified ObjectiveStateChangedFromState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateChangedFromStateObjectiveStatePending     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateChangedFromStateObjectiveStateRunning     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateChangedFromStateObjectiveStateWaiting     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateChangedFromStateObjectiveStateFailed      ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateChangedFromStateObjectiveStateCancelled   ObjectiveStateChangedFromState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateChangedFromStateObjectiveStateFinalized   ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateChangedFromStateObjectiveStateTimedOut    ObjectiveStateChangedFromState = "OBJECTIVE_STATE_TIMED_OUT"
+)
+
+// The state after this write.
+type ObjectiveStateChangedToState string
+
+const (
+	ObjectiveStateChangedToStateObjectiveStateUnspecified ObjectiveStateChangedToState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateChangedToStateObjectiveStatePending     ObjectiveStateChangedToState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateChangedToStateObjectiveStateRunning     ObjectiveStateChangedToState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateChangedToStateObjectiveStateWaiting     ObjectiveStateChangedToState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateChangedToStateObjectiveStateFailed      ObjectiveStateChangedToState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateChangedToStateObjectiveStateCancelled   ObjectiveStateChangedToState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateChangedToStateObjectiveStateFinalized   ObjectiveStateChangedToState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateChangedToStateObjectiveStateTimedOut    ObjectiveStateChangedToState = "OBJECTIVE_STATE_TIMED_OUT"
+)
+
+// ObjectiveStateChanged is written every time the objective's lifecycle state
+//
+//	is set, including the initial move into OBJECTIVE_STATE_PENDING at creation. Terminal
+//	transitions also write their dedicated event (cancelled, timedOut,
+//	finalized, error) immediately before this one, so consumers that only care
+//	about the outcome can keep listening for those.
+type ObjectiveStateChanged struct {
+	// The state before this write. OBJECTIVE_STATE_UNSPECIFIED when the
+	//  objective was just created.
+	FromState ObjectiveStateChangedFromState `json:"fromState"`
+	// The state after this write.
+	ToState ObjectiveStateChangedToState `json:"toState"`
+	// The status message recorded with the transition, if any (e.g.
+	//  "Continued", or the error summary on a failure).
+	Message *string `json:"message,omitempty"`
 }
 
 // ObjectiveTimedOut is the terminal event written when an objective is
@@ -3228,6 +3310,99 @@ type Reasoning struct {
 	// The reasoning text. May be a verbatim chain of thought or a
 	//  provider-generated summary depending on the model.
 	Content string `json:"content"`
+}
+
+// Detach a target by its foreign key. Removing an unassigned target returns
+//
+//	NotFound. The parent variation must exist and be accessible.
+//
+// RemoveAgentVariationAssignmentRequest is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type RemoveAgentVariationAssignmentRequest struct {
+	ToolID     *RemoveAgentVariationAssignmentRequest_ToolID     `json:"-"`
+	ToolSetID  *RemoveAgentVariationAssignmentRequest_ToolSetID  `json:"-"`
+	SubAgentID *RemoveAgentVariationAssignmentRequest_SubAgentID `json:"-"`
+}
+
+func (u RemoveAgentVariationAssignmentRequest) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.ToolID != nil {
+		chosen = u.ToolID
+		count++
+	}
+	if u.ToolSetID != nil {
+		chosen = u.ToolSetID
+		count++
+	}
+	if u.SubAgentID != nil {
+		chosen = u.SubAgentID
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("RemoveAgentVariationAssignmentRequest: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewRemoveAgentVariationAssignmentRequestToolID returns a RemoveAgentVariationAssignmentRequest with the ToolID variant selected.
+func NewRemoveAgentVariationAssignmentRequestToolID(v RemoveAgentVariationAssignmentRequest_ToolID) RemoveAgentVariationAssignmentRequest {
+	v.Type = "toolId"
+	return RemoveAgentVariationAssignmentRequest{ToolID: &v}
+}
+
+// NewRemoveAgentVariationAssignmentRequestToolSetID returns a RemoveAgentVariationAssignmentRequest with the ToolSetID variant selected.
+func NewRemoveAgentVariationAssignmentRequestToolSetID(v RemoveAgentVariationAssignmentRequest_ToolSetID) RemoveAgentVariationAssignmentRequest {
+	v.Type = "toolSetId"
+	return RemoveAgentVariationAssignmentRequest{ToolSetID: &v}
+}
+
+// NewRemoveAgentVariationAssignmentRequestSubAgentID returns a RemoveAgentVariationAssignmentRequest with the SubAgentID variant selected.
+func NewRemoveAgentVariationAssignmentRequestSubAgentID(v RemoveAgentVariationAssignmentRequest_SubAgentID) RemoveAgentVariationAssignmentRequest {
+	v.Type = "subAgentId"
+	return RemoveAgentVariationAssignmentRequest{SubAgentID: &v}
+}
+
+func (u *RemoveAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error {
+	*u = RemoveAgentVariationAssignmentRequest{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "toolId":
+		u.ToolID = new(RemoveAgentVariationAssignmentRequest_ToolID)
+		return json.Unmarshal(data, u.ToolID)
+	case "toolSetId":
+		u.ToolSetID = new(RemoveAgentVariationAssignmentRequest_ToolSetID)
+		return json.Unmarshal(data, u.ToolSetID)
+	case "subAgentId":
+		u.SubAgentID = new(RemoveAgentVariationAssignmentRequest_SubAgentID)
+		return json.Unmarshal(data, u.SubAgentID)
+	}
+	return fmt.Errorf("RemoveAgentVariationAssignmentRequest: unknown type %q", probe.Tag)
+}
+
+// Remove by memory layer ID. An unassigned layer returns NotFound.
+//
+//	The parent variation must still exist and be accessible.
+type RemoveAgentVariationMemoryLayerRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+	// Layer to detach. Accepts memlyr_… or external_id:<value>.
+	MemoryLayerID string `json:"memoryLayerId"`
 }
 
 type ResolvedSecretSource string
@@ -4978,7 +5153,7 @@ type UpdateAgentScheduleRequest struct {
 // Update an existing memory layer assignment. Only `position` is mutable.
 //
 //	A new position that collides with another assignment on the same variation
-//	is rejected with InvalidArgument.
+//	is rejected with InvalidArgument. An unassigned layer returns NotFound.
 type UpdateAgentVariationMemoryLayerRequest struct {
 	// Workspace ID.
 	WorkspaceID *string `json:"workspaceId,omitempty"`
@@ -4986,9 +5161,10 @@ type UpdateAgentVariationMemoryLayerRequest struct {
 	AgentID *string `json:"agentId,omitempty"`
 	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
 	VariationID *string `json:"variationId,omitempty"`
-	ID          *string `json:"id,omitempty"`
+	// Layer to reposition. Accepts memlyr_… or external_id:<value>.
+	MemoryLayerID string `json:"memoryLayerId"`
 	// New position. Only field currently updatable on an assignment.
-	Position *int32 `json:"position,omitempty"`
+	Position int32 `json:"position"`
 }
 
 // Update agent variation request
@@ -5001,7 +5177,13 @@ type UpdateAgentVariationRequest struct {
 	ID       *string                 `json:"id,omitempty"`
 	Metadata *UpdateResourceMetadata `json:"metadata,omitempty"`
 	Spec     *AgentVariationSpec     `json:"spec,omitempty"`
-	// Fields to update
+	// Fields to update. Assignment lists are replaced as a whole, never merged.
+	//  Select spec.assignments or spec.memory_layer_assignments to replace/clear
+	//  one list. Selecting spec replaces the entire spec (including omitted lists);
+	//  * replaces all mutable fields. Element/index paths are not supported.
+	//  Without a mask, infer paths from non-empty fields: non-empty assignment
+	//  lists replace existing lists, while omitted/empty lists remain unchanged.
+	//  To clear a list, explicitly include its path in the mask.
 	UpdateMask *string `json:"updateMask,omitempty"`
 }
 
@@ -5196,36 +5378,32 @@ type UserMessage struct {
 	Content string `json:"content"`
 }
 
-// A read-only reference to a single tool, tool set, or sub-agent attached to
+// A tool, tool set, or sub-agent assigned to a variation, identified only by
 //
-//	a variation. Read the full set of assignments via `AgentVariationInfo.assignments`;
-//	mutations go through the dedicated add/remove assignment endpoints.
-//
-//	The `id` identifies the assignment itself (not the referenced resource) and
-//	is the handle used to remove the assignment. It is returned by the add
-//	endpoint and present on every entry in `AgentVariationInfo.assignments`.
+//	the target resource ID. The same shape is accepted in a spec and returned
+//	on reads. Assignment junction records are an internal implementation detail.
 //
 // VariationAssignment is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type VariationAssignment struct {
-	Tool    *VariationAssignment_Tool    `json:"-"`
-	ToolSet *VariationAssignment_ToolSet `json:"-"`
-	Agent   *VariationAssignment_Agent   `json:"-"`
+	ToolID     *VariationAssignment_ToolID     `json:"-"`
+	ToolSetID  *VariationAssignment_ToolSetID  `json:"-"`
+	SubAgentID *VariationAssignment_SubAgentID `json:"-"`
 }
 
 func (u VariationAssignment) MarshalJSON() ([]byte, error) {
 	var chosen any
 	count := 0
-	if u.Tool != nil {
-		chosen = u.Tool
+	if u.ToolID != nil {
+		chosen = u.ToolID
 		count++
 	}
-	if u.ToolSet != nil {
-		chosen = u.ToolSet
+	if u.ToolSetID != nil {
+		chosen = u.ToolSetID
 		count++
 	}
-	if u.Agent != nil {
-		chosen = u.Agent
+	if u.SubAgentID != nil {
+		chosen = u.SubAgentID
 		count++
 	}
 	if count == 0 {
@@ -5237,22 +5415,22 @@ func (u VariationAssignment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(chosen)
 }
 
-// NewVariationAssignmentTool returns a VariationAssignment with the Tool variant selected.
-func NewVariationAssignmentTool(v VariationAssignment_Tool) VariationAssignment {
-	v.Type = "tool"
-	return VariationAssignment{Tool: &v}
+// NewVariationAssignmentToolID returns a VariationAssignment with the ToolID variant selected.
+func NewVariationAssignmentToolID(v VariationAssignment_ToolID) VariationAssignment {
+	v.Type = "toolId"
+	return VariationAssignment{ToolID: &v}
 }
 
-// NewVariationAssignmentToolSet returns a VariationAssignment with the ToolSet variant selected.
-func NewVariationAssignmentToolSet(v VariationAssignment_ToolSet) VariationAssignment {
-	v.Type = "toolSet"
-	return VariationAssignment{ToolSet: &v}
+// NewVariationAssignmentToolSetID returns a VariationAssignment with the ToolSetID variant selected.
+func NewVariationAssignmentToolSetID(v VariationAssignment_ToolSetID) VariationAssignment {
+	v.Type = "toolSetId"
+	return VariationAssignment{ToolSetID: &v}
 }
 
-// NewVariationAssignmentAgent returns a VariationAssignment with the Agent variant selected.
-func NewVariationAssignmentAgent(v VariationAssignment_Agent) VariationAssignment {
-	v.Type = "agent"
-	return VariationAssignment{Agent: &v}
+// NewVariationAssignmentSubAgentID returns a VariationAssignment with the SubAgentID variant selected.
+func NewVariationAssignmentSubAgentID(v VariationAssignment_SubAgentID) VariationAssignment {
+	v.Type = "subAgentId"
+	return VariationAssignment{SubAgentID: &v}
 }
 
 func (u *VariationAssignment) UnmarshalJSON(data []byte) error {
@@ -5267,39 +5445,31 @@ func (u *VariationAssignment) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	switch probe.Tag {
-	case "tool":
-		u.Tool = new(VariationAssignment_Tool)
-		return json.Unmarshal(data, u.Tool)
-	case "toolSet":
-		u.ToolSet = new(VariationAssignment_ToolSet)
-		return json.Unmarshal(data, u.ToolSet)
-	case "agent":
-		u.Agent = new(VariationAssignment_Agent)
-		return json.Unmarshal(data, u.Agent)
+	case "toolId":
+		u.ToolID = new(VariationAssignment_ToolID)
+		return json.Unmarshal(data, u.ToolID)
+	case "toolSetId":
+		u.ToolSetID = new(VariationAssignment_ToolSetID)
+		return json.Unmarshal(data, u.ToolSetID)
+	case "subAgentId":
+		u.SubAgentID = new(VariationAssignment_SubAgentID)
+		return json.Unmarshal(data, u.SubAgentID)
 	}
 	return fmt.Errorf("VariationAssignment: unknown type %q", probe.Tag)
 }
 
-// VariationMemoryLayerAssignment attaches a single MemoryLayer to a
+// A whole memory layer in a variation's baseline memory cascade. Identified
 //
-//	variation at a given position in the variation's baseline memory
-//	cascade. A variation has at most one assignment per memory_layer_id.
-//
-//	Variations only support whole-layer attachments — entry pinning is an
-//	objective-level capability.
+//	by the memory layer ID; no assignment junction ID is exposed. Entry pinning
+//	remains an objective-level capability.
 type VariationMemoryLayerAssignment struct {
-	// Assignment row id — handle for removing the assignment. Distinct
-	//  from the referenced memory layer's id.
-	ID string `json:"id"`
-	// The attached memory layer.
-	MemoryLayer *BareMetadata `json:"memoryLayer"`
-	// Position in the variation's baseline cascade. Position is
-	//  specificity, CSS-style: a LOWER position is more specific and is
-	//  consulted first; the highest-position assignment is the most
-	//  general fallback. Gaps are fine — only relative position matters.
-	//  Positions must be unique within a variation; a request that would
-	//  collide with an existing assignment's position is rejected with
-	//  InvalidArgument.
+	// Accepts the canonical memlyr_… ID or external_id:<value> on input.
+	//  Reads always return the canonical ID.
+	MemoryLayerID string `json:"memoryLayerId"`
+	// Position is specificity: lower positions are consulted first; the highest
+	//  position is the most general fallback. Gaps and zero are valid. Positions
+	//  must be unique within a variation. Explicitly required in a full spec;
+	//  only AddAgentVariationMemoryLayer can choose an append position for you.
 	Position int32 `json:"position"`
 }
 
@@ -5350,6 +5520,7 @@ const (
 	WebhookDeliveryDataEventTypeObjectiveEventTypeNotice                 WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_NOTICE"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeTimedOut               WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeReasoning              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeStateChanged           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 )
 
 type WebhookDeliveryData struct {
@@ -5616,22 +5787,22 @@ type ObjectiveEventWebhookData struct {
 	Data *ObjectiveEventWebhookDataData `json:"data"`
 }
 
-type VariationAssignment_Tool struct {
-	Type string        `json:"type"`
-	Tool *BareMetadata `json:"tool"`
-	ID   string        `json:"id"`
+type VariationAssignment_ToolID struct {
+	Type string `json:"type"`
+	// Canonical tool ID.
+	ToolID string `json:"toolId"`
 }
 
-type VariationAssignment_ToolSet struct {
-	Type    string        `json:"type"`
-	ToolSet *BareMetadata `json:"toolSet"`
-	ID      string        `json:"id"`
+type VariationAssignment_ToolSetID struct {
+	Type string `json:"type"`
+	// Canonical tool set ID.
+	ToolSetID string `json:"toolSetId"`
 }
 
-type VariationAssignment_Agent struct {
-	Type  string        `json:"type"`
-	Agent *BareMetadata `json:"agent"`
-	ID    string        `json:"id"`
+type VariationAssignment_SubAgentID struct {
+	Type string `json:"type"`
+	// Canonical sub-agent ID.
+	SubAgentID string `json:"subAgentId"`
 }
 
 type ObjectiveToolCallResult_ContentBlock_Text struct {
@@ -5937,6 +6108,11 @@ type ObjectiveEventData_Reasoning struct {
 	Reasoning *Reasoning `json:"reasoning"`
 }
 
+type ObjectiveEventData_StateChanged struct {
+	Type         string                 `json:"type"`
+	StateChanged *ObjectiveStateChanged `json:"stateChanged"`
+}
+
 type CallableTool_Tool struct {
 	Type string            `json:"type"`
 	Tool *ResourceMetadata `json:"tool"`
@@ -6011,6 +6187,39 @@ type AddAgentVariationAssignmentRequest_ToolSetID struct {
 }
 
 type AddAgentVariationAssignmentRequest_SubAgentID struct {
+	Type       string `json:"type"`
+	SubAgentID string `json:"subAgentId"`
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+}
+
+type RemoveAgentVariationAssignmentRequest_ToolID struct {
+	Type   string `json:"type"`
+	ToolID string `json:"toolId"`
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+}
+
+type RemoveAgentVariationAssignmentRequest_ToolSetID struct {
+	Type      string `json:"type"`
+	ToolSetID string `json:"toolSetId"`
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+}
+
+type RemoveAgentVariationAssignmentRequest_SubAgentID struct {
 	Type       string `json:"type"`
 	SubAgentID string `json:"subAgentId"`
 	// Workspace ID.
@@ -6156,6 +6365,7 @@ const (
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeNotice                 AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_NOTICE"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeTimedOut               AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeReasoning              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
+	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeStateChanged           AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 )
 
 type MemoryServiceListMemoryLayersType string
@@ -6177,14 +6387,14 @@ const (
 type ObjectiveServiceListObjectivesState string
 
 const (
-	ObjectiveServiceListObjectivesStateStateUnspecified ObjectiveServiceListObjectivesState = "STATE_UNSPECIFIED"
-	ObjectiveServiceListObjectivesStateStatePending     ObjectiveServiceListObjectivesState = "STATE_PENDING"
-	ObjectiveServiceListObjectivesStateStateRunning     ObjectiveServiceListObjectivesState = "STATE_RUNNING"
-	ObjectiveServiceListObjectivesStateStateWaiting     ObjectiveServiceListObjectivesState = "STATE_WAITING"
-	ObjectiveServiceListObjectivesStateStateFailed      ObjectiveServiceListObjectivesState = "STATE_FAILED"
-	ObjectiveServiceListObjectivesStateStateCancelled   ObjectiveServiceListObjectivesState = "STATE_CANCELLED"
-	ObjectiveServiceListObjectivesStateStateFinalized   ObjectiveServiceListObjectivesState = "STATE_FINALIZED"
-	ObjectiveServiceListObjectivesStateStateTimedOut    ObjectiveServiceListObjectivesState = "STATE_TIMED_OUT"
+	ObjectiveServiceListObjectivesStateObjectiveStateUnspecified ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveServiceListObjectivesStateObjectiveStatePending     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveServiceListObjectivesStateObjectiveStateRunning     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveServiceListObjectivesStateObjectiveStateWaiting     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveServiceListObjectivesStateObjectiveStateFailed      ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveServiceListObjectivesStateObjectiveStateCancelled   ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveServiceListObjectivesStateObjectiveStateFinalized   ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveServiceListObjectivesStateObjectiveStateTimedOut    ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_TIMED_OUT"
 )
 
 type ObjectiveServiceListObjectiveToolCallsStatus string
@@ -6353,6 +6563,80 @@ type ObjectiveEpisodicConfigParam struct {
 	Key string `json:"key"`
 }
 
+// RemoveAgentVariationAssignmentRequestParam is the request-direction oneOf view; at most one variant is non-nil.
+type RemoveAgentVariationAssignmentRequestParam struct {
+	ToolID     *RemoveAgentVariationAssignmentRequest_ToolIDParam     `json:"-"`
+	ToolSetID  *RemoveAgentVariationAssignmentRequest_ToolSetIDParam  `json:"-"`
+	SubAgentID *RemoveAgentVariationAssignmentRequest_SubAgentIDParam `json:"-"`
+}
+
+func (u RemoveAgentVariationAssignmentRequestParam) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.ToolID != nil {
+		chosen = u.ToolID
+		count++
+	}
+	if u.ToolSetID != nil {
+		chosen = u.ToolSetID
+		count++
+	}
+	if u.SubAgentID != nil {
+		chosen = u.SubAgentID
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("RemoveAgentVariationAssignmentRequestParam: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewRemoveAgentVariationAssignmentRequestParamToolID returns a RemoveAgentVariationAssignmentRequestParam with the ToolID variant selected.
+func NewRemoveAgentVariationAssignmentRequestParamToolID(v RemoveAgentVariationAssignmentRequest_ToolIDParam) RemoveAgentVariationAssignmentRequestParam {
+	v.Type = "toolId"
+	return RemoveAgentVariationAssignmentRequestParam{ToolID: &v}
+}
+
+// NewRemoveAgentVariationAssignmentRequestParamToolSetID returns a RemoveAgentVariationAssignmentRequestParam with the ToolSetID variant selected.
+func NewRemoveAgentVariationAssignmentRequestParamToolSetID(v RemoveAgentVariationAssignmentRequest_ToolSetIDParam) RemoveAgentVariationAssignmentRequestParam {
+	v.Type = "toolSetId"
+	return RemoveAgentVariationAssignmentRequestParam{ToolSetID: &v}
+}
+
+// NewRemoveAgentVariationAssignmentRequestParamSubAgentID returns a RemoveAgentVariationAssignmentRequestParam with the SubAgentID variant selected.
+func NewRemoveAgentVariationAssignmentRequestParamSubAgentID(v RemoveAgentVariationAssignmentRequest_SubAgentIDParam) RemoveAgentVariationAssignmentRequestParam {
+	v.Type = "subAgentId"
+	return RemoveAgentVariationAssignmentRequestParam{SubAgentID: &v}
+}
+
+func (u *RemoveAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) error {
+	*u = RemoveAgentVariationAssignmentRequestParam{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "toolId":
+		u.ToolID = new(RemoveAgentVariationAssignmentRequest_ToolIDParam)
+		return json.Unmarshal(data, u.ToolID)
+	case "toolSetId":
+		u.ToolSetID = new(RemoveAgentVariationAssignmentRequest_ToolSetIDParam)
+		return json.Unmarshal(data, u.ToolSetID)
+	case "subAgentId":
+		u.SubAgentID = new(RemoveAgentVariationAssignmentRequest_SubAgentIDParam)
+		return json.Unmarshal(data, u.SubAgentID)
+	}
+	return fmt.Errorf("RemoveAgentVariationAssignmentRequestParam: unknown type %q", probe.Tag)
+}
+
 // WidgetSessionSpecParam is the request-direction view of WidgetSessionSpec:
 // server-owned (readOnly) fields are not accepted as input.
 type WidgetSessionSpecParam struct {
@@ -6400,6 +6684,27 @@ type AddAgentVariationAssignmentRequest_ToolSetIDParam struct {
 // AddAgentVariationAssignmentRequest_SubAgentIDParam is the request-direction view of AddAgentVariationAssignmentRequest_SubAgentID:
 // server-owned (readOnly) fields are not accepted as input.
 type AddAgentVariationAssignmentRequest_SubAgentIDParam struct {
+	Type       string `json:"type"`
+	SubAgentID string `json:"subAgentId"`
+}
+
+// RemoveAgentVariationAssignmentRequest_ToolIDParam is the request-direction view of RemoveAgentVariationAssignmentRequest_ToolID:
+// server-owned (readOnly) fields are not accepted as input.
+type RemoveAgentVariationAssignmentRequest_ToolIDParam struct {
+	Type   string `json:"type"`
+	ToolID string `json:"toolId"`
+}
+
+// RemoveAgentVariationAssignmentRequest_ToolSetIDParam is the request-direction view of RemoveAgentVariationAssignmentRequest_ToolSetID:
+// server-owned (readOnly) fields are not accepted as input.
+type RemoveAgentVariationAssignmentRequest_ToolSetIDParam struct {
+	Type      string `json:"type"`
+	ToolSetID string `json:"toolSetId"`
+}
+
+// RemoveAgentVariationAssignmentRequest_SubAgentIDParam is the request-direction view of RemoveAgentVariationAssignmentRequest_SubAgentID:
+// server-owned (readOnly) fields are not accepted as input.
+type RemoveAgentVariationAssignmentRequest_SubAgentIDParam struct {
 	Type       string `json:"type"`
 	SubAgentID string `json:"subAgentId"`
 }

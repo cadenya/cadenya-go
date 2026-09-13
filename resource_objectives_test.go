@@ -28,7 +28,7 @@ func (s *ObjectivesSuite) TestList() {
 		Cursor("sample").
 		AgentID("sample").
 		ParentObjectiveID("sample").
-		State(cadenya.ObjectiveServiceListObjectivesState("STATE_PENDING")).
+		State(cadenya.ObjectiveServiceListObjectivesState("OBJECTIVE_STATE_PENDING")).
 		ProfileID("sample").
 		SortOrder("sample").
 		IncludeInfo(true).
@@ -54,7 +54,7 @@ func (s *ObjectivesSuite) TestList() {
 			Cursor("sample").
 			AgentID("sample").
 			ParentObjectiveID("sample").
-			State(cadenya.ObjectiveServiceListObjectivesState("STATE_PENDING")).
+			State(cadenya.ObjectiveServiceListObjectivesState("OBJECTIVE_STATE_PENDING")).
 			ProfileID("sample").
 			SortOrder("sample").
 			IncludeInfo(true).

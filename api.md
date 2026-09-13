@@ -278,27 +278,27 @@ client.Agents().Variations().Update(ctx context.Context, agentID string, id stri
 Add an assignment to a variation
 
 ```go
-client.Agents().Variations().AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*VariationAssignment, error)
-```
-Remove an assignment from a variation
-
-```go
-client.Agents().Variations().RemoveAssignment(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) error
+client.Agents().Variations().AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*AgentVariation, error)
 ```
 Attach a memory layer to a variation
 
 ```go
-client.Agents().Variations().AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error)
+client.Agents().Variations().AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
+```
+Remove an assignment from a variation
+
+```go
+client.Agents().Variations().RemoveAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) (*AgentVariation, error)
 ```
 Remove a memory layer assignment from a variation
 
 ```go
-client.Agents().Variations().RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) error
+client.Agents().Variations().RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
 ```
 Update a variation's memory layer assignment
 
 ```go
-client.Agents().Variations().UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error)
+client.Agents().Variations().UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
 ```
 
 ## ai_provider_keys
