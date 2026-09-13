@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cadenya/cadenya-go/compare/v1.1.0...v1.2.0) (2026-09-13)
+
+
+### Features
+
+* add declarative variation assignments ([cacc1e2](https://github.com/cadenya/cadenya-go/commit/cacc1e2f24e7d362316ae28967d1c06e3b67546d))
+
 ## [1.1.0](https://github.com/cadenya/cadenya-go/compare/v1.0.1...v1.1.0) (2026-09-09)
 
 
