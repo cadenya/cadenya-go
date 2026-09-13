@@ -167,33 +167,11 @@ func (s *AgentVariationsSuite) TestAddAssignment() {
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 
 	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample/assignments", g.Interactions[0].Response)
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample:addAssignment", g.Interactions[0].Response)
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		_, err := client.Agents().Variations().AddAssignment(ctx, "sample", "sample", (&cadenya.AgentVariationAddAssignmentBuilder{}).
 			Body(&cadenya.AddAgentVariationAssignmentRequestParam{ToolID: &cadenya.AddAgentVariationAssignmentRequest_ToolIDParam{Type: "toolId", ToolID: "sample"}}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
-}
-
-func (s *AgentVariationsSuite) TestRemoveAssignment() {
-	g := loadGolden(s.T(), "AgentVariationService_RemoveAgentVariationAssignment")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	err := client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationRemoveAssignmentBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
-	s.Require().NoError(err)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample/assignments/sample", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		err := client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationRemoveAssignmentBuilder{}).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -215,7 +193,7 @@ func (s *AgentVariationsSuite) TestAddMemoryLayer() {
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 
 	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample/memory_layer_assignments", g.Interactions[0].Response)
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample:addMemoryLayer", g.Interactions[0].Response)
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		_, err := client.Agents().Variations().AddMemoryLayer(ctx, "sample", "sample", (&cadenya.AgentVariationAddMemoryLayerBuilder{}).
@@ -227,22 +205,50 @@ func (s *AgentVariationsSuite) TestAddMemoryLayer() {
 	})
 }
 
+func (s *AgentVariationsSuite) TestRemoveAssignment() {
+	g := loadGolden(s.T(), "AgentVariationService_RemoveAgentVariationAssignment")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", (&cadenya.AgentVariationRemoveAssignmentBuilder{}).
+		WorkspaceID("sample").
+		Body(&cadenya.RemoveAgentVariationAssignmentRequestParam{ToolID: &cadenya.RemoveAgentVariationAssignmentRequest_ToolIDParam{Type: "toolId", ToolID: "sample"}}).
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample:removeAssignment", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", (&cadenya.AgentVariationRemoveAssignmentBuilder{}).
+			Body(&cadenya.RemoveAgentVariationAssignmentRequestParam{ToolID: &cadenya.RemoveAgentVariationAssignmentRequest_ToolIDParam{Type: "toolId", ToolID: "sample"}}).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
 func (s *AgentVariationsSuite) TestRemoveMemoryLayer() {
 	g := loadGolden(s.T(), "AgentVariationService_RemoveAgentVariationMemoryLayer")
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	err := client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationRemoveMemoryLayerBuilder{}).
+	result, err := client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", (&cadenya.AgentVariationRemoveMemoryLayerBuilder{}).
 		WorkspaceID("sample").
+		MemoryLayerID("sample").
 		ToParams())
 	s.Require().NoError(err)
+	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 
 	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample/memory_layer_assignments/sample", g.Interactions[0].Response)
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample:removeMemoryLayer", g.Interactions[0].Response)
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
-		err := client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationRemoveMemoryLayerBuilder{}).
+		_, err := client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", (&cadenya.AgentVariationRemoveMemoryLayerBuilder{}).
+			MemoryLayerID("sample").
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -254,8 +260,9 @@ func (s *AgentVariationsSuite) TestUpdateMemoryLayer() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	result, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationUpdateMemoryLayerBuilder{}).
+	result, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", (&cadenya.AgentVariationUpdateMemoryLayerBuilder{}).
 		WorkspaceID("sample").
+		MemoryLayerID("sample").
 		Position(1).
 		ToParams())
 	s.Require().NoError(err)
@@ -263,10 +270,11 @@ func (s *AgentVariationsSuite) TestUpdateMemoryLayer() {
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 
 	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample/memory_layer_assignments/sample", g.Interactions[0].Response)
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/agents/sample/variations/sample:updateMemoryLayer", g.Interactions[0].Response)
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
-		_, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", "sample", (&cadenya.AgentVariationUpdateMemoryLayerBuilder{}).
+		_, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", (&cadenya.AgentVariationUpdateMemoryLayerBuilder{}).
+			MemoryLayerID("sample").
 			Position(1).
 			ToParams())
 		s.Require().NoError(err)

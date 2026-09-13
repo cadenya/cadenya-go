@@ -339,18 +339,20 @@ func main() {
 		_, err := client.Agents().Variations().AddAssignment(ctx, "sample", "sample", decode[sdk.AgentVariationAddAssignmentParams](`{"body":{"toolId":"sample","type":"toolId"},"workspaceId":"sample"}`))
 		return err
 	})
-	run("AgentVariationService_RemoveAgentVariationAssignment", func() error {
-		return client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", "sample", decode[sdk.AgentVariationRemoveAssignmentParams](`{"workspaceId":"sample"}`))
-	})
 	run("AgentVariationService_AddAgentVariationMemoryLayer", func() error {
 		_, err := client.Agents().Variations().AddMemoryLayer(ctx, "sample", "sample", decode[sdk.AgentVariationAddMemoryLayerParams](`{"memoryLayerId":"sample","position":1,"workspaceId":"sample"}`))
 		return err
 	})
+	run("AgentVariationService_RemoveAgentVariationAssignment", func() error {
+		_, err := client.Agents().Variations().RemoveAssignment(ctx, "sample", "sample", decode[sdk.AgentVariationRemoveAssignmentParams](`{"body":{"toolId":"sample","type":"toolId"},"workspaceId":"sample"}`))
+		return err
+	})
 	run("AgentVariationService_RemoveAgentVariationMemoryLayer", func() error {
-		return client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", "sample", decode[sdk.AgentVariationRemoveMemoryLayerParams](`{"workspaceId":"sample"}`))
+		_, err := client.Agents().Variations().RemoveMemoryLayer(ctx, "sample", "sample", decode[sdk.AgentVariationRemoveMemoryLayerParams](`{"memoryLayerId":"sample","workspaceId":"sample"}`))
+		return err
 	})
 	run("AgentVariationService_UpdateAgentVariationMemoryLayer", func() error {
-		_, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", "sample", decode[sdk.AgentVariationUpdateMemoryLayerParams](`{"position":1,"workspaceId":"sample"}`))
+		_, err := client.Agents().Variations().UpdateMemoryLayer(ctx, "sample", "sample", decode[sdk.AgentVariationUpdateMemoryLayerParams](`{"memoryLayerId":"sample","position":1,"workspaceId":"sample"}`))
 		return err
 	})
 	run("AIProviderKeyService_ListAIProviderKeys", func() error {
@@ -478,7 +480,7 @@ func main() {
 		return err
 	})
 	run("ObjectiveService_ListObjectives", func() error {
-		page, err := client.Objectives().List(ctx, decode[sdk.ObjectiveListParams](`{"agentId":"sample","agentScheduleId":"sample","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"parentObjectiveId":"sample","profileId":"sample","sortOrder":"sample","state":"STATE_PENDING","subjectId":"sample","tenantId":"sample","widgetId":"sample","widgetSessionId":"sample","workspaceId":"sample"}`))
+		page, err := client.Objectives().List(ctx, decode[sdk.ObjectiveListParams](`{"agentId":"sample","agentScheduleId":"sample","cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"parentObjectiveId":"sample","profileId":"sample","sortOrder":"sample","state":"OBJECTIVE_STATE_PENDING","subjectId":"sample","tenantId":"sample","widgetId":"sample","widgetSessionId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}

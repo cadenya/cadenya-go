@@ -196,26 +196,6 @@ func (b *AgentVariationAddAssignmentBuilder) ToParams() *AgentVariationAddAssign
 	return &p
 }
 
-type AgentVariationRemoveAssignmentParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-}
-
-// AgentVariationRemoveAssignmentBuilder builds a AgentVariationRemoveAssignmentParams fluently.
-type AgentVariationRemoveAssignmentBuilder struct {
-	params AgentVariationRemoveAssignmentParams
-}
-
-func (b *AgentVariationRemoveAssignmentBuilder) WorkspaceID(v string) *AgentVariationRemoveAssignmentBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *AgentVariationRemoveAssignmentBuilder) ToParams() *AgentVariationRemoveAssignmentParams {
-	p := b.params
-	return &p
-}
-
 type AgentVariationAddMemoryLayerParams struct {
 	WorkspaceID   *string `json:"workspaceId,omitempty"`
 	MemoryLayerID string  `json:"memoryLayerId"`
@@ -248,8 +228,36 @@ func (b *AgentVariationAddMemoryLayerBuilder) ToParams() *AgentVariationAddMemor
 	return &p
 }
 
-type AgentVariationRemoveMemoryLayerParams struct {
+type AgentVariationRemoveAssignmentParams struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Body is sent as the entire request body.
+	Body *RemoveAgentVariationAssignmentRequestParam `json:"body"`
+}
+
+// AgentVariationRemoveAssignmentBuilder builds a AgentVariationRemoveAssignmentParams fluently.
+type AgentVariationRemoveAssignmentBuilder struct {
+	params AgentVariationRemoveAssignmentParams
+}
+
+func (b *AgentVariationRemoveAssignmentBuilder) WorkspaceID(v string) *AgentVariationRemoveAssignmentBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *AgentVariationRemoveAssignmentBuilder) Body(v *RemoveAgentVariationAssignmentRequestParam) *AgentVariationRemoveAssignmentBuilder {
+	b.params.Body = v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *AgentVariationRemoveAssignmentBuilder) ToParams() *AgentVariationRemoveAssignmentParams {
+	p := b.params
+	return &p
+}
+
+type AgentVariationRemoveMemoryLayerParams struct {
+	WorkspaceID   *string `json:"workspaceId,omitempty"`
+	MemoryLayerID string  `json:"memoryLayerId"`
 }
 
 // AgentVariationRemoveMemoryLayerBuilder builds a AgentVariationRemoveMemoryLayerParams fluently.
@@ -262,6 +270,11 @@ func (b *AgentVariationRemoveMemoryLayerBuilder) WorkspaceID(v string) *AgentVar
 	return b
 }
 
+func (b *AgentVariationRemoveMemoryLayerBuilder) MemoryLayerID(v string) *AgentVariationRemoveMemoryLayerBuilder {
+	b.params.MemoryLayerID = v
+	return b
+}
+
 // ToParams returns the built params, ready to pass to the SDK method.
 func (b *AgentVariationRemoveMemoryLayerBuilder) ToParams() *AgentVariationRemoveMemoryLayerParams {
 	p := b.params
@@ -269,8 +282,9 @@ func (b *AgentVariationRemoveMemoryLayerBuilder) ToParams() *AgentVariationRemov
 }
 
 type AgentVariationUpdateMemoryLayerParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	Position    *int32  `json:"position,omitempty"`
+	WorkspaceID   *string `json:"workspaceId,omitempty"`
+	MemoryLayerID string  `json:"memoryLayerId"`
+	Position      int32   `json:"position"`
 }
 
 // AgentVariationUpdateMemoryLayerBuilder builds a AgentVariationUpdateMemoryLayerParams fluently.
@@ -283,8 +297,13 @@ func (b *AgentVariationUpdateMemoryLayerBuilder) WorkspaceID(v string) *AgentVar
 	return b
 }
 
+func (b *AgentVariationUpdateMemoryLayerBuilder) MemoryLayerID(v string) *AgentVariationUpdateMemoryLayerBuilder {
+	b.params.MemoryLayerID = v
+	return b
+}
+
 func (b *AgentVariationUpdateMemoryLayerBuilder) Position(v int32) *AgentVariationUpdateMemoryLayerBuilder {
-	b.params.Position = &v
+	b.params.Position = v
 	return b
 }
 
@@ -307,15 +326,15 @@ type AgentVariationResources interface {
 	// Update a variation
 	Update(ctx context.Context, agentID string, id string, params *AgentVariationUpdateParams, opts ...RequestOption) (*AgentVariation, error)
 	// Add an assignment to a variation
-	AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*VariationAssignment, error)
-	// Remove an assignment from a variation
-	RemoveAssignment(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) error
+	AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*AgentVariation, error)
 	// Attach a memory layer to a variation
-	AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error)
+	AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
+	// Remove an assignment from a variation
+	RemoveAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) (*AgentVariation, error)
 	// Remove a memory layer assignment from a variation
-	RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) error
+	RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
 	// Update a variation's memory layer assignment
-	UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error)
+	UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error)
 }
 
 type agentVariationsService struct{ core *core }
@@ -493,7 +512,7 @@ func (s *agentVariationsService) Update(ctx context.Context, agentID string, id 
 	return &out, nil
 }
 
-func (s *agentVariationsService) AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*VariationAssignment, error) {
+func (s *agentVariationsService) AddAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationAddAssignmentParams, opts ...RequestOption) (*AgentVariation, error) {
 	if params == nil {
 		params = &AgentVariationAddAssignmentParams{}
 	}
@@ -513,43 +532,15 @@ func (s *agentVariationsService) AddAssignment(ctx context.Context, agentID stri
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s/assignments", segWorkspaceID, segAgentID, segVariationID)
-	var out VariationAssignment
+	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s:addAssignment", segWorkspaceID, segAgentID, segVariationID)
+	var out AgentVariation
 	if err := s.core.do(ctx, "POST", path, nil, params.Body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (s *agentVariationsService) RemoveAssignment(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) error {
-	if params == nil {
-		params = &AgentVariationRemoveAssignmentParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return err
-	}
-	segAgentID, err := pathSegment("agentId", agentID)
-	if err != nil {
-		return err
-	}
-	segVariationID, err := pathSegment("variationId", variationID)
-	if err != nil {
-		return err
-	}
-	segID, err := pathSegment("id", id)
-	if err != nil {
-		return err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s/assignments/%s", segWorkspaceID, segAgentID, segVariationID, segID)
-	return s.core.do(ctx, "DELETE", path, nil, nil, nil, opts...)
-}
-
-func (s *agentVariationsService) AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error) {
+func (s *agentVariationsService) AddMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationAddMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error) {
 	if params == nil {
 		params = &AgentVariationAddMemoryLayerParams{}
 	}
@@ -569,48 +560,78 @@ func (s *agentVariationsService) AddMemoryLayer(ctx context.Context, agentID str
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s/memory_layer_assignments", segWorkspaceID, segAgentID, segVariationID)
+	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s:addMemoryLayer", segWorkspaceID, segAgentID, segVariationID)
 	body := map[string]any{}
 	body["memoryLayerId"] = params.MemoryLayerID
 	if params.Position != nil {
 		body["position"] = params.Position
 	}
-	var out VariationMemoryLayerAssignment
+	var out AgentVariation
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (s *agentVariationsService) RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) error {
+func (s *agentVariationsService) RemoveAssignment(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveAssignmentParams, opts ...RequestOption) (*AgentVariation, error) {
+	if params == nil {
+		params = &AgentVariationRemoveAssignmentParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segAgentID, err := pathSegment("agentId", agentID)
+	if err != nil {
+		return nil, err
+	}
+	segVariationID, err := pathSegment("variationId", variationID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s:removeAssignment", segWorkspaceID, segAgentID, segVariationID)
+	var out AgentVariation
+	if err := s.core.do(ctx, "POST", path, nil, params.Body, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *agentVariationsService) RemoveMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationRemoveMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error) {
 	if params == nil {
 		params = &AgentVariationRemoveMemoryLayerParams{}
 	}
 	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	segAgentID, err := pathSegment("agentId", agentID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	segVariationID, err := pathSegment("variationId", variationID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	segID, err := pathSegment("id", id)
-	if err != nil {
-		return err
+	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s:removeMemoryLayer", segWorkspaceID, segAgentID, segVariationID)
+	body := map[string]any{}
+	body["memoryLayerId"] = params.MemoryLayerID
+	var out AgentVariation
+	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
+		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s/memory_layer_assignments/%s", segWorkspaceID, segAgentID, segVariationID, segID)
-	return s.core.do(ctx, "DELETE", path, nil, nil, nil, opts...)
+	return &out, nil
 }
 
-func (s *agentVariationsService) UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, id string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*VariationMemoryLayerAssignment, error) {
+func (s *agentVariationsService) UpdateMemoryLayer(ctx context.Context, agentID string, variationID string, params *AgentVariationUpdateMemoryLayerParams, opts ...RequestOption) (*AgentVariation, error) {
 	if params == nil {
 		params = &AgentVariationUpdateMemoryLayerParams{}
 	}
@@ -630,17 +651,12 @@ func (s *agentVariationsService) UpdateMemoryLayer(ctx context.Context, agentID 
 	if err != nil {
 		return nil, err
 	}
-	segID, err := pathSegment("id", id)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s/memory_layer_assignments/%s", segWorkspaceID, segAgentID, segVariationID, segID)
+	path := fmt.Sprintf("/v1/workspaces/%s/agents/%s/variations/%s:updateMemoryLayer", segWorkspaceID, segAgentID, segVariationID)
 	body := map[string]any{}
-	if params.Position != nil {
-		body["position"] = params.Position
-	}
-	var out VariationMemoryLayerAssignment
-	if err := s.core.do(ctx, "PATCH", path, nil, body, &out, opts...); err != nil {
+	body["memoryLayerId"] = params.MemoryLayerID
+	body["position"] = params.Position
+	var out AgentVariation
+	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
