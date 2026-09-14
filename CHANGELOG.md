@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/cadenya/cadenya-go/compare/v1.2.0...v1.3.0) (2026-09-14)
+
+
+### Features
+
+* expose variation assignment metadata ([bd604d5](https://github.com/cadenya/cadenya-go/commit/bd604d55b822b7ed7d00f6483e1ceb065857a8bd))
+
 ## [1.2.0](https://github.com/cadenya/cadenya-go/compare/v1.1.0...v1.2.0) (2026-09-13)
 
 
