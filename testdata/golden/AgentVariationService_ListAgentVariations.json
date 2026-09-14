@@ -24,7 +24,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"info\":{\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"info\":{\"assignmentMetadata\":{},\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -53,7 +53,7 @@
         }
       },
       "response": {
-        "body": "{\"items\":[{\"info\":{\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"info\":{\"assignmentMetadata\":{},\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }
