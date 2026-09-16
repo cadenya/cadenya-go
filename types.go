@@ -2438,6 +2438,8 @@ type ObjectiveError struct {
 }
 
 type ObjectiveEvent struct {
+	// Durable events use objevt_ IDs, the only IDs accepted as reconnect
+	//  cursors. Live-only heartbeats use hb_ IDs and have no SSE id: field.
 	Metadata        *OperationMetadata  `json:"metadata"`
 	Data            *ObjectiveEventData `json:"data"`
 	ContextWindowID string              `json:"contextWindowId"`
@@ -2476,6 +2478,7 @@ type ObjectiveEventData struct {
 	TimedOut               *ObjectiveEventData_TimedOut               `json:"-"`
 	Reasoning              *ObjectiveEventData_Reasoning              `json:"-"`
 	StateChanged           *ObjectiveEventData_StateChanged           `json:"-"`
+	Heartbeat              *ObjectiveEventData_Heartbeat              `json:"-"`
 }
 
 func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
@@ -2555,6 +2558,10 @@ func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
 	}
 	if u.StateChanged != nil {
 		chosen = u.StateChanged
+		count++
+	}
+	if u.Heartbeat != nil {
+		chosen = u.Heartbeat
 		count++
 	}
 	if count == 0 {
@@ -2680,6 +2687,12 @@ func NewObjectiveEventDataStateChanged(v ObjectiveEventData_StateChanged) Object
 	return ObjectiveEventData{StateChanged: &v}
 }
 
+// NewObjectiveEventDataHeartbeat returns a ObjectiveEventData with the Heartbeat variant selected.
+func NewObjectiveEventDataHeartbeat(v ObjectiveEventData_Heartbeat) ObjectiveEventData {
+	v.Type = "heartbeat"
+	return ObjectiveEventData{Heartbeat: &v}
+}
+
 func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	*u = ObjectiveEventData{}
 	var probe struct {
@@ -2749,6 +2762,9 @@ func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	case "stateChanged":
 		u.StateChanged = new(ObjectiveEventData_StateChanged)
 		return json.Unmarshal(data, u.StateChanged)
+	case "heartbeat":
+		u.Heartbeat = new(ObjectiveEventData_Heartbeat)
+		return json.Unmarshal(data, u.Heartbeat)
 	}
 	return fmt.Errorf("ObjectiveEventData: unknown type %q", probe.Tag)
 }
@@ -2793,6 +2809,14 @@ type ObjectiveFinalized struct {
 	//  successfully completed the objective, this field will contain the
 	//  structured output of the objective.
 	Output map[string]any `json:"output,omitempty"`
+}
+
+// ObjectiveHeartbeat reports recent execution liveness. It is transient:
+//
+//	delivered only on live streams, never stored in event history or delivered
+//	to webhooks. Its hb_ event ID is not a reconnect cursor. Heartbeats do not
+//	change objective state or promise progress from the model.
+type ObjectiveHeartbeat struct {
 }
 
 // ObjectiveInfo provides read-only aggregated statistics about an objective's execution
@@ -5531,6 +5555,7 @@ const (
 	WebhookDeliveryDataEventTypeObjectiveEventTypeTimedOut               WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeReasoning              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeStateChanged           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeHeartbeat              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
 )
 
 type WebhookDeliveryData struct {
@@ -6123,6 +6148,11 @@ type ObjectiveEventData_StateChanged struct {
 	StateChanged *ObjectiveStateChanged `json:"stateChanged"`
 }
 
+type ObjectiveEventData_Heartbeat struct {
+	Type      string              `json:"type"`
+	Heartbeat *ObjectiveHeartbeat `json:"heartbeat"`
+}
+
 type CallableTool_Tool struct {
 	Type string            `json:"type"`
 	Tool *ResourceMetadata `json:"tool"`
@@ -6376,6 +6406,7 @@ const (
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeTimedOut               AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_TIMED_OUT"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeReasoning              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeStateChanged           AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
+	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeHeartbeat              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
 )
 
 type MemoryServiceListMemoryLayersType string
