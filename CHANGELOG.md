@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/cadenya/cadenya-go/compare/v1.3.0...v1.4.0) (2026-09-16)
+
+
+### Features
+
+* support objective heartbeat events ([4c35b12](https://github.com/cadenya/cadenya-go/commit/4c35b12c833bcd627e867f4f2dd73f677243809d))
+
 ## [1.3.0](https://github.com/cadenya/cadenya-go/compare/v1.2.0...v1.3.0) (2026-09-14)
 
 
