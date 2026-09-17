@@ -822,7 +822,7 @@ func main() {
 		return nil
 	})
 	run("WidgetSessionService_CreateWidgetSession", func() error {
-		_, err := client.WidgetSessions().Create(ctx, decode[sdk.WidgetSessionCreateParams](`{"metadata":{},"secrets":[{}],"spec":{"widgetId":"sample"},"workspaceId":"sample"}`))
+		_, err := client.WidgetSessions().Create(ctx, decode[sdk.WidgetSessionCreateParams](`{"metadata":{},"secrets":[{}],"spec":{"subject":{"id":"sample"},"tenant":{"id":"sample"},"widgetId":"sample"},"workspaceId":"sample"}`))
 		return err
 	})
 	run("WidgetSessionService_DeleteTenantWidgetSessions", func() error {
