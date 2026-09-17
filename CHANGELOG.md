@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/cadenya/cadenya-go/compare/v1.4.0...v1.5.0) (2026-09-17)
+
+
+### Features
+
+* expose widget session credentials and required identity ([#101](https://github.com/cadenya/cadenya-go/issues/101)) ([6e5ce62](https://github.com/cadenya/cadenya-go/commit/6e5ce6285b03bb3c96259ef49a1cc221905df73d))
+
 ## [1.4.0](https://github.com/cadenya/cadenya-go/compare/v1.3.0...v1.4.0) (2026-09-16)
 
 
