@@ -3836,6 +3836,62 @@ type SetToolCallContentRequest_TextBlock struct {
 	Text string `json:"text"`
 }
 
+// StatusDetails is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type StatusDetails struct {
+	WidgetSessionErrorInfo *WidgetSessionErrorInfo `json:"-"`
+	GoogleProtobufAny      *GoogleProtobufAny      `json:"-"`
+}
+
+func (u StatusDetails) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.WidgetSessionErrorInfo != nil {
+		chosen = u.WidgetSessionErrorInfo
+		count++
+	}
+	if u.GoogleProtobufAny != nil {
+		chosen = u.GoogleProtobufAny
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("StatusDetails: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewStatusDetailsWidgetSessionErrorInfo returns a StatusDetails with the WidgetSessionErrorInfo variant selected.
+func NewStatusDetailsWidgetSessionErrorInfo(v WidgetSessionErrorInfo) StatusDetails {
+	return StatusDetails{WidgetSessionErrorInfo: &v}
+}
+
+// NewStatusDetailsGoogleProtobufAny returns a StatusDetails with the GoogleProtobufAny variant selected.
+func NewStatusDetailsGoogleProtobufAny(v GoogleProtobufAny) StatusDetails {
+	return StatusDetails{GoogleProtobufAny: &v}
+}
+
+func (u *StatusDetails) UnmarshalJSON(data []byte) error {
+	*u = StatusDetails{}
+	{
+		value := new(WidgetSessionErrorInfo)
+		if err := json.Unmarshal(data, value); err == nil {
+			u.WidgetSessionErrorInfo = value
+			return nil
+		}
+	}
+	{
+		value := new(GoogleProtobufAny)
+		if err := json.Unmarshal(data, value); err == nil {
+			u.GoogleProtobufAny = value
+			return nil
+		}
+	}
+	return fmt.Errorf("StatusDetails: no variant matched")
+}
+
 // The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).
 type Status struct {
 	// The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
@@ -3843,7 +3899,7 @@ type Status struct {
 	// A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
 	Message *string `json:"message,omitempty"`
 	// A list of messages that carry the error details.  There is a common set of message types for APIs to use.
-	Details []GoogleProtobufAny `json:"details,omitempty"`
+	Details []StatusDetails `json:"details,omitempty"`
 }
 
 type SubAgentSpawned struct {
@@ -5641,8 +5697,9 @@ const (
 //	a widget, minted server-to-server by the customer's backend. The session
 //	carries all customer-asserted context — tenant, subject, labels, secrets —
 //	and every conversation (objective) created through the widget inherits it.
-//	The bearer token returned at mint is short-lived and refreshed at the
-//	widget host; the session row is what makes revocation possible.
+//	The browser renews short-lived bearer tokens at the widget host with
+//	RenewWidgetSession, authenticated by its existing token. Renewal preserves
+//	this bounded grant and does not extend its hard expiry.
 type WidgetSession struct {
 	Metadata *OperationMetadata `json:"metadata"`
 	Spec     *WidgetSessionSpec `json:"spec"`
@@ -5654,6 +5711,32 @@ type WidgetSession struct {
 	//  provided at creation, encrypted at rest, and interpolated into tool-call
 	//  headers server-side — never returned by any API.
 	Secrets []WidgetSession_Secret `json:"secrets"`
+	// Present only on creation. The same envelope is returned by
+	//  RenewWidgetSession on the widget host. Omitted on reads, lists, and revocation.
+	//  Existing spec.token/spec.token_expires_at and info.host remain populated
+	//  on creation for v1 compatibility and agree with these credentials.
+	Credentials *WidgetSessionCredentials `json:"credentials,omitempty"`
+}
+
+// WidgetSessionCredentials is the only credential envelope the customer's
+//
+//	backend forwards to the browser. Never log or persist its token. Responses
+//	containing credentials use Cache-Control: no-store. Both initial and later
+//	issuance use the same schema; no refresh token or management key is included.
+type WidgetSessionCredentials struct {
+	// Canonical wsess_ identifier. Ordinary renewal cannot change the session.
+	SessionID string `json:"sessionId"`
+	// Authoritative hostname, without a scheme or path. Use HTTPS with this
+	//  host; never construct it or accept a host change during renewal.
+	Host string `json:"host"`
+	// Short-lived bearer credential for the widget host only.
+	Token string `json:"token"`
+	// Exact token expiry, at most 15 minutes after issuance and never later
+	//  than session_expires_at. Equals JWT exp without the 60-second validation
+	//  tolerance added. Renew proactively before this timestamp.
+	TokenExpiresAt time.Time `json:"tokenExpiresAt"`
+	// Immutable hard session expiry. Issuance never extends this deadline.
+	SessionExpiresAt time.Time `json:"sessionExpiresAt"`
 }
 
 // WidgetSessionInfo provides read-only server-derived data about a session.
@@ -5675,7 +5758,7 @@ type WidgetSessionInfo struct {
 	//  against the session's message cap.
 	MessageCount int32 `json:"messageCount"`
 	// When the session last created a conversation, sent a message, or
-	//  refreshed a token.
+	//  received a newly issued token.
 	LastActiveAt *time.Time `json:"lastActiveAt,omitempty"`
 }
 
@@ -5684,25 +5767,26 @@ type WidgetSessionSpec struct {
 	// Widget this session is minted against. Accepts the canonical `wgt_…` form
 	//  or the `external_id:<value>` form.
 	WidgetID string `json:"widgetId"`
-	// Optional tenant assertion — the customer's org/company identifier for the
-	//  visitor. Upserts the tenant record in the workspace and tags the session
-	//  and every conversation it creates. Conversation listing at the widget
-	//  host is scoped to this tenant.
-	Tenant *TenantAssertion `json:"tenant,omitempty"`
-	// Optional subject assertion — the visitor within the tenant (e.g. their
-	//  user id in the customer's namespace). Requires `tenant`; a subject
-	//  asserted without a tenant is rejected with InvalidArgument.
-	Subject *SubjectAssertion `json:"subject,omitempty"`
+	// Required tenant assertion — the customer's organization identifier.
+	//  Upserts the tenant record in the workspace. Every conversation created
+	//  through this session inherits the tenant and subject identity.
+	Tenant *TenantAssertion `json:"tenant"`
+	// Required subject assertion — the visitor's ID within the tenant.
+	//  Sessions with the same tenant and subject share conversation history on
+	//  the same widget and agent, subject to the current session's permissions.
+	//  A static ID deliberately shares that history; use a distinct ID per
+	//  visitor when their conversations should be separate.
+	Subject *SubjectAssertion `json:"subject"`
 	// Hard session expiry. Tokens never outlive it; after it passes the session
 	//  transitions to STATE_EXPIRED. Defaults to a server-chosen horizon when
 	//  unset.
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
-	// The session bearer token. Returned only on creation — subsequent reads
-	//  omit it. The token is short-lived; the widget refreshes it at the widget
-	//  host without involving the customer's backend.
+	// Legacy creation-only alias of credentials.token; omitted on reads.
+	//  Supported throughout v1. New clients should consume credentials.
+	//  The browser obtains replacements with RenewWidgetSession at the widget host.
 	Token string `json:"token"`
-	// Expiry of the token returned in `token`. Distinct from `expires_at`,
-	//  which bounds the session itself.
+	// Legacy creation-only alias of credentials.token_expires_at, supported
+	//  throughout v1. Distinct from expires_at, which bounds the session itself.
 	TokenExpiresAt *time.Time `json:"tokenExpiresAt,omitempty"`
 	// Parameters forced onto tool calls made by this session's conversations.
 	//  A pinned parameter is removed from the tool schema the LLM sees, and its
@@ -6358,6 +6442,25 @@ type ModelSpec_Capability_Caching struct {
 	Caching *Capability_Caching `json:"caching"`
 }
 
+// TOKEN_EXPIRED identifies access-token expiry beyond the 60-second clock-skew tolerance. That token cannot renew; use already-installed newer credentials or require explicit app reauthentication. SESSION_* reasons are terminal. Never infer renewability from HTTP status alone.
+type WidgetSessionErrorReason string
+
+const (
+	WidgetSessionErrorReasonTokenExpired     WidgetSessionErrorReason = "TOKEN_EXPIRED"
+	WidgetSessionErrorReasonSessionRevoked   WidgetSessionErrorReason = "SESSION_REVOKED"
+	WidgetSessionErrorReasonSessionExpired   WidgetSessionErrorReason = "SESSION_EXPIRED"
+	WidgetSessionErrorReasonSessionExhausted WidgetSessionErrorReason = "SESSION_EXHAUSTED"
+)
+
+// google.rpc.ErrorInfo detail for widget lifecycle failures. Match both domain and reason; ignore unknown reasons rather than renewing automatically.
+type WidgetSessionErrorInfo struct {
+	Type   string                   `json:"@type"`
+	Domain string                   `json:"domain"`
+	Reason WidgetSessionErrorReason `json:"reason"`
+	// Optional non-sensitive context. Never contains tokens or secrets.
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
 type AgentServiceListAgentsState string
 
 const (
@@ -6684,15 +6787,16 @@ type WidgetSessionSpecParam struct {
 	// Widget this session is minted against. Accepts the canonical `wgt_…` form
 	//  or the `external_id:<value>` form.
 	WidgetID string `json:"widgetId"`
-	// Optional tenant assertion — the customer's org/company identifier for the
-	//  visitor. Upserts the tenant record in the workspace and tags the session
-	//  and every conversation it creates. Conversation listing at the widget
-	//  host is scoped to this tenant.
-	Tenant *TenantAssertion `json:"tenant,omitempty"`
-	// Optional subject assertion — the visitor within the tenant (e.g. their
-	//  user id in the customer's namespace). Requires `tenant`; a subject
-	//  asserted without a tenant is rejected with InvalidArgument.
-	Subject *SubjectAssertion `json:"subject,omitempty"`
+	// Required tenant assertion — the customer's organization identifier.
+	//  Upserts the tenant record in the workspace. Every conversation created
+	//  through this session inherits the tenant and subject identity.
+	Tenant *TenantAssertion `json:"tenant"`
+	// Required subject assertion — the visitor's ID within the tenant.
+	//  Sessions with the same tenant and subject share conversation history on
+	//  the same widget and agent, subject to the current session's permissions.
+	//  A static ID deliberately shares that history; use a distinct ID per
+	//  visitor when their conversations should be separate.
+	Subject *SubjectAssertion `json:"subject"`
 	// Hard session expiry. Tokens never outlive it; after it passes the session
 	//  transitions to STATE_EXPIRED. Defaults to a server-chosen horizon when
 	//  unset.

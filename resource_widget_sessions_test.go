@@ -68,7 +68,7 @@ func (s *WidgetSessionsSuite) TestCreate() {
 	result, err := client.WidgetSessions().Create(ctx, (&cadenya.WidgetSessionCreateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.CreateOperationMetadata{}).
-		Spec(&cadenya.WidgetSessionSpecParam{WidgetID: "sample"}).
+		Spec(&cadenya.WidgetSessionSpecParam{WidgetID: "sample", Tenant: &cadenya.TenantAssertion{ID: "sample"}, Subject: &cadenya.SubjectAssertion{ID: "sample"}}).
 		Secrets(cadenya.CreateWidgetSessionRequest_Secret{}).
 		ToParams())
 	s.Require().NoError(err)
@@ -81,7 +81,7 @@ func (s *WidgetSessionsSuite) TestCreate() {
 		ctx := context.Background()
 		_, err := client.WidgetSessions().Create(ctx, (&cadenya.WidgetSessionCreateBuilder{}).
 			Metadata(&cadenya.CreateOperationMetadata{}).
-			Spec(&cadenya.WidgetSessionSpecParam{WidgetID: "sample"}).
+			Spec(&cadenya.WidgetSessionSpecParam{WidgetID: "sample", Tenant: &cadenya.TenantAssertion{ID: "sample"}, Subject: &cadenya.SubjectAssertion{ID: "sample"}}).
 			Secrets(cadenya.CreateWidgetSessionRequest_Secret{}).
 			ToParams())
 		s.Require().NoError(err)
