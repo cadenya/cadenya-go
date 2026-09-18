@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/cadenya/cadenya-go/compare/v1.5.0...v1.6.0) (2026-09-18)
+
+
+### Features
+
+* add agent pools and callable identity ([6e928e5](https://github.com/cadenya/cadenya-go/commit/6e928e5014a2e3510f4effff02392e64f173453c))
+
 ## [1.5.0](https://github.com/cadenya/cadenya-go/compare/v1.4.0...v1.5.0) (2026-09-17)
 
 
