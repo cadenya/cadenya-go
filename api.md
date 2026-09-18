@@ -147,6 +147,54 @@ List workspaces
 client.Workspaces().List(ctx context.Context, params *WorkspaceListParams, opts ...RequestOption) (*Page[Workspace], error)
 ```
 
+## agent_pools
+
+List agent pools
+
+```go
+client.AgentPools().List(ctx context.Context, params *AgentPoolListParams, opts ...RequestOption) (*Page[AgentPool], error)
+```
+Create a new agent pool
+
+```go
+client.AgentPools().Create(ctx context.Context, params *AgentPoolCreateParams, opts ...RequestOption) (*AgentPool, error)
+```
+Get an agent pool by ID
+
+```go
+client.AgentPools().Retrieve(ctx context.Context, id string, params *AgentPoolRetrieveParams, opts ...RequestOption) (*AgentPool, error)
+```
+Delete an agent pool
+
+```go
+client.AgentPools().Delete(ctx context.Context, id string, params *AgentPoolDeleteParams, opts ...RequestOption) error
+```
+Update an agent pool
+
+```go
+client.AgentPools().Update(ctx context.Context, id string, params *AgentPoolUpdateParams, opts ...RequestOption) (*AgentPool, error)
+```
+Activate an agent pool
+
+```go
+client.AgentPools().Activate(ctx context.Context, id string, params *AgentPoolActivateParams, opts ...RequestOption) (*AgentPool, error)
+```
+Archive an agent pool
+
+```go
+client.AgentPools().Archive(ctx context.Context, id string, params *AgentPoolArchiveParams, opts ...RequestOption) (*AgentPool, error)
+```
+Deactivate an agent pool
+
+```go
+client.AgentPools().Deactivate(ctx context.Context, id string, params *AgentPoolDeactivateParams, opts ...RequestOption) (*AgentPool, error)
+```
+Unarchive an agent pool
+
+```go
+client.AgentPools().Unarchive(ctx context.Context, id string, params *AgentPoolUnarchiveParams, opts ...RequestOption) (*AgentPool, error)
+```
+
 ## agents
 
 List agents

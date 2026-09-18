@@ -192,6 +192,51 @@ func main() {
 		}
 		return nil
 	})
+	run("AgentPoolService_ListAgentPools", func() error {
+		page, err := client.AgentPools().List(ctx, decode[sdk.AgentPoolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"AGENT_POOL_STATE_ACTIVE","workspaceId":"sample"}`))
+		if err != nil {
+			return err
+		}
+		items, err := page.All(ctx)
+		if err != nil {
+			return err
+		}
+		if len(items) != 2 {
+			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
+		}
+		return nil
+	})
+	run("AgentPoolService_CreateAgentPool", func() error {
+		_, err := client.AgentPools().Create(ctx, decode[sdk.AgentPoolCreateParams](`{"metadata":{"name":"sample"},"spec":{"assignments":[{"agentId":"sample"}],"description":"sample"},"workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_GetAgentPool", func() error {
+		_, err := client.AgentPools().Retrieve(ctx, "sample", decode[sdk.AgentPoolRetrieveParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_DeleteAgentPool", func() error {
+		return client.AgentPools().Delete(ctx, "sample", decode[sdk.AgentPoolDeleteParams](`{"workspaceId":"sample"}`))
+	})
+	run("AgentPoolService_UpdateAgentPool", func() error {
+		_, err := client.AgentPools().Update(ctx, "sample", decode[sdk.AgentPoolUpdateParams](`{"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_ActivateAgentPool", func() error {
+		_, err := client.AgentPools().Activate(ctx, "sample", decode[sdk.AgentPoolActivateParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_ArchiveAgentPool", func() error {
+		_, err := client.AgentPools().Archive(ctx, "sample", decode[sdk.AgentPoolArchiveParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_DeactivateAgentPool", func() error {
+		_, err := client.AgentPools().Deactivate(ctx, "sample", decode[sdk.AgentPoolDeactivateParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("AgentPoolService_UnarchiveAgentPool", func() error {
+		_, err := client.AgentPools().Unarchive(ctx, "sample", decode[sdk.AgentPoolUnarchiveParams](`{"workspaceId":"sample"}`))
+		return err
+	})
 	run("AgentService_ListAgents", func() error {
 		page, err := client.Agents().List(ctx, decode[sdk.AgentListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"STATE_DRAFT","variationSelectionMode":"VARIATION_SELECTION_MODE_RANDOM","workspaceId":"sample"}`))
 		if err != nil {
