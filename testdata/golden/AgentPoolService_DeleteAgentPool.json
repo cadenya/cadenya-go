@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "DELETE",
+        "path": "/v1/workspaces/sample/agent_pools/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "",
+        "contentType": "application/json",
+        "status": 204
+      }
+    }
+  ]
+}

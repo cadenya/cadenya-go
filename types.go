@@ -419,7 +419,15 @@ type AccountSpec struct {
 	Workspaces   []Workspace `json:"workspaces"`
 }
 
-// Attach a single tool, tool set, or sub-agent to a variation. Exactly one
+// Activate an inactive pool.
+type ActivateAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+}
+
+// Attach a single tool, tool set, sub-agent, or agent pool to a variation. Exactly one
 //
 //	of the target fields must be set; the assignment kind is inferred from the
 //	populated field. Adding an existing target returns AlreadyExists.
@@ -428,9 +436,10 @@ type AccountSpec struct {
 // AddAgentVariationAssignmentRequest is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type AddAgentVariationAssignmentRequest struct {
-	ToolID     *AddAgentVariationAssignmentRequest_ToolID     `json:"-"`
-	ToolSetID  *AddAgentVariationAssignmentRequest_ToolSetID  `json:"-"`
-	SubAgentID *AddAgentVariationAssignmentRequest_SubAgentID `json:"-"`
+	ToolID      *AddAgentVariationAssignmentRequest_ToolID      `json:"-"`
+	ToolSetID   *AddAgentVariationAssignmentRequest_ToolSetID   `json:"-"`
+	SubAgentID  *AddAgentVariationAssignmentRequest_SubAgentID  `json:"-"`
+	AgentPoolID *AddAgentVariationAssignmentRequest_AgentPoolID `json:"-"`
 }
 
 func (u AddAgentVariationAssignmentRequest) MarshalJSON() ([]byte, error) {
@@ -446,6 +455,10 @@ func (u AddAgentVariationAssignmentRequest) MarshalJSON() ([]byte, error) {
 	}
 	if u.SubAgentID != nil {
 		chosen = u.SubAgentID
+		count++
+	}
+	if u.AgentPoolID != nil {
+		chosen = u.AgentPoolID
 		count++
 	}
 	if count == 0 {
@@ -475,6 +488,12 @@ func NewAddAgentVariationAssignmentRequestSubAgentID(v AddAgentVariationAssignme
 	return AddAgentVariationAssignmentRequest{SubAgentID: &v}
 }
 
+// NewAddAgentVariationAssignmentRequestAgentPoolID returns a AddAgentVariationAssignmentRequest with the AgentPoolID variant selected.
+func NewAddAgentVariationAssignmentRequestAgentPoolID(v AddAgentVariationAssignmentRequest_AgentPoolID) AddAgentVariationAssignmentRequest {
+	v.Type = "agentPoolId"
+	return AddAgentVariationAssignmentRequest{AgentPoolID: &v}
+}
+
 func (u *AddAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error {
 	*u = AddAgentVariationAssignmentRequest{}
 	var probe struct {
@@ -496,6 +515,9 @@ func (u *AddAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error {
 	case "subAgentId":
 		u.SubAgentID = new(AddAgentVariationAssignmentRequest_SubAgentID)
 		return json.Unmarshal(data, u.SubAgentID)
+	case "agentPoolId":
+		u.AgentPoolID = new(AddAgentVariationAssignmentRequest_AgentPoolID)
+		return json.Unmarshal(data, u.AgentPoolID)
 	}
 	return fmt.Errorf("AddAgentVariationAssignmentRequest: unknown type %q", probe.Tag)
 }
@@ -567,6 +589,80 @@ type Agent struct {
 type AgentInfo struct {
 	VariationCount int32    `json:"variationCount"`
 	CreatedBy      *Profile `json:"createdBy,omitempty"`
+}
+
+// Output only. Pools are created INACTIVE. Use :activate, :deactivate,
+//
+//	:archive, and :unarchive to transition states. Unarchive returns INACTIVE.
+type AgentPoolState string
+
+const (
+	AgentPoolStateAgentPoolStateUnspecified AgentPoolState = "AGENT_POOL_STATE_UNSPECIFIED"
+	AgentPoolStateAgentPoolStateActive      AgentPoolState = "AGENT_POOL_STATE_ACTIVE"
+	AgentPoolStateAgentPoolStateInactive    AgentPoolState = "AGENT_POOL_STATE_INACTIVE"
+	AgentPoolStateAgentPoolStateArchived    AgentPoolState = "AGENT_POOL_STATE_ARCHIVED"
+)
+
+// A workspace-scoped group of agents. When assigned to a variation, the pool
+//
+//	exposes one callable target that routes a request to a member agent.
+//	Pool membership references agents; variation assignments reference the pool.
+type AgentPool struct {
+	Metadata *ResourceMetadata `json:"metadata"`
+	Spec     *AgentPoolSpec    `json:"spec"`
+	Info     *AgentPoolInfo    `json:"info,omitempty"`
+	// Output only. Pools are created INACTIVE. Use :activate, :deactivate,
+	//  :archive, and :unarchive to transition states. Unarchive returns INACTIVE.
+	State AgentPoolState `json:"state"`
+}
+
+// A member of a pool, identified by its agent ID. This is distinct from a
+//
+//	VariationAssignment, which attaches the entire pool to a variation.
+type AgentPoolAssignment struct {
+	// Canonical ID of an agent in the pool's workspace.
+	AgentID string `json:"agentId"`
+}
+
+// AgentPoolInfo represents the information of an agent pool.
+type AgentPoolInfo struct {
+	// Number of member agents in spec.assignments.
+	AssignedAgents int32    `json:"assignedAgents"`
+	CreatedBy      *Profile `json:"createdBy"`
+}
+
+// AgentPoolSpec describes the pool's purpose, membership, input schema, and routing instructions.
+type AgentPoolSpec struct {
+	// Describes when a calling agent should use this pool.
+	Description string `json:"description"`
+	// JSON Schema defining the input arguments for this pool's callable tool.
+	//  When the pool is assigned to an agent variation, this schema tells the LLM
+	//  what arguments to supply. The supplied arguments provide the context used
+	//  to route the request to an agent in the pool.
+	State map[string]any `json:"state,omitempty"`
+	// Complete set of member agents, all in the pool's workspace. At least one
+	//  member is required. Order has no meaning; duplicate agent IDs are invalid.
+	Assignments []AgentPoolAssignment `json:"assignments"`
+	// Instructions for routing requests to an agent in the pool.
+	//  If empty, defaults to "Which agent is best suited to handle this request?".
+	Instructions *string `json:"instructions,omitempty"`
+}
+
+// Partial input for UpdateAgentPool. The server applies update_mask, then
+//
+//	validates the resulting AgentPoolSpec before persisting any changes.
+type AgentPoolUpdateSpec struct {
+	// Omit to leave unchanged, unless the mask selects this field or all of spec.
+	Description *string `json:"description,omitempty"`
+	// JSON Schema for the pool's callable input arguments. Update through
+	//  spec.state in the update mask.
+	State map[string]any `json:"state,omitempty"`
+	// Replacement membership. A selected empty list is invalid because a pool
+	//  must retain at least one member. Unselected fields remain unchanged.
+	Assignments []AgentPoolAssignment `json:"assignments,omitempty"`
+	// Routing instructions to update through spec.instructions in the update
+	//  mask. Selecting this field with an empty value restores the default question.
+	Instructions *string `json:"instructions,omitempty"`
 }
 
 // The current lifecycle state of the schedule. Output only. Schedules are
@@ -730,20 +826,22 @@ type AgentVariationInfo struct {
 	MemoryLayerCount int32 `json:"memoryLayerCount"`
 	// Number of distinct callable tools available through this variation's
 	//  assignments after normalization. Expands tool sets and deduplicates tools
-	//  also assigned directly. Each sub-agent contributes one callable tool;
-	//  its own assignments are not expanded. Counts the full normalized set,
-	//  regardless of which tools progressive discovery has loaded.
+	//  also assigned directly. Each sub-agent or pool contributes one callable
+	//  tool; sub-agent assignments and pool members are not expanded. Counts the
+	//  full normalized set, regardless of which tools progressive discovery has loaded.
 	EffectiveToolCount int32 `json:"effectiveToolCount"`
 	// Current display metadata for targets explicitly referenced by
 	//  spec.assignments and spec.memory_layer_assignments, keyed by canonical
-	//  resource ID. Includes tools, tool sets, sub-agents, and memory layers in
-	//  one map; each value's id equals its key. Does not expand tools within
-	//  assigned tool sets or assignments within sub-agents.
+	//  resource ID. Includes tools, tool sets, sub-agents, agent pools,
+	//  and memory layers in one map; each value's id equals its key. Does not expand
+	//  tools within assigned tool sets, assignments within sub-agents, or pool members.
 	//  Populated whenever info is returned; empty when there are no assignments.
 	//  Missing or inaccessible targets are omitted, and names may be absent.
 	//  Clients use spec for assignment type/order and fall back to the ID when
 	//  display metadata is unavailable. This map never accepts assignment writes.
 	AssignmentMetadata map[string]BareMetadata `json:"assignmentMetadata"`
+	// Number of agent pools assigned to this variation.
+	AgentPoolCount int32 `json:"agentPoolCount"`
 }
 
 // AgentVariationSpec defines the complete operational configuration for a
@@ -760,7 +858,7 @@ type AgentVariationSpec struct {
 	// ProgressiveDiscovery is an optional config that, when set, will load a Cadenya provided tool that
 	//  can search for tools in the assigned tool sets or tools.
 	//
-	//  Note: Sub-agents are always loaded as a tool regardless of this value.
+	//  Note: Sub-agents and agent pools are always loaded as tools regardless of this value.
 	ProgressiveDiscovery *AgentVariationSpec_ProgressiveDiscovery `json:"progressiveDiscovery,omitempty"`
 	// Execution constraints
 	Constraints *AgentVariationSpec_Constraints `json:"constraints,omitempty"`
@@ -778,7 +876,7 @@ type AgentVariationSpec struct {
 	//  result. If neither this template nor first_user_message is present, objective
 	//  creation is rejected with InvalidArgument.
 	FirstUserMessageTemplate *string `json:"firstUserMessageTemplate,omitempty"`
-	// Complete set of assigned tools, tool sets, and sub-agents. Order has no
+	// Complete set of assigned tools, tool sets, sub-agents, and agent pools. Order has no
 	//  meaning. Duplicate (target kind, canonical target ID) pairs are collapsed.
 	//  On create, omitted or empty means no assignments. On update, selecting
 	//  spec.assignments in update_mask replaces the entire set; empty clears it.
@@ -894,6 +992,14 @@ type ApproveToolCallRequest struct {
 	ToolCallID *string `json:"toolCallId,omitempty"`
 }
 
+// Archive an active or inactive pool, preserving membership and assignments.
+type ArchiveAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+}
+
 // Archive agent request
 type ArchiveAgentRequest struct {
 	// Workspace ID.
@@ -971,6 +1077,7 @@ type CallableTool struct {
 	Tool                *CallableTool_Tool                `json:"-"`
 	Agent               *CallableTool_Agent               `json:"-"`
 	CadenyaProvidedTool *CallableTool_CadenyaProvidedTool `json:"-"`
+	AgentPool           *CallableTool_AgentPool           `json:"-"`
 }
 
 func (u CallableTool) MarshalJSON() ([]byte, error) {
@@ -986,6 +1093,10 @@ func (u CallableTool) MarshalJSON() ([]byte, error) {
 	}
 	if u.CadenyaProvidedTool != nil {
 		chosen = u.CadenyaProvidedTool
+		count++
+	}
+	if u.AgentPool != nil {
+		chosen = u.AgentPool
 		count++
 	}
 	if count == 0 {
@@ -1015,6 +1126,12 @@ func NewCallableToolCadenyaProvidedTool(v CallableTool_CadenyaProvidedTool) Call
 	return CallableTool{CadenyaProvidedTool: &v}
 }
 
+// NewCallableToolAgentPool returns a CallableTool with the AgentPool variant selected.
+func NewCallableToolAgentPool(v CallableTool_AgentPool) CallableTool {
+	v.Type = "agentPool"
+	return CallableTool{AgentPool: &v}
+}
+
 func (u *CallableTool) UnmarshalJSON(data []byte) error {
 	*u = CallableTool{}
 	var probe struct {
@@ -1036,6 +1153,9 @@ func (u *CallableTool) UnmarshalJSON(data []byte) error {
 	case "cadenyaProvidedTool":
 		u.CadenyaProvidedTool = new(CallableTool_CadenyaProvidedTool)
 		return json.Unmarshal(data, u.CadenyaProvidedTool)
+	case "agentPool":
+		u.AgentPool = new(CallableTool_AgentPool)
+		return json.Unmarshal(data, u.AgentPool)
 	}
 	return fmt.Errorf("CallableTool: unknown type %q", probe.Tag)
 }
@@ -1260,6 +1380,14 @@ type CreateAccountResourceMetadata struct {
 	//  prefix (e.g. "cadenya.com/") of at most 253 characters.
 	//  Examples: {"environment": "production", "team": "platform", "version": "v2"}
 	Labels map[string]string `json:"labels,omitempty"`
+}
+
+// Create a pool in INACTIVE state. Validate and persist membership atomically.
+type CreateAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string                 `json:"workspaceId,omitempty"`
+	Metadata    *CreateResourceMetadata `json:"metadata"`
+	Spec        *AgentPoolSpec          `json:"spec"`
 }
 
 // Create agent request
@@ -1531,6 +1659,14 @@ type CredentialHeaders struct {
 	Headers map[string]string `json:"headers,omitempty"`
 }
 
+// Deactivate an active pool.
+type DeactivateAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+}
+
 // Delete tenant widget sessions response.
 type DeleteTenantWidgetSessionsResponse struct {
 	// Number of sessions deleted.
@@ -1614,6 +1750,12 @@ type ListAccountWorkspacesResponse struct {
 type ListAgentFeedbackResponse struct {
 	Items      []ObjectiveFeedback `json:"items"`
 	Pagination *PageModel          `json:"pagination,omitempty"`
+}
+
+// List agent pools response
+type ListAgentPoolsResponse struct {
+	Items      []AgentPool `json:"items"`
+	Pagination *PageModel  `json:"pagination,omitempty"`
 }
 
 // List agent schedules response.
@@ -3353,9 +3495,10 @@ type Reasoning struct {
 // RemoveAgentVariationAssignmentRequest is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type RemoveAgentVariationAssignmentRequest struct {
-	ToolID     *RemoveAgentVariationAssignmentRequest_ToolID     `json:"-"`
-	ToolSetID  *RemoveAgentVariationAssignmentRequest_ToolSetID  `json:"-"`
-	SubAgentID *RemoveAgentVariationAssignmentRequest_SubAgentID `json:"-"`
+	ToolID      *RemoveAgentVariationAssignmentRequest_ToolID      `json:"-"`
+	ToolSetID   *RemoveAgentVariationAssignmentRequest_ToolSetID   `json:"-"`
+	SubAgentID  *RemoveAgentVariationAssignmentRequest_SubAgentID  `json:"-"`
+	AgentPoolID *RemoveAgentVariationAssignmentRequest_AgentPoolID `json:"-"`
 }
 
 func (u RemoveAgentVariationAssignmentRequest) MarshalJSON() ([]byte, error) {
@@ -3371,6 +3514,10 @@ func (u RemoveAgentVariationAssignmentRequest) MarshalJSON() ([]byte, error) {
 	}
 	if u.SubAgentID != nil {
 		chosen = u.SubAgentID
+		count++
+	}
+	if u.AgentPoolID != nil {
+		chosen = u.AgentPoolID
 		count++
 	}
 	if count == 0 {
@@ -3400,6 +3547,12 @@ func NewRemoveAgentVariationAssignmentRequestSubAgentID(v RemoveAgentVariationAs
 	return RemoveAgentVariationAssignmentRequest{SubAgentID: &v}
 }
 
+// NewRemoveAgentVariationAssignmentRequestAgentPoolID returns a RemoveAgentVariationAssignmentRequest with the AgentPoolID variant selected.
+func NewRemoveAgentVariationAssignmentRequestAgentPoolID(v RemoveAgentVariationAssignmentRequest_AgentPoolID) RemoveAgentVariationAssignmentRequest {
+	v.Type = "agentPoolId"
+	return RemoveAgentVariationAssignmentRequest{AgentPoolID: &v}
+}
+
 func (u *RemoveAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error {
 	*u = RemoveAgentVariationAssignmentRequest{}
 	var probe struct {
@@ -3421,6 +3574,9 @@ func (u *RemoveAgentVariationAssignmentRequest) UnmarshalJSON(data []byte) error
 	case "subAgentId":
 		u.SubAgentID = new(RemoveAgentVariationAssignmentRequest_SubAgentID)
 		return json.Unmarshal(data, u.SubAgentID)
+	case "agentPoolId":
+		u.AgentPoolID = new(RemoveAgentVariationAssignmentRequest_AgentPoolID)
+		return json.Unmarshal(data, u.AgentPoolID)
 	}
 	return fmt.Errorf("RemoveAgentVariationAssignmentRequest: unknown type %q", probe.Tag)
 }
@@ -5139,6 +5295,14 @@ func (u *ToolSpec_Config) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("ToolSpec_Config: unknown type %q", probe.Tag)
 }
 
+// Restore an archived pool to INACTIVE; activate it separately to route requests.
+type UnarchiveAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+}
+
 // Unarchive agent request
 type UnarchiveAgentRequest struct {
 	// Workspace ID.
@@ -5212,6 +5376,24 @@ type UpdateAccountResourceMetadata struct {
 	//  prefix (e.g. "cadenya.com/") of at most 253 characters.
 	//  Examples: {"environment": "production", "team": "platform", "version": "v2"}
 	Labels map[string]string `json:"labels,omitempty"`
+}
+
+// Update agent pool request
+type UpdateAgentPoolRequest struct {
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
+	ID       *string                 `json:"id,omitempty"`
+	Metadata *UpdateResourceMetadata `json:"metadata,omitempty"`
+	Spec     *AgentPoolUpdateSpec    `json:"spec,omitempty"`
+	// Fields to update. Only metadata and spec are mutable; top-level state and info
+	//  paths are invalid. spec.assignments replaces the entire membership list.
+	//  A spec mask replaces the full spec; * replaces all mutable fields.
+	//  Without a mask, infer paths from non-empty fields. Empty or omitted
+	//  membership then leaves the existing list unchanged. Element/index paths
+	//  are invalid. Validate the merged pool atomically: an empty description
+	//  or membership (including an explicitly masked empty list) is invalid.
+	UpdateMask *string `json:"updateMask,omitempty"`
 }
 
 // Update agent request
@@ -5468,7 +5650,7 @@ type UserMessage struct {
 	Content string `json:"content"`
 }
 
-// A tool, tool set, or sub-agent assigned to a variation, identified only by
+// A tool, tool set, sub-agent, or agent pool assigned to a variation, identified only by
 //
 //	the target resource ID. The same shape is accepted in a spec and returned
 //	on reads. Assignment junction records are an internal implementation detail.
@@ -5476,9 +5658,10 @@ type UserMessage struct {
 // VariationAssignment is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type VariationAssignment struct {
-	ToolID     *VariationAssignment_ToolID     `json:"-"`
-	ToolSetID  *VariationAssignment_ToolSetID  `json:"-"`
-	SubAgentID *VariationAssignment_SubAgentID `json:"-"`
+	ToolID      *VariationAssignment_ToolID      `json:"-"`
+	ToolSetID   *VariationAssignment_ToolSetID   `json:"-"`
+	SubAgentID  *VariationAssignment_SubAgentID  `json:"-"`
+	AgentPoolID *VariationAssignment_AgentPoolID `json:"-"`
 }
 
 func (u VariationAssignment) MarshalJSON() ([]byte, error) {
@@ -5494,6 +5677,10 @@ func (u VariationAssignment) MarshalJSON() ([]byte, error) {
 	}
 	if u.SubAgentID != nil {
 		chosen = u.SubAgentID
+		count++
+	}
+	if u.AgentPoolID != nil {
+		chosen = u.AgentPoolID
 		count++
 	}
 	if count == 0 {
@@ -5523,6 +5710,12 @@ func NewVariationAssignmentSubAgentID(v VariationAssignment_SubAgentID) Variatio
 	return VariationAssignment{SubAgentID: &v}
 }
 
+// NewVariationAssignmentAgentPoolID returns a VariationAssignment with the AgentPoolID variant selected.
+func NewVariationAssignmentAgentPoolID(v VariationAssignment_AgentPoolID) VariationAssignment {
+	v.Type = "agentPoolId"
+	return VariationAssignment{AgentPoolID: &v}
+}
+
 func (u *VariationAssignment) UnmarshalJSON(data []byte) error {
 	*u = VariationAssignment{}
 	var probe struct {
@@ -5544,6 +5737,9 @@ func (u *VariationAssignment) UnmarshalJSON(data []byte) error {
 	case "subAgentId":
 		u.SubAgentID = new(VariationAssignment_SubAgentID)
 		return json.Unmarshal(data, u.SubAgentID)
+	case "agentPoolId":
+		u.AgentPoolID = new(VariationAssignment_AgentPoolID)
+		return json.Unmarshal(data, u.AgentPoolID)
 	}
 	return fmt.Errorf("VariationAssignment: unknown type %q", probe.Tag)
 }
@@ -5924,6 +6120,12 @@ type VariationAssignment_SubAgentID struct {
 	SubAgentID string `json:"subAgentId"`
 }
 
+type VariationAssignment_AgentPoolID struct {
+	Type string `json:"type"`
+	// Canonical agent pool ID. Attaches the pool as a single callable target.
+	AgentPoolID string `json:"agentPoolId"`
+}
+
 type ObjectiveToolCallResult_ContentBlock_Text struct {
 	Type string                             `json:"type"`
 	Text *ObjectiveToolCallResult_TextBlock `json:"text"`
@@ -6252,6 +6454,12 @@ type CallableTool_CadenyaProvidedTool struct {
 	CadenyaProvidedTool *ResourceMetadata `json:"cadenyaProvidedTool"`
 }
 
+type CallableTool_AgentPool struct {
+	Type string `json:"type"`
+	// Agent pool responsible for routing this call to a member agent.
+	AgentPool *ResourceMetadata `json:"agentPool"`
+}
+
 type MemoryEntryCreateSpec_Content struct {
 	Type string `json:"type"`
 	// Inline content, written directly into the entry.
@@ -6321,6 +6529,18 @@ type AddAgentVariationAssignmentRequest_SubAgentID struct {
 	VariationID *string `json:"variationId,omitempty"`
 }
 
+type AddAgentVariationAssignmentRequest_AgentPoolID struct {
+	Type string `json:"type"`
+	// Canonical agent pool ID in the variation's workspace.
+	AgentPoolID string `json:"agentPoolId"`
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+}
+
 type RemoveAgentVariationAssignmentRequest_ToolID struct {
 	Type   string `json:"type"`
 	ToolID string `json:"toolId"`
@@ -6346,6 +6566,18 @@ type RemoveAgentVariationAssignmentRequest_ToolSetID struct {
 type RemoveAgentVariationAssignmentRequest_SubAgentID struct {
 	Type       string `json:"type"`
 	SubAgentID string `json:"subAgentId"`
+	// Workspace ID.
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
+	AgentID *string `json:"agentId,omitempty"`
+	// Variation ID. Accepts the canonical `agentvar_…` form or the `external_id:<value>` form.
+	VariationID *string `json:"variationId,omitempty"`
+}
+
+type RemoveAgentVariationAssignmentRequest_AgentPoolID struct {
+	Type string `json:"type"`
+	// Canonical agent pool ID in the variation's workspace.
+	AgentPoolID string `json:"agentPoolId"`
 	// Workspace ID.
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 	// Agent ID. Accepts the canonical `agent_…` form or the `external_id:<value>` form.
@@ -6460,6 +6692,15 @@ type WidgetSessionErrorInfo struct {
 	// Optional non-sensitive context. Never contains tokens or secrets.
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
+
+type AgentPoolServiceListAgentPoolsState string
+
+const (
+	AgentPoolServiceListAgentPoolsStateAgentPoolStateUnspecified AgentPoolServiceListAgentPoolsState = "AGENT_POOL_STATE_UNSPECIFIED"
+	AgentPoolServiceListAgentPoolsStateAgentPoolStateActive      AgentPoolServiceListAgentPoolsState = "AGENT_POOL_STATE_ACTIVE"
+	AgentPoolServiceListAgentPoolsStateAgentPoolStateInactive    AgentPoolServiceListAgentPoolsState = "AGENT_POOL_STATE_INACTIVE"
+	AgentPoolServiceListAgentPoolsStateAgentPoolStateArchived    AgentPoolServiceListAgentPoolsState = "AGENT_POOL_STATE_ARCHIVED"
+)
 
 type AgentServiceListAgentsState string
 
@@ -6611,9 +6852,10 @@ type APIKeySpecParam struct {
 
 // AddAgentVariationAssignmentRequestParam is the request-direction oneOf view; at most one variant is non-nil.
 type AddAgentVariationAssignmentRequestParam struct {
-	ToolID     *AddAgentVariationAssignmentRequest_ToolIDParam     `json:"-"`
-	ToolSetID  *AddAgentVariationAssignmentRequest_ToolSetIDParam  `json:"-"`
-	SubAgentID *AddAgentVariationAssignmentRequest_SubAgentIDParam `json:"-"`
+	ToolID      *AddAgentVariationAssignmentRequest_ToolIDParam      `json:"-"`
+	ToolSetID   *AddAgentVariationAssignmentRequest_ToolSetIDParam   `json:"-"`
+	SubAgentID  *AddAgentVariationAssignmentRequest_SubAgentIDParam  `json:"-"`
+	AgentPoolID *AddAgentVariationAssignmentRequest_AgentPoolIDParam `json:"-"`
 }
 
 func (u AddAgentVariationAssignmentRequestParam) MarshalJSON() ([]byte, error) {
@@ -6629,6 +6871,10 @@ func (u AddAgentVariationAssignmentRequestParam) MarshalJSON() ([]byte, error) {
 	}
 	if u.SubAgentID != nil {
 		chosen = u.SubAgentID
+		count++
+	}
+	if u.AgentPoolID != nil {
+		chosen = u.AgentPoolID
 		count++
 	}
 	if count == 0 {
@@ -6658,6 +6904,12 @@ func NewAddAgentVariationAssignmentRequestParamSubAgentID(v AddAgentVariationAss
 	return AddAgentVariationAssignmentRequestParam{SubAgentID: &v}
 }
 
+// NewAddAgentVariationAssignmentRequestParamAgentPoolID returns a AddAgentVariationAssignmentRequestParam with the AgentPoolID variant selected.
+func NewAddAgentVariationAssignmentRequestParamAgentPoolID(v AddAgentVariationAssignmentRequest_AgentPoolIDParam) AddAgentVariationAssignmentRequestParam {
+	v.Type = "agentPoolId"
+	return AddAgentVariationAssignmentRequestParam{AgentPoolID: &v}
+}
+
 func (u *AddAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) error {
 	*u = AddAgentVariationAssignmentRequestParam{}
 	var probe struct {
@@ -6679,6 +6931,9 @@ func (u *AddAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) err
 	case "subAgentId":
 		u.SubAgentID = new(AddAgentVariationAssignmentRequest_SubAgentIDParam)
 		return json.Unmarshal(data, u.SubAgentID)
+	case "agentPoolId":
+		u.AgentPoolID = new(AddAgentVariationAssignmentRequest_AgentPoolIDParam)
+		return json.Unmarshal(data, u.AgentPoolID)
 	}
 	return fmt.Errorf("AddAgentVariationAssignmentRequestParam: unknown type %q", probe.Tag)
 }
@@ -6709,9 +6964,10 @@ type ObjectiveEpisodicConfigParam struct {
 
 // RemoveAgentVariationAssignmentRequestParam is the request-direction oneOf view; at most one variant is non-nil.
 type RemoveAgentVariationAssignmentRequestParam struct {
-	ToolID     *RemoveAgentVariationAssignmentRequest_ToolIDParam     `json:"-"`
-	ToolSetID  *RemoveAgentVariationAssignmentRequest_ToolSetIDParam  `json:"-"`
-	SubAgentID *RemoveAgentVariationAssignmentRequest_SubAgentIDParam `json:"-"`
+	ToolID      *RemoveAgentVariationAssignmentRequest_ToolIDParam      `json:"-"`
+	ToolSetID   *RemoveAgentVariationAssignmentRequest_ToolSetIDParam   `json:"-"`
+	SubAgentID  *RemoveAgentVariationAssignmentRequest_SubAgentIDParam  `json:"-"`
+	AgentPoolID *RemoveAgentVariationAssignmentRequest_AgentPoolIDParam `json:"-"`
 }
 
 func (u RemoveAgentVariationAssignmentRequestParam) MarshalJSON() ([]byte, error) {
@@ -6727,6 +6983,10 @@ func (u RemoveAgentVariationAssignmentRequestParam) MarshalJSON() ([]byte, error
 	}
 	if u.SubAgentID != nil {
 		chosen = u.SubAgentID
+		count++
+	}
+	if u.AgentPoolID != nil {
+		chosen = u.AgentPoolID
 		count++
 	}
 	if count == 0 {
@@ -6756,6 +7016,12 @@ func NewRemoveAgentVariationAssignmentRequestParamSubAgentID(v RemoveAgentVariat
 	return RemoveAgentVariationAssignmentRequestParam{SubAgentID: &v}
 }
 
+// NewRemoveAgentVariationAssignmentRequestParamAgentPoolID returns a RemoveAgentVariationAssignmentRequestParam with the AgentPoolID variant selected.
+func NewRemoveAgentVariationAssignmentRequestParamAgentPoolID(v RemoveAgentVariationAssignmentRequest_AgentPoolIDParam) RemoveAgentVariationAssignmentRequestParam {
+	v.Type = "agentPoolId"
+	return RemoveAgentVariationAssignmentRequestParam{AgentPoolID: &v}
+}
+
 func (u *RemoveAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) error {
 	*u = RemoveAgentVariationAssignmentRequestParam{}
 	var probe struct {
@@ -6777,6 +7043,9 @@ func (u *RemoveAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) 
 	case "subAgentId":
 		u.SubAgentID = new(RemoveAgentVariationAssignmentRequest_SubAgentIDParam)
 		return json.Unmarshal(data, u.SubAgentID)
+	case "agentPoolId":
+		u.AgentPoolID = new(RemoveAgentVariationAssignmentRequest_AgentPoolIDParam)
+		return json.Unmarshal(data, u.AgentPoolID)
 	}
 	return fmt.Errorf("RemoveAgentVariationAssignmentRequestParam: unknown type %q", probe.Tag)
 }
@@ -6833,6 +7102,14 @@ type AddAgentVariationAssignmentRequest_SubAgentIDParam struct {
 	SubAgentID string `json:"subAgentId"`
 }
 
+// AddAgentVariationAssignmentRequest_AgentPoolIDParam is the request-direction view of AddAgentVariationAssignmentRequest_AgentPoolID:
+// server-owned (readOnly) fields are not accepted as input.
+type AddAgentVariationAssignmentRequest_AgentPoolIDParam struct {
+	Type string `json:"type"`
+	// Canonical agent pool ID in the variation's workspace.
+	AgentPoolID string `json:"agentPoolId"`
+}
+
 // RemoveAgentVariationAssignmentRequest_ToolIDParam is the request-direction view of RemoveAgentVariationAssignmentRequest_ToolID:
 // server-owned (readOnly) fields are not accepted as input.
 type RemoveAgentVariationAssignmentRequest_ToolIDParam struct {
@@ -6852,4 +7129,12 @@ type RemoveAgentVariationAssignmentRequest_ToolSetIDParam struct {
 type RemoveAgentVariationAssignmentRequest_SubAgentIDParam struct {
 	Type       string `json:"type"`
 	SubAgentID string `json:"subAgentId"`
+}
+
+// RemoveAgentVariationAssignmentRequest_AgentPoolIDParam is the request-direction view of RemoveAgentVariationAssignmentRequest_AgentPoolID:
+// server-owned (readOnly) fields are not accepted as input.
+type RemoveAgentVariationAssignmentRequest_AgentPoolIDParam struct {
+	Type string `json:"type"`
+	// Canonical agent pool ID in the variation's workspace.
+	AgentPoolID string `json:"agentPoolId"`
 }

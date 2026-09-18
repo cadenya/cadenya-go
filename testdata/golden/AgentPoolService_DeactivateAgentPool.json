@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "POST",
+        "path": "/v1/workspaces/sample/agent_pools/sample:deactivate",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{\"assignments\":[{\"agentId\":\"sample\"}],\"description\":\"sample\"},\"state\":\"AGENT_POOL_STATE_ACTIVE\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}
