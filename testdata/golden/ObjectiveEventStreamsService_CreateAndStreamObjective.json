@@ -1,0 +1,44 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "agentId": "sample",
+          "episodicMemory": {
+            "key": "sample"
+          },
+          "firstUserMessage": "sample",
+          "firstUserMessageData": {},
+          "memoryCascade": [
+            {
+              "memoryLayerId": "sample"
+            }
+          ],
+          "metadata": {
+            "externalId": "sample"
+          },
+          "pinnedParameters": {},
+          "secrets": [
+            {}
+          ],
+          "subject": {
+            "id": "sample"
+          },
+          "systemPromptData": {},
+          "tenant": {
+            "id": "sample"
+          },
+          "variationId": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/objectives:stream",
+        "query": {}
+      },
+      "response": {
+        "body": "id: e1\ndata: {\"objective\":{\"configSnapshot\":{\"agent\":{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{},\"state\":\"STATE_DRAFT\"},\"agentVariation\":{\"info\":{\"agentPoolCount\":1,\"assignmentMetadata\":{},\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}},\"firstUserMessage\":\"sample\",\"memoryCascade\":[{\"memoryLayerId\":\"sample\"}],\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"parentObjectiveId\":\"sample\",\"pinnedParameters\":{},\"secrets\":[{\"name\":\"sample\"}],\"state\":\"OBJECTIVE_STATE_PENDING\",\"stateMessage\":\"sample\",\"systemPrompt\":\"sample\"},\"type\":\"objective\"}\n\nevent: ping\ndata: not-json-housekeeping\n\nid: e2\ndata: {\"objective\":{\"configSnapshot\":{\"agent\":{\"info\":{\"variationCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{},\"state\":\"STATE_DRAFT\"},\"agentVariation\":{\"info\":{\"agentPoolCount\":1,\"assignmentMetadata\":{},\"effectiveToolCount\":1,\"feedbackCount\":1,\"memoryLayerCount\":1,\"score\":1.5,\"subAgentCount\":1,\"toolCount\":1,\"toolSetCount\":1},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"spec\":{}}},\"firstUserMessage\":\"sample\",\"memoryCascade\":[{\"memoryLayerId\":\"sample\"}],\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"parentObjectiveId\":\"sample\",\"pinnedParameters\":{},\"secrets\":[{\"name\":\"sample\"}],\"state\":\"OBJECTIVE_STATE_PENDING\",\"stateMessage\":\"sample\",\"systemPrompt\":\"sample\"},\"type\":\"objective\"}\n\n",
+        "contentType": "text/event-stream",
+        "status": 200
+      }
+    }
+  ]
+}

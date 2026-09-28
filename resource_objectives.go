@@ -119,7 +119,7 @@ type ObjectiveCreateParams struct {
 	AgentID              string                          `json:"agentId"`
 	VariationID          *string                         `json:"variationId,omitempty"`
 	Metadata             *CreateOperationMetadata        `json:"metadata,omitempty"`
-	SystemPromptData     map[string]any                  `json:"systemPromptData"`
+	SystemPromptData     map[string]any                  `json:"systemPromptData,omitempty"`
 	FirstUserMessage     *string                         `json:"firstUserMessage,omitempty"`
 	Secrets              []CreateObjectiveRequest_Secret `json:"secrets,omitempty"`
 	MemoryCascade        []MemoryReference               `json:"memoryCascade,omitempty"`
@@ -442,6 +442,70 @@ func (b *ObjectiveCreateFeedbackBuilder) ToParams() *ObjectiveCreateFeedbackPara
 	return &p
 }
 
+type ObjectiveListQueuedActionsParams struct {
+	WorkspaceID *string                                          `json:"workspaceId,omitempty"`
+	Limit       *int32                                           `json:"limit,omitempty"`
+	Cursor      *string                                          `json:"cursor,omitempty"`
+	State       *ObjectiveServiceListObjectiveQueuedActionsState `json:"state,omitempty"`
+}
+
+// ObjectiveListQueuedActionsBuilder builds a ObjectiveListQueuedActionsParams fluently.
+type ObjectiveListQueuedActionsBuilder struct {
+	params ObjectiveListQueuedActionsParams
+}
+
+func (b *ObjectiveListQueuedActionsBuilder) WorkspaceID(v string) *ObjectiveListQueuedActionsBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ObjectiveListQueuedActionsBuilder) Limit(v int32) *ObjectiveListQueuedActionsBuilder {
+	b.params.Limit = &v
+	return b
+}
+
+func (b *ObjectiveListQueuedActionsBuilder) Cursor(v string) *ObjectiveListQueuedActionsBuilder {
+	b.params.Cursor = &v
+	return b
+}
+
+func (b *ObjectiveListQueuedActionsBuilder) State(v ObjectiveServiceListObjectiveQueuedActionsState) *ObjectiveListQueuedActionsBuilder {
+	b.params.State = &v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ObjectiveListQueuedActionsBuilder) ToParams() *ObjectiveListQueuedActionsParams {
+	p := b.params
+	return &p
+}
+
+type ObjectiveRemoveQueuedActionParams struct {
+	WorkspaceID    *string `json:"workspaceId,omitempty"`
+	QueuedActionID string  `json:"queuedActionId"`
+}
+
+// ObjectiveRemoveQueuedActionBuilder builds a ObjectiveRemoveQueuedActionParams fluently.
+type ObjectiveRemoveQueuedActionBuilder struct {
+	params ObjectiveRemoveQueuedActionParams
+}
+
+func (b *ObjectiveRemoveQueuedActionBuilder) WorkspaceID(v string) *ObjectiveRemoveQueuedActionBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ObjectiveRemoveQueuedActionBuilder) QueuedActionID(v string) *ObjectiveRemoveQueuedActionBuilder {
+	b.params.QueuedActionID = v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ObjectiveRemoveQueuedActionBuilder) ToParams() *ObjectiveRemoveQueuedActionParams {
+	p := b.params
+	return &p
+}
+
 type ObjectiveListToolCallsParams struct {
 	WorkspaceID     *string                                                `json:"workspaceId,omitempty"`
 	Limit           *int32                                                 `json:"limit,omitempty"`
@@ -706,6 +770,118 @@ func (b *ObjectiveContinueBuilder) ToParams() *ObjectiveContinueParams {
 	return &p
 }
 
+type ObjectiveInterruptParams struct {
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+}
+
+// ObjectiveInterruptBuilder builds a ObjectiveInterruptParams fluently.
+type ObjectiveInterruptBuilder struct {
+	params ObjectiveInterruptParams
+}
+
+func (b *ObjectiveInterruptBuilder) WorkspaceID(v string) *ObjectiveInterruptBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ObjectiveInterruptBuilder) ToParams() *ObjectiveInterruptParams {
+	p := b.params
+	return &p
+}
+
+type ObjectiveCreateAndStreamParams struct {
+	WorkspaceID          *string                                   `json:"workspaceId,omitempty"`
+	AgentID              string                                    `json:"agentId"`
+	VariationID          *string                                   `json:"variationId,omitempty"`
+	Metadata             *CreateAndStreamObjectiveRequest_Metadata `json:"metadata"`
+	SystemPromptData     map[string]any                            `json:"systemPromptData,omitempty"`
+	FirstUserMessage     *string                                   `json:"firstUserMessage,omitempty"`
+	Secrets              []CreateObjectiveRequest_Secret           `json:"secrets,omitempty"`
+	MemoryCascade        []MemoryReference                         `json:"memoryCascade,omitempty"`
+	FirstUserMessageData map[string]any                            `json:"firstUserMessageData,omitempty"`
+	EpisodicMemory       *ObjectiveEpisodicConfigParam             `json:"episodicMemory,omitempty"`
+	Tenant               *TenantAssertion                          `json:"tenant,omitempty"`
+	Subject              *SubjectAssertion                         `json:"subject,omitempty"`
+	PinnedParameters     map[string]string                         `json:"pinnedParameters,omitempty"`
+}
+
+// ObjectiveCreateAndStreamBuilder builds a ObjectiveCreateAndStreamParams fluently.
+type ObjectiveCreateAndStreamBuilder struct {
+	params ObjectiveCreateAndStreamParams
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) WorkspaceID(v string) *ObjectiveCreateAndStreamBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) AgentID(v string) *ObjectiveCreateAndStreamBuilder {
+	b.params.AgentID = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) VariationID(v string) *ObjectiveCreateAndStreamBuilder {
+	b.params.VariationID = &v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) Metadata(v *CreateAndStreamObjectiveRequest_Metadata) *ObjectiveCreateAndStreamBuilder {
+	b.params.Metadata = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) SystemPromptData(v map[string]any) *ObjectiveCreateAndStreamBuilder {
+	b.params.SystemPromptData = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) FirstUserMessage(v string) *ObjectiveCreateAndStreamBuilder {
+	b.params.FirstUserMessage = &v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) Secrets(v ...CreateObjectiveRequest_Secret) *ObjectiveCreateAndStreamBuilder {
+	b.params.Secrets = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) MemoryCascade(v ...MemoryReference) *ObjectiveCreateAndStreamBuilder {
+	b.params.MemoryCascade = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) FirstUserMessageData(v map[string]any) *ObjectiveCreateAndStreamBuilder {
+	b.params.FirstUserMessageData = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) EpisodicMemory(v *ObjectiveEpisodicConfigParam) *ObjectiveCreateAndStreamBuilder {
+	b.params.EpisodicMemory = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) Tenant(v *TenantAssertion) *ObjectiveCreateAndStreamBuilder {
+	b.params.Tenant = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) Subject(v *SubjectAssertion) *ObjectiveCreateAndStreamBuilder {
+	b.params.Subject = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) PinnedParameters(v map[string]string) *ObjectiveCreateAndStreamBuilder {
+	b.params.PinnedParameters = v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ObjectiveCreateAndStreamBuilder) ToParams() *ObjectiveCreateAndStreamParams {
+	p := b.params
+	return &p
+}
+
 // ObjectiveResources is implemented by the SDK and easy to mock in tests.
 type ObjectiveResources interface {
 	// List objectives
@@ -726,6 +902,10 @@ type ObjectiveResources interface {
 	ListFeedback(ctx context.Context, objectiveID string, params *ObjectiveListFeedbackParams, opts ...RequestOption) (*Page[ObjectiveFeedback], error)
 	// Submit feedback for an objective
 	CreateFeedback(ctx context.Context, objectiveID string, params *ObjectiveCreateFeedbackParams, opts ...RequestOption) (*ObjectiveFeedback, error)
+	// List objective queued actions
+	ListQueuedActions(ctx context.Context, objectiveID string, params *ObjectiveListQueuedActionsParams, opts ...RequestOption) (*Page[ObjectiveQueuedAction], error)
+	// Remove a queued action
+	RemoveQueuedAction(ctx context.Context, objectiveID string, params *ObjectiveRemoveQueuedActionParams, opts ...RequestOption) (*ObjectiveQueuedAction, error)
 	// List objective tool calls
 	ListToolCalls(ctx context.Context, objectiveID string, params *ObjectiveListToolCallsParams, opts ...RequestOption) (*Page[ObjectiveToolCall], error)
 	// Get an objective tool call by ID
@@ -741,9 +921,13 @@ type ObjectiveResources interface {
 	// Cancel an objective
 	Cancel(ctx context.Context, objectiveID string, params *ObjectiveCancelParams, opts ...RequestOption) (*Objective, error)
 	// Compact an objective
-	Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*CompactObjectiveResponse, error)
+	Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*ObjectiveQueuedAction, error)
 	// Continue an objective
-	Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ObjectiveEvent, error)
+	Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ContinueObjectiveResponse, error)
+	// Interrupt an objective
+	Interrupt(ctx context.Context, objectiveID string, params *ObjectiveInterruptParams, opts ...RequestOption) (*ObjectiveEvent, error)
+	// Create an objective and stream its events
+	CreateAndStream(ctx context.Context, params *ObjectiveCreateAndStreamParams, opts ...RequestOption) (*Stream[CreateAndStreamObjectiveResponse], error)
 }
 
 type objectivesService struct{ core *core }
@@ -1142,6 +1326,78 @@ func (s *objectivesService) CreateFeedback(ctx context.Context, objectiveID stri
 	return &out, nil
 }
 
+func (s *objectivesService) ListQueuedActions(ctx context.Context, objectiveID string, params *ObjectiveListQueuedActionsParams, opts ...RequestOption) (*Page[ObjectiveQueuedAction], error) {
+	if params == nil {
+		params = &ObjectiveListQueuedActionsParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segObjectiveID, err := pathSegment("objectiveId", objectiveID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s/queued_actions", segWorkspaceID, segObjectiveID)
+	q := url.Values{}
+	if params.Limit != nil {
+		q.Set("limit", strconv.FormatInt(int64(*params.Limit), 10))
+	}
+	if params.Cursor != nil {
+		q.Set("cursor", (*params.Cursor))
+	}
+	if params.State != nil {
+		q.Set("state", string(*params.State))
+	}
+	var out ListObjectiveQueuedActionsResponse
+	if err := s.core.do(ctx, "GET", path, q, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	nextCursor := ""
+	if out.Pagination != nil {
+		nextCursor = out.Pagination.NextCursor
+	}
+	base := *params
+	fetch := func(ctx context.Context, cursor string) (*Page[ObjectiveQueuedAction], error) {
+		p := base
+		p.Cursor = &cursor
+		return s.ListQueuedActions(ctx, objectiveID, &p, opts...)
+	}
+	return newPage(out.Items, nextCursor, fetch), nil
+}
+
+func (s *objectivesService) RemoveQueuedAction(ctx context.Context, objectiveID string, params *ObjectiveRemoveQueuedActionParams, opts ...RequestOption) (*ObjectiveQueuedAction, error) {
+	if params == nil {
+		params = &ObjectiveRemoveQueuedActionParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segObjectiveID, err := pathSegment("objectiveId", objectiveID)
+	if err != nil {
+		return nil, err
+	}
+	segQueuedActionID, err := pathSegment("queuedActionId", params.QueuedActionID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s/queued_actions/%s:remove", segWorkspaceID, segObjectiveID, segQueuedActionID)
+	var out ObjectiveQueuedAction
+	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (s *objectivesService) ListToolCalls(ctx context.Context, objectiveID string, params *ObjectiveListToolCallsParams, opts ...RequestOption) (*Page[ObjectiveToolCall], error) {
 	if params == nil {
 		params = &ObjectiveListToolCallsParams{}
@@ -1384,7 +1640,7 @@ func (s *objectivesService) Cancel(ctx context.Context, objectiveID string, para
 	return &out, nil
 }
 
-func (s *objectivesService) Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*CompactObjectiveResponse, error) {
+func (s *objectivesService) Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*ObjectiveQueuedAction, error) {
 	if params == nil {
 		params = &ObjectiveCompactParams{}
 	}
@@ -1405,14 +1661,14 @@ func (s *objectivesService) Compact(ctx context.Context, objectiveID string, par
 	if params.CompactionConfig != nil {
 		body["compactionConfig"] = params.CompactionConfig
 	}
-	var out CompactObjectiveResponse
+	var out ObjectiveQueuedAction
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (s *objectivesService) Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ObjectiveEvent, error) {
+func (s *objectivesService) Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ContinueObjectiveResponse, error) {
 	if params == nil {
 		params = &ObjectiveContinueParams{}
 	}
@@ -1434,9 +1690,102 @@ func (s *objectivesService) Continue(ctx context.Context, objectiveID string, pa
 	if params.Enqueue != nil {
 		body["enqueue"] = params.Enqueue
 	}
-	var out ObjectiveEvent
+	var out ContinueObjectiveResponse
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
 		return nil, err
 	}
 	return &out, nil
+}
+
+func (s *objectivesService) Interrupt(ctx context.Context, objectiveID string, params *ObjectiveInterruptParams, opts ...RequestOption) (*ObjectiveEvent, error) {
+	if params == nil {
+		params = &ObjectiveInterruptParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segObjectiveID, err := pathSegment("objectiveId", objectiveID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s:interrupt", segWorkspaceID, segObjectiveID)
+	var out ObjectiveEvent
+	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *objectivesService) CreateAndStream(ctx context.Context, params *ObjectiveCreateAndStreamParams, opts ...RequestOption) (*Stream[CreateAndStreamObjectiveResponse], error) {
+	if params == nil {
+		params = &ObjectiveCreateAndStreamParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/objectives:stream", segWorkspaceID)
+	body := map[string]any{}
+	body["agentId"] = params.AgentID
+	if params.VariationID != nil {
+		body["variationId"] = params.VariationID
+	}
+	if params.Metadata != nil {
+		body["metadata"] = params.Metadata
+	}
+	if params.SystemPromptData != nil {
+		body["systemPromptData"] = params.SystemPromptData
+	}
+	if params.FirstUserMessage != nil {
+		body["firstUserMessage"] = params.FirstUserMessage
+	}
+	if params.Secrets != nil {
+		body["secrets"] = params.Secrets
+	}
+	if params.MemoryCascade != nil {
+		body["memoryCascade"] = params.MemoryCascade
+	}
+	if params.FirstUserMessageData != nil {
+		body["firstUserMessageData"] = params.FirstUserMessageData
+	}
+	if params.EpisodicMemory != nil {
+		body["episodicMemory"] = params.EpisodicMemory
+	}
+	if params.Tenant != nil {
+		body["tenant"] = params.Tenant
+	}
+	if params.Subject != nil {
+		body["subject"] = params.Subject
+	}
+	if params.PinnedParameters != nil {
+		body["pinnedParameters"] = params.PinnedParameters
+	}
+	rc := buildRequestConfig(opts)
+	resp, err := s.core.rawConfig(ctx, "POST", path, nil, body, true, rc)
+	if err != nil {
+		return nil, err
+	}
+	_reconnect := func(lastEventID string) (*http.Response, error) {
+		rc2 := *rc
+		rc2.headers = rc.headers.Clone()
+		if lastEventID != "" {
+			rc2.headers.Set("Last-Event-ID", lastEventID)
+		} else {
+			rc2.headers.Del("Last-Event-ID")
+		}
+		return s.core.rawConfig(ctx, "POST", path, nil, body, true, &rc2)
+	}
+	if rc.reconnect != nil && !*rc.reconnect {
+		_reconnect = nil
+	}
+	return newStream[CreateAndStreamObjectiveResponse](ctx, resp, rc.headers.Get("Last-Event-ID"), []string{"ping", "open"}, _reconnect), nil
 }

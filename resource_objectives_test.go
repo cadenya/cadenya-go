@@ -325,6 +325,62 @@ func (s *ObjectivesSuite) TestCreateFeedback() {
 	})
 }
 
+func (s *ObjectivesSuite) TestListQueuedActions() {
+	g := loadGolden(s.T(), "ObjectiveService_ListObjectiveQueuedActions")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	page, err := client.Objectives().ListQueuedActions(ctx, "sample", (&cadenya.ObjectiveListQueuedActionsBuilder{}).
+		WorkspaceID("sample").
+		Limit(1).
+		Cursor("sample").
+		State(cadenya.ObjectiveServiceListObjectiveQueuedActionsState("STATE_QUEUED")).
+		ToParams())
+	s.Require().NoError(err)
+	items, err := page.All(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(items, 2)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives/sample/queued_actions", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Objectives().ListQueuedActions(ctx, "sample", (&cadenya.ObjectiveListQueuedActionsBuilder{}).
+			Limit(1).
+			Cursor("sample").
+			State(cadenya.ObjectiveServiceListObjectiveQueuedActionsState("STATE_QUEUED")).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
+func (s *ObjectivesSuite) TestRemoveQueuedAction() {
+	g := loadGolden(s.T(), "ObjectiveService_RemoveObjectiveQueuedAction")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Objectives().RemoveQueuedAction(ctx, "sample", (&cadenya.ObjectiveRemoveQueuedActionBuilder{}).
+		WorkspaceID("sample").
+		QueuedActionID("sample").
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives/sample/queued_actions/sample:remove", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Objectives().RemoveQueuedAction(ctx, "sample", (&cadenya.ObjectiveRemoveQueuedActionBuilder{}).
+			QueuedActionID("sample").
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
 func (s *ObjectivesSuite) TestListToolCalls() {
 	g := loadGolden(s.T(), "ObjectiveService_ListObjectiveToolCalls")
 	server, served := goldenServer(s.T(), g)
@@ -560,6 +616,85 @@ func (s *ObjectivesSuite) TestContinue() {
 			Enqueue(true).
 			ToParams())
 		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
+func (s *ObjectivesSuite) TestInterrupt() {
+	g := loadGolden(s.T(), "ObjectiveService_InterruptObjective")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Objectives().Interrupt(ctx, "sample", (&cadenya.ObjectiveInterruptBuilder{}).
+		WorkspaceID("sample").
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives/sample:interrupt", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		_, err := client.Objectives().Interrupt(ctx, "sample", (&cadenya.ObjectiveInterruptBuilder{}).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
+func (s *ObjectivesSuite) TestCreateAndStream() {
+	g := loadGolden(s.T(), "ObjectiveEventStreamsService_CreateAndStreamObjective")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	stream, err := client.Objectives().CreateAndStream(ctx, (&cadenya.ObjectiveCreateAndStreamBuilder{}).
+		WorkspaceID("sample").
+		AgentID("sample").
+		VariationID("sample").
+		Metadata(&cadenya.CreateAndStreamObjectiveRequest_Metadata{ExternalID: "sample"}).
+		SystemPromptData(map[string]any{}).
+		FirstUserMessage("sample").
+		Secrets(cadenya.CreateObjectiveRequest_Secret{}).
+		MemoryCascade(cadenya.MemoryReference{MemoryLayerID: "sample"}).
+		FirstUserMessageData(map[string]any{}).
+		EpisodicMemory(&cadenya.ObjectiveEpisodicConfigParam{Key: "sample"}).
+		Tenant(&cadenya.TenantAssertion{ID: "sample"}).
+		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
+		PinnedParameters(map[string]string{}).
+		ToParams())
+	s.Require().NoError(err)
+	count := 0
+	for stream.Next() {
+		count++
+	}
+	s.Require().NoError(stream.Err())
+	s.Require().Equal(2, count)
+	s.Require().Equal("e2", stream.LastEventID())
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/objectives:stream", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		stream, err := client.Objectives().CreateAndStream(ctx, (&cadenya.ObjectiveCreateAndStreamBuilder{}).
+			AgentID("sample").
+			VariationID("sample").
+			Metadata(&cadenya.CreateAndStreamObjectiveRequest_Metadata{ExternalID: "sample"}).
+			SystemPromptData(map[string]any{}).
+			FirstUserMessage("sample").
+			Secrets(cadenya.CreateObjectiveRequest_Secret{}).
+			MemoryCascade(cadenya.MemoryReference{MemoryLayerID: "sample"}).
+			FirstUserMessageData(map[string]any{}).
+			EpisodicMemory(&cadenya.ObjectiveEpisodicConfigParam{Key: "sample"}).
+			Tenant(&cadenya.TenantAssertion{ID: "sample"}).
+			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
+			PinnedParameters(map[string]string{}).
+			ToParams())
+		s.Require().NoError(err)
+		for stream.Next() {
+		}
+		s.Require().NoError(stream.Err())
 		s.Require().Equal(int32(1), hits.Load())
 	})
 }

@@ -1221,19 +1221,13 @@ type Capability_TopK struct {
 type Capability_TopP struct {
 }
 
-// Compact objective request — triggers compaction on a running objective.
+// Compact objective request. Compaction is queued for a busy agent loop and starts immediately for a waiting objective.
 type CompactObjectiveRequest struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 	// The ID of the objective. Supports "external_id:" prefix for external IDs.
 	ObjectiveID *string `json:"objectiveId,omitempty"`
 	// Optional compaction config override. When not set, uses the variation's compaction_config.
 	CompactionConfig *AgentVariationSpec_CompactionConfig `json:"compactionConfig,omitempty"`
-}
-
-// Compact objective response
-type CompactObjectiveResponse struct {
-	// The new context window created by the compaction
-	ContextWindow *ObjectiveContextWindowData `json:"contextWindow,omitempty"`
 }
 
 // SummarizationStrategy configures LLM-powered summarization of older conversation turns.
@@ -1345,10 +1339,79 @@ type ContinueObjectiveRequest struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 	// The ID of the objective. If you have assigned an external ID to the objective, you can prefix the ID with "external_id:". For example, "external_id:1234567890". Otherwise, the ID assigned by Cadenya should be used.
 	ObjectiveID *string `json:"objectiveId,omitempty"`
-	// The message to continue an objective that has completed (or you are enqueing)
+	// The user message to send to the objective.
 	Message string `json:"message"`
-	// When set to true, the message will be enqueued for when the agent loop is available to process it.
+	// When false, the objective must be waiting and the message is sent immediately.
+	//  When true, a waiting objective still receives the message immediately; an
+	//  objective whose agent loop is busy queues it instead, and the agent picks it
+	//  up before its next assistant turn. Queued messages can be listed and removed
+	//  until then.
 	Enqueue *bool `json:"enqueue,omitempty"`
+}
+
+// ContinueObjectiveResponse reports whether the message joined the conversation
+//
+//	immediately or was queued for the agent loop.
+//
+// ContinueObjectiveResponse is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type ContinueObjectiveResponse struct {
+	Event        *ContinueObjectiveResponse_Event        `json:"-"`
+	QueuedAction *ContinueObjectiveResponse_QueuedAction `json:"-"`
+}
+
+func (u ContinueObjectiveResponse) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.Event != nil {
+		chosen = u.Event
+		count++
+	}
+	if u.QueuedAction != nil {
+		chosen = u.QueuedAction
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("ContinueObjectiveResponse: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewContinueObjectiveResponseEvent returns a ContinueObjectiveResponse with the Event variant selected.
+func NewContinueObjectiveResponseEvent(v ContinueObjectiveResponse_Event) ContinueObjectiveResponse {
+	v.Type = "event"
+	return ContinueObjectiveResponse{Event: &v}
+}
+
+// NewContinueObjectiveResponseQueuedAction returns a ContinueObjectiveResponse with the QueuedAction variant selected.
+func NewContinueObjectiveResponseQueuedAction(v ContinueObjectiveResponse_QueuedAction) ContinueObjectiveResponse {
+	v.Type = "queuedAction"
+	return ContinueObjectiveResponse{QueuedAction: &v}
+}
+
+func (u *ContinueObjectiveResponse) UnmarshalJSON(data []byte) error {
+	*u = ContinueObjectiveResponse{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "event":
+		u.Event = new(ContinueObjectiveResponse_Event)
+		return json.Unmarshal(data, u.Event)
+	case "queuedAction":
+		u.QueuedAction = new(ContinueObjectiveResponse_QueuedAction)
+		return json.Unmarshal(data, u.QueuedAction)
+	}
+	return fmt.Errorf("ContinueObjectiveResponse: unknown type %q", probe.Tag)
 }
 
 type CreateAIProviderKeyRequest struct {
@@ -1422,6 +1485,158 @@ type CreateAgentVariationRequest struct {
 	Spec     *AgentVariationSpec     `json:"spec"`
 }
 
+// The request body for creating an objective and streaming its events.
+//
+//	Accepts everything Create objective accepts, and additionally requires
+//	`metadata.externalId`, which is the idempotency key for the stream.
+type CreateAndStreamObjectiveRequest struct {
+	WorkspaceID string `json:"workspaceId"`
+	AgentID     string `json:"agentId"`
+	// Optional explicit variation selection. Overrides the agent's variation_selection_mode.
+	VariationID *string `json:"variationId,omitempty"`
+	// Required here, though Create objective leaves it optional: the external
+	//  ID inside it is the idempotency key that makes a retry of this request
+	//  resume the objective instead of starting another.
+	Metadata *CreateAndStreamObjectiveRequest_Metadata `json:"metadata"`
+	// Arbitrary data rendered into the selected variation's system_prompt_template
+	//  (liquid) to produce the objective's system prompt. If the agent has a
+	//  system_prompt_data_schema, this must satisfy it.
+	SystemPromptData map[string]any `json:"systemPromptData,omitempty"`
+	// Optional explicit first user message for the LLM chat history. When not set,
+	//  the selected variation's first_user_message_template is rendered with
+	//  first_user_message_data instead. If neither this field nor a
+	//  first_user_message_template is present, the request is rejected with InvalidArgument.
+	FirstUserMessage *string `json:"firstUserMessage,omitempty"`
+	// Secrets that can be used in the headers for tool calls using the secret interpolation format.
+	Secrets []CreateObjectiveRequest_Secret `json:"secrets,omitempty"`
+	// Memory layers/entries layered over the baseline cascade inherited
+	//  from the selected variation — element-level rules over inherited
+	//  styles, in CSS terms.
+	//
+	//  Array order is resolution order: EARLIER elements are more specific
+	//  and are consulted first. Entries pinned via memory_entry_id behave
+	//  as single-entry layers at their position.
+	//
+	//  System-managed layers (e.g., episodic) cannot be referenced here;
+	//  they attach themselves automatically based on the episodic key.
+	//
+	//  Size cap: the TOTAL effective cascade (this field + the variation's
+	//  memory layer assignments) must not exceed 10 entries. A request
+	//  that would produce a larger cascade is rejected with
+	//  InvalidArgument.
+	MemoryCascade []MemoryReference `json:"memoryCascade,omitempty"`
+	// Arbitrary data rendered into the selected variation's first_user_message_template
+	//  (liquid) to produce the first user message. Separate from `system_prompt_data`,
+	//  which renders the system prompt template.
+	FirstUserMessageData map[string]any `json:"firstUserMessageData,omitempty"`
+	// If the agent variation that is selected has episodic memory enabled, then this key is used to create/update a memory layer
+	//  specific to the episodic memory. The layer may have a TTL configured by the variation.
+	EpisodicMemory *ObjectiveEpisodicConfig `json:"episodicMemory,omitempty"`
+	// Optional tenant assertion — the customer's org/company identifier for the
+	//  end user this objective serves. Upserts the tenant record in the
+	//  workspace and associates the objective with it.
+	Tenant *TenantAssertion `json:"tenant,omitempty"`
+	// Optional subject assertion — the person within the tenant this objective
+	//  serves. Requires `tenant`; a subject asserted without a tenant is
+	//  rejected with InvalidArgument.
+	Subject *SubjectAssertion `json:"subject,omitempty"`
+	// Parameters forced onto this objective's tool calls. A pinned parameter
+	//  is removed from the tool schema the LLM sees, and its value is always
+	//  overwritten server-side with the pinned value — the model cannot choose
+	//  a different value for it. By default a pinned key applies to every tool
+	//  with a top-level parameter of the same name; a tool set's overlays
+	//  (ToolSetSpec.overlays) can bind pinned keys to nested paths, differently
+	//  named parameters, or a subset of tools.
+	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
+}
+
+// Objective metadata, with an external ID that is required here because
+//
+//	it is the request's idempotency key: repeating a request that carries
+//	an external ID already in use attaches to that objective instead of
+//	starting a second one.
+type CreateAndStreamObjectiveRequest_Metadata struct {
+	// Key-value pairs for categorization and filtering. Values are 0-63
+	//  alphanumeric characters with "-", "_", or "." allowed between; keys
+	//  follow the same shape and additionally accept an optional DNS-subdomain
+	//  prefix (e.g. "cadenya.com/") of at most 253 characters.
+	//  Examples: {"priority": "high", "source": "api", "workflow": "onboarding"}
+	Labels map[string]string `json:"labels,omitempty"`
+	// External ID for the objective (e.g., a workflow ID from an external
+	//  system), and this request's idempotency key. Required here, though
+	//  Create objective leaves it optional. Reusing a value that already
+	//  exists in the workspace attaches to that objective and streams it
+	//  rather than creating another; Create objective instead rejects a
+	//  duplicate with AlreadyExists.
+	ExternalID string `json:"externalId"`
+}
+
+// One message on the create-and-stream feed. The first message is always
+//
+//	the `objective` variant, sent as soon as the objective exists; every
+//	message after it is an `event`.
+//
+// CreateAndStreamObjectiveResponse is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type CreateAndStreamObjectiveResponse struct {
+	Objective *CreateAndStreamObjectiveResponse_Objective `json:"-"`
+	Event     *CreateAndStreamObjectiveResponse_Event     `json:"-"`
+}
+
+func (u CreateAndStreamObjectiveResponse) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.Objective != nil {
+		chosen = u.Objective
+		count++
+	}
+	if u.Event != nil {
+		chosen = u.Event
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("CreateAndStreamObjectiveResponse: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewCreateAndStreamObjectiveResponseObjective returns a CreateAndStreamObjectiveResponse with the Objective variant selected.
+func NewCreateAndStreamObjectiveResponseObjective(v CreateAndStreamObjectiveResponse_Objective) CreateAndStreamObjectiveResponse {
+	v.Type = "objective"
+	return CreateAndStreamObjectiveResponse{Objective: &v}
+}
+
+// NewCreateAndStreamObjectiveResponseEvent returns a CreateAndStreamObjectiveResponse with the Event variant selected.
+func NewCreateAndStreamObjectiveResponseEvent(v CreateAndStreamObjectiveResponse_Event) CreateAndStreamObjectiveResponse {
+	v.Type = "event"
+	return CreateAndStreamObjectiveResponse{Event: &v}
+}
+
+func (u *CreateAndStreamObjectiveResponse) UnmarshalJSON(data []byte) error {
+	*u = CreateAndStreamObjectiveResponse{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "objective":
+		u.Objective = new(CreateAndStreamObjectiveResponse_Objective)
+		return json.Unmarshal(data, u.Objective)
+	case "event":
+		u.Event = new(CreateAndStreamObjectiveResponse_Event)
+		return json.Unmarshal(data, u.Event)
+	}
+	return fmt.Errorf("CreateAndStreamObjectiveResponse: unknown type %q", probe.Tag)
+}
+
 type CreateMemoryEntryRequest struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 	// Memory layer ID. Accepts canonical memlyr_… form or external_id:<value> form.
@@ -1469,7 +1684,7 @@ type CreateObjectiveRequest struct {
 	// Arbitrary data rendered into the selected variation's system_prompt_template
 	//  (liquid) to produce the objective's system prompt. If the agent has a
 	//  system_prompt_data_schema, this must satisfy it.
-	SystemPromptData map[string]any `json:"systemPromptData"`
+	SystemPromptData map[string]any `json:"systemPromptData,omitempty"`
 	// Optional explicit first user message for the LLM chat history. When not set,
 	//  the selected variation's first_user_message_template is rendered with
 	//  first_user_message_data instead. If neither this field nor a
@@ -1731,6 +1946,13 @@ type GoogleProtobufAny struct {
 	Type *string `json:"@type,omitempty"`
 }
 
+// InterruptObjectiveRequest stops a running objective without cancelling background agents.
+type InterruptObjectiveRequest struct {
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// Supports the "external_id:" prefix.
+	ObjectiveID *string `json:"objectiveId,omitempty"`
+}
+
 type ListAIProviderKeysResponse struct {
 	Items      []AIProviderKey `json:"items"`
 	Pagination *PageModel      `json:"pagination,omitempty"`
@@ -1812,6 +2034,12 @@ type ListObjectiveEventsResponse struct {
 type ListObjectiveFeedbackResponse struct {
 	Items      []ObjectiveFeedback `json:"items"`
 	Pagination *PageModel          `json:"pagination,omitempty"`
+}
+
+type ListObjectiveQueuedActionsResponse struct {
+	// Queued actions in the order they were sent, oldest first.
+	Items      []ObjectiveQueuedAction `json:"items"`
+	Pagination *PageModel              `json:"pagination,omitempty"`
 }
 
 type ListObjectiveToolCallsResponse struct {
@@ -2213,6 +2441,8 @@ type ModelBasePricing struct {
 	InputPricePerMillionTokens string `json:"inputPricePerMillionTokens"`
 	// Default output token rate, in cents per million tokens.
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
+	// Default cached input token rate, in cents per million tokens.
+	CachedInputPricePerMillionTokens string `json:"cachedInputPricePerMillionTokens"`
 }
 
 // ModelInfo carries server-derived, read-only details about a model.
@@ -2238,6 +2468,8 @@ type ModelPricingOverride struct {
 	InputPricePerMillionTokens *string `json:"inputPricePerMillionTokens,omitempty"`
 	// Override for output token price, in cents per million tokens.
 	OutputPricePerMillionTokens *string `json:"outputPricePerMillionTokens,omitempty"`
+	// Override for cached input token price, in cents per million tokens.
+	CachedInputPricePerMillionTokens *string `json:"cachedInputPricePerMillionTokens,omitempty"`
 }
 
 type ModelSpec struct {
@@ -2258,6 +2490,12 @@ type ModelSpec struct {
 	// Cost per million output tokens in cents (e.g., 1500 = $15.00). Effective
 	//  price on reads, see input_price_per_million_tokens.
 	OutputPricePerMillionTokens string `json:"outputPricePerMillionTokens"`
+	// Cost per million input tokens served from the provider's prompt cache, in
+	//  cents (e.g., 30 = $0.30). Cached tokens are a subset of the input tokens
+	//  and are billed at this rate instead of the input rate. Zero means the rate
+	//  is not known and cached tokens are costed at the input rate. Effective
+	//  price on reads, see input_price_per_million_tokens.
+	CachedInputPricePerMillionTokens *string `json:"cachedInputPricePerMillionTokens,omitempty"`
 	// The inference knobs this model supports. Catalog data; drives which
 	//  ModelConfig fields a variation on this model may set. Reasoning support
 	//  (and its mode) lives here too, as the "reasoning" capability.
@@ -2435,14 +2673,15 @@ type Notice struct {
 type ObjectiveState string
 
 const (
-	ObjectiveStateObjectiveStateUnspecified ObjectiveState = "OBJECTIVE_STATE_UNSPECIFIED"
-	ObjectiveStateObjectiveStatePending     ObjectiveState = "OBJECTIVE_STATE_PENDING"
-	ObjectiveStateObjectiveStateRunning     ObjectiveState = "OBJECTIVE_STATE_RUNNING"
-	ObjectiveStateObjectiveStateWaiting     ObjectiveState = "OBJECTIVE_STATE_WAITING"
-	ObjectiveStateObjectiveStateFailed      ObjectiveState = "OBJECTIVE_STATE_FAILED"
-	ObjectiveStateObjectiveStateCancelled   ObjectiveState = "OBJECTIVE_STATE_CANCELLED"
-	ObjectiveStateObjectiveStateFinalized   ObjectiveState = "OBJECTIVE_STATE_FINALIZED"
-	ObjectiveStateObjectiveStateTimedOut    ObjectiveState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateObjectiveStateUnspecified  ObjectiveState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateObjectiveStatePending      ObjectiveState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateObjectiveStateRunning      ObjectiveState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateObjectiveStateWaiting      ObjectiveState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateObjectiveStateFailed       ObjectiveState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateObjectiveStateCancelled    ObjectiveState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateObjectiveStateFinalized    ObjectiveState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateObjectiveStateTimedOut     ObjectiveState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateObjectiveStateInterrupting ObjectiveState = "OBJECTIVE_STATE_INTERRUPTING"
 )
 
 // Objective is the data for an objective. It contains the snapshotted fields for the selected agent and variation. Secrets are returned
@@ -2621,6 +2860,7 @@ type ObjectiveEventData struct {
 	Reasoning              *ObjectiveEventData_Reasoning              `json:"-"`
 	StateChanged           *ObjectiveEventData_StateChanged           `json:"-"`
 	Heartbeat              *ObjectiveEventData_Heartbeat              `json:"-"`
+	Interrupted            *ObjectiveEventData_Interrupted            `json:"-"`
 }
 
 func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
@@ -2704,6 +2944,10 @@ func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
 	}
 	if u.Heartbeat != nil {
 		chosen = u.Heartbeat
+		count++
+	}
+	if u.Interrupted != nil {
+		chosen = u.Interrupted
 		count++
 	}
 	if count == 0 {
@@ -2835,6 +3079,12 @@ func NewObjectiveEventDataHeartbeat(v ObjectiveEventData_Heartbeat) ObjectiveEve
 	return ObjectiveEventData{Heartbeat: &v}
 }
 
+// NewObjectiveEventDataInterrupted returns a ObjectiveEventData with the Interrupted variant selected.
+func NewObjectiveEventDataInterrupted(v ObjectiveEventData_Interrupted) ObjectiveEventData {
+	v.Type = "interrupted"
+	return ObjectiveEventData{Interrupted: &v}
+}
+
 func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	*u = ObjectiveEventData{}
 	var probe struct {
@@ -2907,6 +3157,9 @@ func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	case "heartbeat":
 		u.Heartbeat = new(ObjectiveEventData_Heartbeat)
 		return json.Unmarshal(data, u.Heartbeat)
+	case "interrupted":
+		u.Interrupted = new(ObjectiveEventData_Interrupted)
+		return json.Unmarshal(data, u.Interrupted)
 	}
 	return fmt.Errorf("ObjectiveEventData: unknown type %q", probe.Tag)
 }
@@ -3001,34 +3254,132 @@ type ObjectiveInfo struct {
 	Widget *BareMetadata `json:"widget,omitempty"`
 }
 
+// ObjectiveInterrupted confirms that foreground execution stopped and the objective is waiting.
+type ObjectiveInterrupted struct {
+	Message string `json:"message"`
+}
+
+type ObjectiveQueuedActionState string
+
+const (
+	ObjectiveQueuedActionStateStateUnspecified ObjectiveQueuedActionState = "STATE_UNSPECIFIED"
+	ObjectiveQueuedActionStateStateQueued      ObjectiveQueuedActionState = "STATE_QUEUED"
+	ObjectiveQueuedActionStateStateSent        ObjectiveQueuedActionState = "STATE_SENT"
+	ObjectiveQueuedActionStateStateRemoved     ObjectiveQueuedActionState = "STATE_REMOVED"
+	ObjectiveQueuedActionStateStateDiscarded   ObjectiveQueuedActionState = "STATE_DISCARDED"
+)
+
+// ObjectiveQueuedAction is work sent to an objective while its agent loop was
+//
+//	busy. The agent picks queued actions up in order at the next boundary where
+//	it can act on them: after its current tool calls settle, before its next
+//	assistant turn. Until then a queued action can be removed and the agent never
+//	learns about it.
+type ObjectiveQueuedAction struct {
+	Metadata *OperationMetadata `json:"metadata"`
+	// The objective this action was sent to.
+	ObjectiveID string                     `json:"objectiveId"`
+	Data        *ObjectiveQueuedActionData `json:"data"`
+	State       ObjectiveQueuedActionState `json:"state"`
+	// When the agent loop picked the action up. Unset until the action is sent.
+	SentAt *time.Time `json:"sentAt,omitempty"`
+	// The conversation event a sent user message became. Unset for other
+	//  actions and for user messages that have not been sent.
+	ObjectiveEventID *string `json:"objectiveEventId,omitempty"`
+}
+
+// ObjectiveQueuedActionData is the action to perform.
+// ObjectiveQueuedActionData is a oneOf union; at most one variant is non-nil. All variants
+// nil means the union was unset (protobuf empty/default) in the response.
+type ObjectiveQueuedActionData struct {
+	UserMessage *ObjectiveQueuedActionData_UserMessage `json:"-"`
+	Compaction  *ObjectiveQueuedActionData_Compaction  `json:"-"`
+}
+
+func (u ObjectiveQueuedActionData) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.UserMessage != nil {
+		chosen = u.UserMessage
+		count++
+	}
+	if u.Compaction != nil {
+		chosen = u.Compaction
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("ObjectiveQueuedActionData: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewObjectiveQueuedActionDataUserMessage returns a ObjectiveQueuedActionData with the UserMessage variant selected.
+func NewObjectiveQueuedActionDataUserMessage(v ObjectiveQueuedActionData_UserMessage) ObjectiveQueuedActionData {
+	v.Type = "userMessage"
+	return ObjectiveQueuedActionData{UserMessage: &v}
+}
+
+// NewObjectiveQueuedActionDataCompaction returns a ObjectiveQueuedActionData with the Compaction variant selected.
+func NewObjectiveQueuedActionDataCompaction(v ObjectiveQueuedActionData_Compaction) ObjectiveQueuedActionData {
+	v.Type = "compaction"
+	return ObjectiveQueuedActionData{Compaction: &v}
+}
+
+func (u *ObjectiveQueuedActionData) UnmarshalJSON(data []byte) error {
+	*u = ObjectiveQueuedActionData{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "userMessage":
+		u.UserMessage = new(ObjectiveQueuedActionData_UserMessage)
+		return json.Unmarshal(data, u.UserMessage)
+	case "compaction":
+		u.Compaction = new(ObjectiveQueuedActionData_Compaction)
+		return json.Unmarshal(data, u.Compaction)
+	}
+	return fmt.Errorf("ObjectiveQueuedActionData: unknown type %q", probe.Tag)
+}
+
 // The state before this write. OBJECTIVE_STATE_UNSPECIFIED when the
 //
 //	objective was just created.
 type ObjectiveStateChangedFromState string
 
 const (
-	ObjectiveStateChangedFromStateObjectiveStateUnspecified ObjectiveStateChangedFromState = "OBJECTIVE_STATE_UNSPECIFIED"
-	ObjectiveStateChangedFromStateObjectiveStatePending     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_PENDING"
-	ObjectiveStateChangedFromStateObjectiveStateRunning     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_RUNNING"
-	ObjectiveStateChangedFromStateObjectiveStateWaiting     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_WAITING"
-	ObjectiveStateChangedFromStateObjectiveStateFailed      ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FAILED"
-	ObjectiveStateChangedFromStateObjectiveStateCancelled   ObjectiveStateChangedFromState = "OBJECTIVE_STATE_CANCELLED"
-	ObjectiveStateChangedFromStateObjectiveStateFinalized   ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FINALIZED"
-	ObjectiveStateChangedFromStateObjectiveStateTimedOut    ObjectiveStateChangedFromState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateChangedFromStateObjectiveStateUnspecified  ObjectiveStateChangedFromState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateChangedFromStateObjectiveStatePending      ObjectiveStateChangedFromState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateChangedFromStateObjectiveStateRunning      ObjectiveStateChangedFromState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateChangedFromStateObjectiveStateWaiting      ObjectiveStateChangedFromState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateChangedFromStateObjectiveStateFailed       ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateChangedFromStateObjectiveStateCancelled    ObjectiveStateChangedFromState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateChangedFromStateObjectiveStateFinalized    ObjectiveStateChangedFromState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateChangedFromStateObjectiveStateTimedOut     ObjectiveStateChangedFromState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateChangedFromStateObjectiveStateInterrupting ObjectiveStateChangedFromState = "OBJECTIVE_STATE_INTERRUPTING"
 )
 
 // The state after this write.
 type ObjectiveStateChangedToState string
 
 const (
-	ObjectiveStateChangedToStateObjectiveStateUnspecified ObjectiveStateChangedToState = "OBJECTIVE_STATE_UNSPECIFIED"
-	ObjectiveStateChangedToStateObjectiveStatePending     ObjectiveStateChangedToState = "OBJECTIVE_STATE_PENDING"
-	ObjectiveStateChangedToStateObjectiveStateRunning     ObjectiveStateChangedToState = "OBJECTIVE_STATE_RUNNING"
-	ObjectiveStateChangedToStateObjectiveStateWaiting     ObjectiveStateChangedToState = "OBJECTIVE_STATE_WAITING"
-	ObjectiveStateChangedToStateObjectiveStateFailed      ObjectiveStateChangedToState = "OBJECTIVE_STATE_FAILED"
-	ObjectiveStateChangedToStateObjectiveStateCancelled   ObjectiveStateChangedToState = "OBJECTIVE_STATE_CANCELLED"
-	ObjectiveStateChangedToStateObjectiveStateFinalized   ObjectiveStateChangedToState = "OBJECTIVE_STATE_FINALIZED"
-	ObjectiveStateChangedToStateObjectiveStateTimedOut    ObjectiveStateChangedToState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateChangedToStateObjectiveStateUnspecified  ObjectiveStateChangedToState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveStateChangedToStateObjectiveStatePending      ObjectiveStateChangedToState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveStateChangedToStateObjectiveStateRunning      ObjectiveStateChangedToState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveStateChangedToStateObjectiveStateWaiting      ObjectiveStateChangedToState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveStateChangedToStateObjectiveStateFailed       ObjectiveStateChangedToState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveStateChangedToStateObjectiveStateCancelled    ObjectiveStateChangedToState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveStateChangedToStateObjectiveStateFinalized    ObjectiveStateChangedToState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveStateChangedToStateObjectiveStateTimedOut     ObjectiveStateChangedToState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveStateChangedToStateObjectiveStateInterrupting ObjectiveStateChangedToState = "OBJECTIVE_STATE_INTERRUPTING"
 )
 
 // ObjectiveStateChanged is written every time the objective's lifecycle state
@@ -3089,6 +3440,7 @@ const (
 	ObjectiveToolCallExecutionStatusToolCallExecutionStatusCompleted         ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
 	ObjectiveToolCallExecutionStatusToolCallExecutionStatusErrored           ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
 	ObjectiveToolCallExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
+	ObjectiveToolCallExecutionStatusToolCallExecutionStatusInterrupted       ObjectiveToolCallExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_INTERRUPTED"
 )
 
 // ObjectiveToolCall is a record of a tool call made during an objective's execution.
@@ -3264,6 +3616,7 @@ const (
 	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusCompleted         ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
 	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusErrored           ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
 	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
+	ObjectiveToolCallWithResultExecutionStatusToolCallExecutionStatusInterrupted       ObjectiveToolCallWithResultExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_INTERRUPTED"
 )
 
 // ObjectiveToolCallWithResult is an ObjectiveToolCall plus the content the
@@ -3476,6 +3829,17 @@ type PublishAgentRequest struct {
 	ID *string `json:"id,omitempty"`
 }
 
+// QueuedCompaction is a compaction waiting to run.
+type QueuedCompaction struct {
+	// Optional compaction config override. When not set, uses the variation's compaction_config.
+	CompactionConfig *AgentVariationSpec_CompactionConfig `json:"compactionConfig,omitempty"`
+}
+
+// QueuedUserMessage is a user message waiting to join the conversation.
+type QueuedUserMessage struct {
+	Content string `json:"content"`
+}
+
 // Reasoning carries the human-readable reasoning text a model produced while
 //
 //	working on an iteration — extended thinking (Anthropic, Gemini) or reasoning
@@ -3593,6 +3957,14 @@ type RemoveAgentVariationMemoryLayerRequest struct {
 	VariationID *string `json:"variationId,omitempty"`
 	// Layer to detach. Accepts memlyr_… or external_id:<value>.
 	MemoryLayerID string `json:"memoryLayerId"`
+}
+
+type RemoveObjectiveQueuedActionRequest struct {
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+	// The ID of the objective. Supports "external_id:" prefix for external IDs.
+	ObjectiveID *string `json:"objectiveId,omitempty"`
+	// The ID of the queued action to remove.
+	QueuedActionID *string `json:"queuedActionId,omitempty"`
 }
 
 type ResolvedSecretSource string
@@ -5164,6 +5536,32 @@ type ToolSetSpec struct {
 	//  update_mask of `spec.overlays` swaps the entire list for the one in the
 	//  request. Read-modify-write to add or remove a single overlay.
 	Overlays []ToolOverlay `json:"overlays,omitempty"`
+	// The tool set's secrets, identified by normalized name. Order has no
+	//  meaning. Values are write-only; reads return names only.
+	//
+	//  On create, the tool set and its secrets are written together, so the first
+	//  sync and source validation already use them. On update, selecting
+	//  spec.secrets in update_mask replaces the set: names not listed are
+	//  deleted, listed names are created or have their value replaced, and a
+	//  listed name without a value keeps its stored value. An empty masked list
+	//  deletes every secret. Without a mask, a non-empty list creates or updates
+	//  the listed secrets and deletes nothing.
+	Secrets []ToolSetSpec_Secret `json:"secrets,omitempty"`
+}
+
+// A secret scoped to this tool set. Adapter headers and tool configuration
+//
+//	reference it as `{{ secrets.NAME }}`. The same secrets are managed one at
+//	a time through the tool set secret operations.
+type ToolSetSpec_Secret struct {
+	// Secret name, normalized to upper case with characters outside A-Z, 0-9
+	//  and _ replaced by _. It is also the secret's external id, so
+	//  `{{ secrets.<name> }}` resolves to it.
+	Name string `json:"name"`
+	// Secret value. Write-only: never returned by any API, so reads list names
+	//  with an empty value. Required for a secret the tool set does not have
+	//  yet; on update, an entry without a value keeps the stored value.
+	Value *string `json:"value,omitempty"`
 }
 
 // ToolSetUsage describes one agent variation that uses the tool set (or, when
@@ -5482,8 +5880,9 @@ type UpdateMemoryLayerRequest struct {
 //
 //	metadata.external_id, metadata.labels, spec.provider_model_id,
 //	spec.provider, spec.family, spec.max_input_tokens, spec.max_output_tokens,
-//	spec.capabilities, pricing_override.input_price_per_million_tokens, and
-//	pricing_override.output_price_per_million_tokens. Synced models
+//	spec.capabilities, pricing_override.input_price_per_million_tokens,
+//	pricing_override.output_price_per_million_tokens, and
+//	pricing_override.cached_input_price_per_million_tokens. Synced models
 //	(PROVENANCE_SYNCED_FROM_PROVIDER) reject metadata.name and spec.* paths.
 //	spec price fields are never writable; price changes go through
 //	pricing_override, where a masked-but-absent field clears the override.
@@ -5808,6 +6207,7 @@ const (
 	WebhookDeliveryDataEventTypeObjectiveEventTypeReasoning              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeStateChanged           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeHeartbeat              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeInterrupted            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_INTERRUPTED"
 )
 
 type WebhookDeliveryData struct {
@@ -5831,6 +6231,16 @@ type WebhookDeliveryData struct {
 	ResponseHeaders map[string]string `json:"responseHeaders"`
 	// Content length of the response body in bytes
 	ResponseContentLength string `json:"responseContentLength"`
+}
+
+// WhoamiResponse describes the authenticated caller.
+type WhoamiResponse struct {
+	// The caller's profile.
+	Profile *Profile `json:"profile"`
+	// Metadata of the caller's default workspace: the one they chose, while
+	//  they can still access it, otherwise the first workspace they can access.
+	//  Unset when the caller can access no workspace.
+	DefaultWorkspace *AccountResourceMetadata `json:"defaultWorkspace,omitempty"`
 }
 
 // The current lifecycle state of the widget. Output only. Widgets are
@@ -6439,6 +6849,11 @@ type ObjectiveEventData_Heartbeat struct {
 	Heartbeat *ObjectiveHeartbeat `json:"heartbeat"`
 }
 
+type ObjectiveEventData_Interrupted struct {
+	Type        string                `json:"type"`
+	Interrupted *ObjectiveInterrupted `json:"interrupted"`
+}
+
 type CallableTool_Tool struct {
 	Type string            `json:"type"`
 	Tool *ResourceMetadata `json:"tool"`
@@ -6479,6 +6894,30 @@ type MemoryEntryCreateSpec_UploadID struct {
 	//  here.
 	Key         string  `json:"key"`
 	Description *string `json:"description,omitempty"`
+}
+
+type ObjectiveQueuedActionData_UserMessage struct {
+	Type string `json:"type"`
+	// A user message appended to the conversation before the next assistant turn.
+	UserMessage *QueuedUserMessage `json:"userMessage"`
+}
+
+type ObjectiveQueuedActionData_Compaction struct {
+	Type string `json:"type"`
+	// A compaction of the conversation run before the next assistant turn.
+	Compaction *QueuedCompaction `json:"compaction"`
+}
+
+type ContinueObjectiveResponse_Event struct {
+	Type string `json:"type"`
+	// The user message event, when the objective was waiting and the message was sent immediately.
+	Event *ObjectiveEvent `json:"event"`
+}
+
+type ContinueObjectiveResponse_QueuedAction struct {
+	Type string `json:"type"`
+	// The queued action, when the agent loop was busy and the message was queued.
+	QueuedAction *ObjectiveQueuedAction `json:"queuedAction"`
 }
 
 type SetToolCallContentRequest_ContentBlock_Text struct {
@@ -6674,6 +7113,21 @@ type ModelSpec_Capability_Caching struct {
 	Caching *Capability_Caching `json:"caching"`
 }
 
+type CreateAndStreamObjectiveResponse_Objective struct {
+	Type string `json:"type"`
+	// The objective. Sent exactly once, as the first message. On a repeated
+	//  request that attached to an existing objective, this is that
+	//  objective rather than a newly created one.
+	Objective *Objective `json:"objective"`
+}
+
+type CreateAndStreamObjectiveResponse_Event struct {
+	Type string `json:"type"`
+	// An objective event, identical to the payloads Stream objective events
+	//  yields — including transient hb_ heartbeats.
+	Event *ObjectiveEvent `json:"event"`
+}
+
 // TOKEN_EXPIRED identifies access-token expiry beyond the 60-second clock-skew tolerance. That token cannot renew; use already-installed newer credentials or require explicit app reauthentication. SESSION_* reasons are terminal. Never infer renewability from HTTP status alone.
 type WidgetSessionErrorReason string
 
@@ -6751,6 +7205,7 @@ const (
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeReasoning              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_REASONING"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeStateChanged           AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeHeartbeat              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
+	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeInterrupted            AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_INTERRUPTED"
 )
 
 type MemoryServiceListMemoryLayersType string
@@ -6772,14 +7227,25 @@ const (
 type ObjectiveServiceListObjectivesState string
 
 const (
-	ObjectiveServiceListObjectivesStateObjectiveStateUnspecified ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_UNSPECIFIED"
-	ObjectiveServiceListObjectivesStateObjectiveStatePending     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_PENDING"
-	ObjectiveServiceListObjectivesStateObjectiveStateRunning     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_RUNNING"
-	ObjectiveServiceListObjectivesStateObjectiveStateWaiting     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_WAITING"
-	ObjectiveServiceListObjectivesStateObjectiveStateFailed      ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FAILED"
-	ObjectiveServiceListObjectivesStateObjectiveStateCancelled   ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_CANCELLED"
-	ObjectiveServiceListObjectivesStateObjectiveStateFinalized   ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FINALIZED"
-	ObjectiveServiceListObjectivesStateObjectiveStateTimedOut    ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveServiceListObjectivesStateObjectiveStateUnspecified  ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_UNSPECIFIED"
+	ObjectiveServiceListObjectivesStateObjectiveStatePending      ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_PENDING"
+	ObjectiveServiceListObjectivesStateObjectiveStateRunning      ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_RUNNING"
+	ObjectiveServiceListObjectivesStateObjectiveStateWaiting      ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_WAITING"
+	ObjectiveServiceListObjectivesStateObjectiveStateFailed       ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FAILED"
+	ObjectiveServiceListObjectivesStateObjectiveStateCancelled    ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_CANCELLED"
+	ObjectiveServiceListObjectivesStateObjectiveStateFinalized    ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_FINALIZED"
+	ObjectiveServiceListObjectivesStateObjectiveStateTimedOut     ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_TIMED_OUT"
+	ObjectiveServiceListObjectivesStateObjectiveStateInterrupting ObjectiveServiceListObjectivesState = "OBJECTIVE_STATE_INTERRUPTING"
+)
+
+type ObjectiveServiceListObjectiveQueuedActionsState string
+
+const (
+	ObjectiveServiceListObjectiveQueuedActionsStateStateUnspecified ObjectiveServiceListObjectiveQueuedActionsState = "STATE_UNSPECIFIED"
+	ObjectiveServiceListObjectiveQueuedActionsStateStateQueued      ObjectiveServiceListObjectiveQueuedActionsState = "STATE_QUEUED"
+	ObjectiveServiceListObjectiveQueuedActionsStateStateSent        ObjectiveServiceListObjectiveQueuedActionsState = "STATE_SENT"
+	ObjectiveServiceListObjectiveQueuedActionsStateStateRemoved     ObjectiveServiceListObjectiveQueuedActionsState = "STATE_REMOVED"
+	ObjectiveServiceListObjectiveQueuedActionsStateStateDiscarded   ObjectiveServiceListObjectiveQueuedActionsState = "STATE_DISCARDED"
 )
 
 type ObjectiveServiceListObjectiveToolCallsStatus string
@@ -6801,6 +7267,7 @@ const (
 	ObjectiveServiceListObjectiveToolCallsExecutionStatusToolCallExecutionStatusCompleted         ObjectiveServiceListObjectiveToolCallsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_COMPLETED"
 	ObjectiveServiceListObjectiveToolCallsExecutionStatusToolCallExecutionStatusErrored           ObjectiveServiceListObjectiveToolCallsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_ERRORED"
 	ObjectiveServiceListObjectiveToolCallsExecutionStatusToolCallExecutionStatusWaitingForContent ObjectiveServiceListObjectiveToolCallsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_WAITING_FOR_CONTENT"
+	ObjectiveServiceListObjectiveToolCallsExecutionStatusToolCallExecutionStatusInterrupted       ObjectiveServiceListObjectiveToolCallsExecutionStatus = "TOOL_CALL_EXECUTION_STATUS_INTERRUPTED"
 )
 
 type ToolServiceListToolSetsState string

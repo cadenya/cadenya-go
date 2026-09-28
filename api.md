@@ -136,7 +136,7 @@ client.WorkspaceAdmin().RemoveMember(ctx context.Context, profileID string, para
 Retrieves the profile for the credentials accessing the API
 
 ```go
-client.Profiles().Whoami(ctx context.Context, opts ...RequestOption) (*Profile, error)
+client.Profiles().Whoami(ctx context.Context, opts ...RequestOption) (*WhoamiResponse, error)
 ```
 
 ## workspaces
@@ -518,6 +518,16 @@ Submit feedback for an objective
 ```go
 client.Objectives().CreateFeedback(ctx context.Context, objectiveID string, params *ObjectiveCreateFeedbackParams, opts ...RequestOption) (*ObjectiveFeedback, error)
 ```
+List objective queued actions
+
+```go
+client.Objectives().ListQueuedActions(ctx context.Context, objectiveID string, params *ObjectiveListQueuedActionsParams, opts ...RequestOption) (*Page[ObjectiveQueuedAction], error)
+```
+Remove a queued action
+
+```go
+client.Objectives().RemoveQueuedAction(ctx context.Context, objectiveID string, params *ObjectiveRemoveQueuedActionParams, opts ...RequestOption) (*ObjectiveQueuedAction, error)
+```
 List objective tool calls
 
 ```go
@@ -556,12 +566,22 @@ client.Objectives().Cancel(ctx context.Context, objectiveID string, params *Obje
 Compact an objective
 
 ```go
-client.Objectives().Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*CompactObjectiveResponse, error)
+client.Objectives().Compact(ctx context.Context, objectiveID string, params *ObjectiveCompactParams, opts ...RequestOption) (*ObjectiveQueuedAction, error)
 ```
 Continue an objective
 
 ```go
-client.Objectives().Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ObjectiveEvent, error)
+client.Objectives().Continue(ctx context.Context, objectiveID string, params *ObjectiveContinueParams, opts ...RequestOption) (*ContinueObjectiveResponse, error)
+```
+Interrupt an objective
+
+```go
+client.Objectives().Interrupt(ctx context.Context, objectiveID string, params *ObjectiveInterruptParams, opts ...RequestOption) (*ObjectiveEvent, error)
+```
+Create an objective and stream its events
+
+```go
+client.Objectives().CreateAndStream(ctx context.Context, params *ObjectiveCreateAndStreamParams, opts ...RequestOption) (*Stream[CreateAndStreamObjectiveResponse], error)
 ```
 
 ## tool_search
