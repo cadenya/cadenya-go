@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/cadenya/cadenya-go/compare/v1.6.0...v1.7.0) (2026-09-28)
+
+
+### Features
+
+* default workspace in whoami, objective queued actions and interrupts ([45cf67e](https://github.com/cadenya/cadenya-go/commit/45cf67ea0e65dd92eb391809fd15c94dfd41c3e0))
+
 ## [1.6.0](https://github.com/cadenya/cadenya-go/compare/v1.5.0...v1.6.0) (2026-09-18)
 
 
