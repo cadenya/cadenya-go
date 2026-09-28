@@ -9,16 +9,16 @@ import (
 // ProfileResources is implemented by the SDK and easy to mock in tests.
 type ProfileResources interface {
 	// Retrieves the profile for the credentials accessing the API
-	Whoami(ctx context.Context, opts ...RequestOption) (*Profile, error)
+	Whoami(ctx context.Context, opts ...RequestOption) (*WhoamiResponse, error)
 }
 
 type profilesService struct{ core *core }
 
 var _ ProfileResources = (*profilesService)(nil)
 
-func (s *profilesService) Whoami(ctx context.Context, opts ...RequestOption) (*Profile, error) {
+func (s *profilesService) Whoami(ctx context.Context, opts ...RequestOption) (*WhoamiResponse, error) {
 	path := "/v1/whoami"
-	var out Profile
+	var out WhoamiResponse
 	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
 	}

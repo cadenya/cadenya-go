@@ -2,11 +2,9 @@
   "interactions": [
     {
       "request": {
-        "body": {
-          "compactionConfig": {}
-        },
+        "body": null,
         "method": "POST",
-        "path": "/v1/workspaces/sample/objectives/sample:compact",
+        "path": "/v1/workspaces/sample/objectives/sample/queued_actions/sample:remove",
         "query": {}
       },
       "response": {

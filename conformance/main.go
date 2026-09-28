@@ -613,6 +613,24 @@ func main() {
 		_, err := client.Objectives().CreateFeedback(ctx, "sample", decode[sdk.ObjectiveCreateFeedbackParams](`{"data":{},"metadata":{},"workspaceId":"sample"}`))
 		return err
 	})
+	run("ObjectiveService_ListObjectiveQueuedActions", func() error {
+		page, err := client.Objectives().ListQueuedActions(ctx, "sample", decode[sdk.ObjectiveListQueuedActionsParams](`{"cursor":"sample","limit":1,"state":"STATE_QUEUED","workspaceId":"sample"}`))
+		if err != nil {
+			return err
+		}
+		items, err := page.All(ctx)
+		if err != nil {
+			return err
+		}
+		if len(items) != 2 {
+			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
+		}
+		return nil
+	})
+	run("ObjectiveService_RemoveObjectiveQueuedAction", func() error {
+		_, err := client.Objectives().RemoveQueuedAction(ctx, "sample", decode[sdk.ObjectiveRemoveQueuedActionParams](`{"queuedActionId":"sample","workspaceId":"sample"}`))
+		return err
+	})
 	run("ObjectiveService_ListObjectiveToolCalls", func() error {
 		page, err := client.Objectives().ListToolCalls(ctx, "sample", decode[sdk.ObjectiveListToolCallsParams](`{"cursor":"sample","executionStatus":"TOOL_CALL_EXECUTION_STATUS_PENDING","includeInfo":true,"labels":"sample","limit":1,"status":"TOOL_CALL_STATUS_AUTO_APPROVED","workspaceId":"sample"}`))
 		if err != nil {
@@ -668,6 +686,27 @@ func main() {
 	run("ObjectiveService_ContinueObjective", func() error {
 		_, err := client.Objectives().Continue(ctx, "sample", decode[sdk.ObjectiveContinueParams](`{"enqueue":true,"message":"sample","workspaceId":"sample"}`))
 		return err
+	})
+	run("ObjectiveService_InterruptObjective", func() error {
+		_, err := client.Objectives().Interrupt(ctx, "sample", decode[sdk.ObjectiveInterruptParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ObjectiveEventStreamsService_CreateAndStreamObjective", func() error {
+		stream, err := client.Objectives().CreateAndStream(ctx, decode[sdk.ObjectiveCreateAndStreamParams](`{"agentId":"sample","episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{"externalId":"sample"},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
+		if err != nil {
+			return err
+		}
+		count := 0
+		for stream.Next() {
+			count++
+		}
+		if err := stream.Err(); err != nil {
+			return err
+		}
+		if count != 2 {
+			return fmt.Errorf("expected 2 events, got %d", count)
+		}
+		return nil
 	})
 	run("SearchService_SearchToolsOrToolSets", func() error {
 		_, err := client.ToolSearch().SearchOrSets(ctx, decode[sdk.ToolSearchSearchOrSetsParams](`{"query":"sample","workspaceId":"sample"}`))

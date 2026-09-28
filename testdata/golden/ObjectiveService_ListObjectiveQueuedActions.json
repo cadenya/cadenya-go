@@ -1,0 +1,50 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/queued_actions",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ],
+          "state": [
+            "STATE_QUEUED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"type\":\"userMessage\",\"userMessage\":{\"content\":\"sample\"}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"objectiveId\":\"sample\",\"state\":\"STATE_QUEUED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/objectives/sample/queued_actions",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "limit": [
+            "1"
+          ],
+          "state": [
+            "STATE_QUEUED"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"data\":{\"type\":\"userMessage\",\"userMessage\":{\"content\":\"sample\"}},\"metadata\":{\"accountId\":\"sample\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"profileId\":\"sample\",\"workspaceId\":\"sample\"},\"objectiveId\":\"sample\",\"state\":\"STATE_QUEUED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}
