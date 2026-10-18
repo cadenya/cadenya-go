@@ -1,0 +1,19 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "workspaceId": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/account/api_keys/sample:addWorkspace",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"allWorkspaces\":true,\"default\":true,\"token\":\"sample\",\"workspaceAssignments\":[{\"workspaceId\":\"sample\"}]},\"state\":\"STATE_ENABLED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

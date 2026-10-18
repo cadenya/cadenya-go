@@ -153,7 +153,7 @@ func NewClient(opts ...Option) (*Client, error) {
 			httpClient: o.httpClient,
 			maxRetries: o.maxRetries,
 			defaults:   defaults,
-			userAgent:  "cadenya-go/1.5.0 (api 1.0)",
+			userAgent:  "cadenya-go/1.7.0 (api 1.0)",
 		},
 		webhookSecret: webhookSecret,
 	}, nil
@@ -168,6 +168,11 @@ func (c *Client) APIKeys() APIKeyResources { return &apiKeysService{core: c.core
 // WorkspaceAdmin returns the workspace_admin resource group.
 func (c *Client) WorkspaceAdmin() WorkspaceAdminResources {
 	return &workspaceAdminService{core: c.core}
+}
+
+// TrustedEndpoints returns the trusted_endpoints resource group.
+func (c *Client) TrustedEndpoints() TrustedEndpointResources {
+	return &trustedEndpointsService{core: c.core}
 }
 
 // Profiles returns the profiles resource group.

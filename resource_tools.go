@@ -98,7 +98,7 @@ func (b *ToolListBuilder) ToParams() *ToolListParams {
 type ToolCreateParams struct {
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
 	Metadata    *CreateResourceMetadata `json:"metadata"`
-	Spec        *ToolSpec               `json:"spec"`
+	Spec        *ToolSpecParam          `json:"spec"`
 }
 
 // ToolCreateBuilder builds a ToolCreateParams fluently.
@@ -116,7 +116,7 @@ func (b *ToolCreateBuilder) Metadata(v *CreateResourceMetadata) *ToolCreateBuild
 	return b
 }
 
-func (b *ToolCreateBuilder) Spec(v *ToolSpec) *ToolCreateBuilder {
+func (b *ToolCreateBuilder) Spec(v *ToolSpecParam) *ToolCreateBuilder {
 	b.params.Spec = v
 	return b
 }
@@ -170,7 +170,7 @@ func (b *ToolDeleteBuilder) ToParams() *ToolDeleteParams {
 type ToolUpdateParams struct {
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
 	Metadata    *UpdateResourceMetadata `json:"metadata,omitempty"`
-	Spec        *ToolSpec               `json:"spec,omitempty"`
+	Spec        *ToolSpecParam          `json:"spec,omitempty"`
 	UpdateMask  *string                 `json:"updateMask,omitempty"`
 }
 
@@ -189,7 +189,7 @@ func (b *ToolUpdateBuilder) Metadata(v *UpdateResourceMetadata) *ToolUpdateBuild
 	return b
 }
 
-func (b *ToolUpdateBuilder) Spec(v *ToolSpec) *ToolUpdateBuilder {
+func (b *ToolUpdateBuilder) Spec(v *ToolSpecParam) *ToolUpdateBuilder {
 	b.params.Spec = v
 	return b
 }

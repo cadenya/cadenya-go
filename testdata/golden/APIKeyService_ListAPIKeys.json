@@ -4,7 +4,7 @@
       "request": {
         "body": null,
         "method": "GET",
-        "path": "/v1/workspaces/sample/api_keys",
+        "path": "/v1/account/api_keys",
         "query": {
           "cursor": [
             "sample"
@@ -26,11 +26,14 @@
           ],
           "sortOrder": [
             "sample"
+          ],
+          "workspaceId": [
+            "sample"
           ]
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"system\":true,\"token\":\"sample\"},\"state\":\"STATE_ENABLED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"allWorkspaces\":true,\"default\":true,\"token\":\"sample\",\"workspaceAssignments\":[{\"workspaceId\":\"sample\"}]},\"state\":\"STATE_ENABLED\"}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
         "contentType": "application/json",
         "status": 200
       }
@@ -39,7 +42,7 @@
       "request": {
         "body": null,
         "method": "GET",
-        "path": "/v1/workspaces/sample/api_keys",
+        "path": "/v1/account/api_keys",
         "query": {
           "cursor": [
             "cursor_page_2"
@@ -61,11 +64,14 @@
           ],
           "sortOrder": [
             "sample"
+          ],
+          "workspaceId": [
+            "sample"
           ]
         }
       },
       "response": {
-        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"system\":true,\"token\":\"sample\"},\"state\":\"STATE_ENABLED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"allWorkspaces\":true,\"default\":true,\"token\":\"sample\",\"workspaceAssignments\":[{\"workspaceId\":\"sample\"}]},\"state\":\"STATE_ENABLED\"}],\"pagination\":{\"nextCursor\":\"\"}}",
         "contentType": "application/json",
         "status": 200
       }

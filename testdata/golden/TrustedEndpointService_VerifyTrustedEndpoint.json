@@ -1,0 +1,19 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "url": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/account/trusted_endpoints:verify",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"host\":\"sample\",\"result\":\"RESULT_TRUSTED\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

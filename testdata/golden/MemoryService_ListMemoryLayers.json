@@ -33,6 +33,12 @@
           "sortOrder": [
             "sample"
           ],
+          "subjectId": [
+            "sample"
+          ],
+          "tenantId": [
+            "sample"
+          ],
           "type": [
             "MEMORY_LAYER_TYPE_EPISODIC"
           ]
@@ -75,6 +81,12 @@
             "sample"
           ],
           "sortOrder": [
+            "sample"
+          ],
+          "subjectId": [
+            "sample"
+          ],
+          "tenantId": [
             "sample"
           ],
           "type": [

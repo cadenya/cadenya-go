@@ -22,26 +22,6 @@ client.Accounts().RotateWebhookSigningKey(ctx context.Context, opts ...RequestOp
 
 ## api_keys
 
-Get the global API key
-
-```go
-client.APIKeys().RetrieveGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-```
-Disable the global API key
-
-```go
-client.APIKeys().DisableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-```
-Enable the global API key
-
-```go
-client.APIKeys().EnableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-```
-Rotate the global API key
-
-```go
-client.APIKeys().RotateGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-```
 List API keys
 
 ```go
@@ -55,32 +35,47 @@ client.APIKeys().Create(ctx context.Context, params *APIKeyCreateParams, opts ..
 Get an API key by ID
 
 ```go
-client.APIKeys().Retrieve(ctx context.Context, id string, params *APIKeyRetrieveParams, opts ...RequestOption) (*APIKey, error)
+client.APIKeys().Retrieve(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 ```
 Delete an API key
 
 ```go
-client.APIKeys().Delete(ctx context.Context, id string, params *APIKeyDeleteParams, opts ...RequestOption) error
+client.APIKeys().Delete(ctx context.Context, id string, opts ...RequestOption) error
 ```
 Update an API key
 
 ```go
 client.APIKeys().Update(ctx context.Context, id string, params *APIKeyUpdateParams, opts ...RequestOption) (*APIKey, error)
 ```
+Assign a workspace to an API key
+
+```go
+client.APIKeys().AddWorkspace(ctx context.Context, id string, params *APIKeyAddWorkspaceParams, opts ...RequestOption) (*APIKey, error)
+```
 Disable an API key
 
 ```go
-client.APIKeys().Disable(ctx context.Context, id string, params *APIKeyDisableParams, opts ...RequestOption) (*APIKey, error)
+client.APIKeys().Disable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 ```
 Enable an API key
 
 ```go
-client.APIKeys().Enable(ctx context.Context, id string, params *APIKeyEnableParams, opts ...RequestOption) (*APIKey, error)
+client.APIKeys().Enable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
+```
+Remove a workspace from an API key
+
+```go
+client.APIKeys().RemoveWorkspace(ctx context.Context, id string, params *APIKeyRemoveWorkspaceParams, opts ...RequestOption) (*APIKey, error)
+```
+Reveal an API key's token
+
+```go
+client.APIKeys().Reveal(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 ```
 Rotate an API key
 
 ```go
-client.APIKeys().Rotate(ctx context.Context, id string, params *APIKeyRotateParams, opts ...RequestOption) (*APIKey, error)
+client.APIKeys().Rotate(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 ```
 
 ## workspace_admin
@@ -129,6 +124,34 @@ Remove a member from a workspace
 
 ```go
 client.WorkspaceAdmin().RemoveMember(ctx context.Context, profileID string, params *WorkspaceAdminRemoveMemberParams, opts ...RequestOption) error
+```
+
+## trusted_endpoints
+
+List trusted endpoints
+
+```go
+client.TrustedEndpoints().List(ctx context.Context, params *TrustedEndpointListParams, opts ...RequestOption) (*Page[TrustedEndpoint], error)
+```
+Create a trusted endpoint
+
+```go
+client.TrustedEndpoints().Create(ctx context.Context, params *TrustedEndpointCreateParams, opts ...RequestOption) (*TrustedEndpoint, error)
+```
+Get a trusted endpoint by ID
+
+```go
+client.TrustedEndpoints().Retrieve(ctx context.Context, id string, opts ...RequestOption) (*TrustedEndpoint, error)
+```
+Delete a trusted endpoint
+
+```go
+client.TrustedEndpoints().Delete(ctx context.Context, id string, opts ...RequestOption) error
+```
+Verify a URL against the trusted endpoints
+
+```go
+client.TrustedEndpoints().Verify(ctx context.Context, params *TrustedEndpointVerifyParams, opts ...RequestOption) (*VerifyTrustedEndpointResponse, error)
 ```
 
 ## profiles
