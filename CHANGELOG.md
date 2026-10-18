@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/cadenya/cadenya-go/compare/v1.7.0...v1.8.0) (2026-10-18)
+
+
+### Features
+
+* trusted endpoints, API key workspace management, remove global API key service ([#108](https://github.com/cadenya/cadenya-go/issues/108)) ([1d67d1f](https://github.com/cadenya/cadenya-go/commit/1d67d1fd99a6065d4636ab58616e5dcb5a8c61c7))
+
 ## [1.7.0](https://github.com/cadenya/cadenya-go/compare/v1.6.0...v1.7.0) (2026-09-28)
 
 
