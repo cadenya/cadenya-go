@@ -1,0 +1,24 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "host": "sample"
+          }
+        },
+        "method": "POST",
+        "path": "/v1/account/trusted_endpoints",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"host\":\"sample\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

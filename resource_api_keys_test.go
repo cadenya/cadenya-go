@@ -17,50 +17,6 @@ func TestApiKeysSuite(t *testing.T) {
 	suite.Run(t, new(ApiKeysSuite))
 }
 
-func (s *ApiKeysSuite) TestRetrieveGlobal() {
-	g := loadGolden(s.T(), "GlobalAPIKeyService_GetGlobalAPIKey")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	result, err := client.APIKeys().RetrieveGlobal(ctx)
-	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-}
-
-func (s *ApiKeysSuite) TestDisableGlobal() {
-	g := loadGolden(s.T(), "GlobalAPIKeyService_DisableGlobalAPIKey")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	result, err := client.APIKeys().DisableGlobal(ctx)
-	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-}
-
-func (s *ApiKeysSuite) TestEnableGlobal() {
-	g := loadGolden(s.T(), "GlobalAPIKeyService_EnableGlobalAPIKey")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	result, err := client.APIKeys().EnableGlobal(ctx)
-	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-}
-
-func (s *ApiKeysSuite) TestRotateGlobal() {
-	g := loadGolden(s.T(), "GlobalAPIKeyService_RotateGlobalAPIKey")
-	server, served := goldenServer(s.T(), g)
-	client := newTestClient(s.T(), server.URL)
-	ctx := context.Background()
-	result, err := client.APIKeys().RotateGlobal(ctx)
-	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-}
-
 func (s *ApiKeysSuite) TestList() {
 	g := loadGolden(s.T(), "APIKeyService_ListAPIKeys")
 	server, served := goldenServer(s.T(), g)
@@ -83,7 +39,7 @@ func (s *ApiKeysSuite) TestList() {
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 
 	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys", g.Interactions[0].Response)
+		server, hits := queryServer(s.T(), "workspaceId", "default_workspace_id", g.Interactions[0].Response)
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		_, err := client.APIKeys().List(ctx, (&cadenya.APIKeyListBuilder{}).
@@ -106,25 +62,12 @@ func (s *ApiKeysSuite) TestCreate() {
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
 	result, err := client.APIKeys().Create(ctx, (&cadenya.APIKeyCreateBuilder{}).
-		WorkspaceID("sample").
 		Metadata(&cadenya.CreateAccountResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.APIKeySpecParam{}).
+		Spec(&cadenya.APIKeySpecParam{AllWorkspaces: true, WorkspaceAssignments: []cadenya.APIKeyWorkspaceAssignment{cadenya.APIKeyWorkspaceAssignment{WorkspaceID: "sample"}}}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Create(ctx, (&cadenya.APIKeyCreateBuilder{}).
-			Metadata(&cadenya.CreateAccountResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.APIKeySpecParam{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
 }
 
 func (s *ApiKeysSuite) TestRetrieve() {
@@ -132,22 +75,10 @@ func (s *ApiKeysSuite) TestRetrieve() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	result, err := client.APIKeys().Retrieve(ctx, "sample", (&cadenya.APIKeyRetrieveBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
+	result, err := client.APIKeys().Retrieve(ctx, "sample")
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Retrieve(ctx, "sample", (&cadenya.APIKeyRetrieveBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
 }
 
 func (s *ApiKeysSuite) TestDelete() {
@@ -155,21 +86,9 @@ func (s *ApiKeysSuite) TestDelete() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	err := client.APIKeys().Delete(ctx, "sample", (&cadenya.APIKeyDeleteBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
+	err := client.APIKeys().Delete(ctx, "sample")
 	s.Require().NoError(err)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		err := client.APIKeys().Delete(ctx, "sample", (&cadenya.APIKeyDeleteBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
 }
 
 func (s *ApiKeysSuite) TestUpdate() {
@@ -178,27 +97,26 @@ func (s *ApiKeysSuite) TestUpdate() {
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
 	result, err := client.APIKeys().Update(ctx, "sample", (&cadenya.APIKeyUpdateBuilder{}).
-		WorkspaceID("sample").
 		Metadata(&cadenya.UpdateAccountResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.APIKeySpecParam{}).
+		Spec(&cadenya.APIKeySpecParam{AllWorkspaces: true, WorkspaceAssignments: []cadenya.APIKeyWorkspaceAssignment{cadenya.APIKeyWorkspaceAssignment{WorkspaceID: "sample"}}}).
 		UpdateMask("sample").
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+}
 
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Update(ctx, "sample", (&cadenya.APIKeyUpdateBuilder{}).
-			Metadata(&cadenya.UpdateAccountResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.APIKeySpecParam{}).
-			UpdateMask("sample").
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
+func (s *ApiKeysSuite) TestAddWorkspace() {
+	g := loadGolden(s.T(), "APIKeyService_AddAPIKeyWorkspace")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.APIKeys().AddWorkspace(ctx, "sample", (&cadenya.APIKeyAddWorkspaceBuilder{}).
+		WorkspaceID("sample").
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 }
 
 func (s *ApiKeysSuite) TestDisable() {
@@ -206,22 +124,10 @@ func (s *ApiKeysSuite) TestDisable() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	result, err := client.APIKeys().Disable(ctx, "sample", (&cadenya.APIKeyDisableBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
+	result, err := client.APIKeys().Disable(ctx, "sample")
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample:disable", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Disable(ctx, "sample", (&cadenya.APIKeyDisableBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
 }
 
 func (s *ApiKeysSuite) TestEnable() {
@@ -229,22 +135,34 @@ func (s *ApiKeysSuite) TestEnable() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	result, err := client.APIKeys().Enable(ctx, "sample", (&cadenya.APIKeyEnableBuilder{}).
+	result, err := client.APIKeys().Enable(ctx, "sample")
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+}
+
+func (s *ApiKeysSuite) TestRemoveWorkspace() {
+	g := loadGolden(s.T(), "APIKeyService_RemoveAPIKeyWorkspace")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.APIKeys().RemoveWorkspace(ctx, "sample", (&cadenya.APIKeyRemoveWorkspaceBuilder{}).
 		WorkspaceID("sample").
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+}
 
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample:enable", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Enable(ctx, "sample", (&cadenya.APIKeyEnableBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
+func (s *ApiKeysSuite) TestReveal() {
+	g := loadGolden(s.T(), "APIKeyService_RevealAPIKey")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.APIKeys().Reveal(ctx, "sample")
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 }
 
 func (s *ApiKeysSuite) TestRotate() {
@@ -252,20 +170,8 @@ func (s *ApiKeysSuite) TestRotate() {
 	server, served := goldenServer(s.T(), g)
 	client := newTestClient(s.T(), server.URL)
 	ctx := context.Background()
-	result, err := client.APIKeys().Rotate(ctx, "sample", (&cadenya.APIKeyRotateBuilder{}).
-		WorkspaceID("sample").
-		ToParams())
+	result, err := client.APIKeys().Rotate(ctx, "sample")
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
-
-	s.Run("workspace_id falls back to the client default", func() {
-		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/api_keys/sample:rotate", g.Interactions[0].Response)
-		client := newTestClient(s.T(), server.URL)
-		ctx := context.Background()
-		_, err := client.APIKeys().Rotate(ctx, "sample", (&cadenya.APIKeyRotateBuilder{}).
-			ToParams())
-		s.Require().NoError(err)
-		s.Require().Equal(int32(1), hits.Load())
-	})
 }

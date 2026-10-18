@@ -8,6 +8,12 @@
           },
           "spec": {
             "type": "MEMORY_LAYER_TYPE_EPISODIC"
+          },
+          "subject": {
+            "id": "sample"
+          },
+          "tenant": {
+            "id": "sample"
           }
         },
         "method": "POST",

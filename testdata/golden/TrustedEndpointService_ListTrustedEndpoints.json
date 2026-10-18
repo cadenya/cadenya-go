@@ -1,0 +1,50 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/account/trusted_endpoints",
+        "query": {
+          "cursor": [
+            "sample"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"host\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"cursor_page_2\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    },
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/account/trusted_endpoints",
+        "query": {
+          "cursor": [
+            "cursor_page_2"
+          ],
+          "labels": [
+            "sample"
+          ],
+          "limit": [
+            "1"
+          ]
+        }
+      },
+      "response": {
+        "body": "{\"items\":[{\"metadata\":{\"accountId\":\"sample\",\"externalId\":\"sample\",\"id\":\"sample\",\"labels\":{},\"name\":\"sample\",\"profileId\":\"sample\"},\"spec\":{\"host\":\"sample\"}}],\"pagination\":{\"nextCursor\":\"\"}}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

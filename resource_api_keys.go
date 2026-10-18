@@ -72,19 +72,13 @@ func (b *APIKeyListBuilder) ToParams() *APIKeyListParams {
 }
 
 type APIKeyCreateParams struct {
-	WorkspaceID *string                        `json:"workspaceId,omitempty"`
-	Metadata    *CreateAccountResourceMetadata `json:"metadata"`
-	Spec        *APIKeySpecParam               `json:"spec"`
+	Metadata *CreateAccountResourceMetadata `json:"metadata"`
+	Spec     *APIKeySpecParam               `json:"spec"`
 }
 
 // APIKeyCreateBuilder builds a APIKeyCreateParams fluently.
 type APIKeyCreateBuilder struct {
 	params APIKeyCreateParams
-}
-
-func (b *APIKeyCreateBuilder) WorkspaceID(v string) *APIKeyCreateBuilder {
-	b.params.WorkspaceID = &v
-	return b
 }
 
 func (b *APIKeyCreateBuilder) Metadata(v *CreateAccountResourceMetadata) *APIKeyCreateBuilder {
@@ -103,61 +97,15 @@ func (b *APIKeyCreateBuilder) ToParams() *APIKeyCreateParams {
 	return &p
 }
 
-type APIKeyRetrieveParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-}
-
-// APIKeyRetrieveBuilder builds a APIKeyRetrieveParams fluently.
-type APIKeyRetrieveBuilder struct {
-	params APIKeyRetrieveParams
-}
-
-func (b *APIKeyRetrieveBuilder) WorkspaceID(v string) *APIKeyRetrieveBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *APIKeyRetrieveBuilder) ToParams() *APIKeyRetrieveParams {
-	p := b.params
-	return &p
-}
-
-type APIKeyDeleteParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-}
-
-// APIKeyDeleteBuilder builds a APIKeyDeleteParams fluently.
-type APIKeyDeleteBuilder struct {
-	params APIKeyDeleteParams
-}
-
-func (b *APIKeyDeleteBuilder) WorkspaceID(v string) *APIKeyDeleteBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *APIKeyDeleteBuilder) ToParams() *APIKeyDeleteParams {
-	p := b.params
-	return &p
-}
-
 type APIKeyUpdateParams struct {
-	WorkspaceID *string                        `json:"workspaceId,omitempty"`
-	Metadata    *UpdateAccountResourceMetadata `json:"metadata,omitempty"`
-	Spec        *APIKeySpecParam               `json:"spec,omitempty"`
-	UpdateMask  *string                        `json:"updateMask,omitempty"`
+	Metadata   *UpdateAccountResourceMetadata `json:"metadata,omitempty"`
+	Spec       *APIKeySpecParam               `json:"spec,omitempty"`
+	UpdateMask *string                        `json:"updateMask,omitempty"`
 }
 
 // APIKeyUpdateBuilder builds a APIKeyUpdateParams fluently.
 type APIKeyUpdateBuilder struct {
 	params APIKeyUpdateParams
-}
-
-func (b *APIKeyUpdateBuilder) WorkspaceID(v string) *APIKeyUpdateBuilder {
-	b.params.WorkspaceID = &v
-	return b
 }
 
 func (b *APIKeyUpdateBuilder) Metadata(v *UpdateAccountResourceMetadata) *APIKeyUpdateBuilder {
@@ -181,133 +129,75 @@ func (b *APIKeyUpdateBuilder) ToParams() *APIKeyUpdateParams {
 	return &p
 }
 
-type APIKeyDisableParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
+type APIKeyAddWorkspaceParams struct {
+	WorkspaceID string `json:"workspaceId"`
 }
 
-// APIKeyDisableBuilder builds a APIKeyDisableParams fluently.
-type APIKeyDisableBuilder struct {
-	params APIKeyDisableParams
+// APIKeyAddWorkspaceBuilder builds a APIKeyAddWorkspaceParams fluently.
+type APIKeyAddWorkspaceBuilder struct {
+	params APIKeyAddWorkspaceParams
 }
 
-func (b *APIKeyDisableBuilder) WorkspaceID(v string) *APIKeyDisableBuilder {
-	b.params.WorkspaceID = &v
+func (b *APIKeyAddWorkspaceBuilder) WorkspaceID(v string) *APIKeyAddWorkspaceBuilder {
+	b.params.WorkspaceID = v
 	return b
 }
 
 // ToParams returns the built params, ready to pass to the SDK method.
-func (b *APIKeyDisableBuilder) ToParams() *APIKeyDisableParams {
+func (b *APIKeyAddWorkspaceBuilder) ToParams() *APIKeyAddWorkspaceParams {
 	p := b.params
 	return &p
 }
 
-type APIKeyEnableParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
+type APIKeyRemoveWorkspaceParams struct {
+	WorkspaceID string `json:"workspaceId"`
 }
 
-// APIKeyEnableBuilder builds a APIKeyEnableParams fluently.
-type APIKeyEnableBuilder struct {
-	params APIKeyEnableParams
+// APIKeyRemoveWorkspaceBuilder builds a APIKeyRemoveWorkspaceParams fluently.
+type APIKeyRemoveWorkspaceBuilder struct {
+	params APIKeyRemoveWorkspaceParams
 }
 
-func (b *APIKeyEnableBuilder) WorkspaceID(v string) *APIKeyEnableBuilder {
-	b.params.WorkspaceID = &v
+func (b *APIKeyRemoveWorkspaceBuilder) WorkspaceID(v string) *APIKeyRemoveWorkspaceBuilder {
+	b.params.WorkspaceID = v
 	return b
 }
 
 // ToParams returns the built params, ready to pass to the SDK method.
-func (b *APIKeyEnableBuilder) ToParams() *APIKeyEnableParams {
-	p := b.params
-	return &p
-}
-
-type APIKeyRotateParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-}
-
-// APIKeyRotateBuilder builds a APIKeyRotateParams fluently.
-type APIKeyRotateBuilder struct {
-	params APIKeyRotateParams
-}
-
-func (b *APIKeyRotateBuilder) WorkspaceID(v string) *APIKeyRotateBuilder {
-	b.params.WorkspaceID = &v
-	return b
-}
-
-// ToParams returns the built params, ready to pass to the SDK method.
-func (b *APIKeyRotateBuilder) ToParams() *APIKeyRotateParams {
+func (b *APIKeyRemoveWorkspaceBuilder) ToParams() *APIKeyRemoveWorkspaceParams {
 	p := b.params
 	return &p
 }
 
 // APIKeyResources is implemented by the SDK and easy to mock in tests.
 type APIKeyResources interface {
-	// Get the global API key
-	RetrieveGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-	// Disable the global API key
-	DisableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-	// Enable the global API key
-	EnableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
-	// Rotate the global API key
-	RotateGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error)
 	// List API keys
 	List(ctx context.Context, params *APIKeyListParams, opts ...RequestOption) (*Page[APIKey], error)
 	// Create a new API key
 	Create(ctx context.Context, params *APIKeyCreateParams, opts ...RequestOption) (*APIKey, error)
 	// Get an API key by ID
-	Retrieve(ctx context.Context, id string, params *APIKeyRetrieveParams, opts ...RequestOption) (*APIKey, error)
+	Retrieve(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 	// Delete an API key
-	Delete(ctx context.Context, id string, params *APIKeyDeleteParams, opts ...RequestOption) error
+	Delete(ctx context.Context, id string, opts ...RequestOption) error
 	// Update an API key
 	Update(ctx context.Context, id string, params *APIKeyUpdateParams, opts ...RequestOption) (*APIKey, error)
+	// Assign a workspace to an API key
+	AddWorkspace(ctx context.Context, id string, params *APIKeyAddWorkspaceParams, opts ...RequestOption) (*APIKey, error)
 	// Disable an API key
-	Disable(ctx context.Context, id string, params *APIKeyDisableParams, opts ...RequestOption) (*APIKey, error)
+	Disable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 	// Enable an API key
-	Enable(ctx context.Context, id string, params *APIKeyEnableParams, opts ...RequestOption) (*APIKey, error)
+	Enable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
+	// Remove a workspace from an API key
+	RemoveWorkspace(ctx context.Context, id string, params *APIKeyRemoveWorkspaceParams, opts ...RequestOption) (*APIKey, error)
+	// Reveal an API key's token
+	Reveal(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 	// Rotate an API key
-	Rotate(ctx context.Context, id string, params *APIKeyRotateParams, opts ...RequestOption) (*APIKey, error)
+	Rotate(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error)
 }
 
 type apiKeysService struct{ core *core }
 
 var _ APIKeyResources = (*apiKeysService)(nil)
-
-func (s *apiKeysService) RetrieveGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error) {
-	path := "/v1/account/global_api_key"
-	var out APIKey
-	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (s *apiKeysService) DisableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error) {
-	path := "/v1/account/global_api_key:disable"
-	var out APIKey
-	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (s *apiKeysService) EnableGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error) {
-	path := "/v1/account/global_api_key:enable"
-	var out APIKey
-	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (s *apiKeysService) RotateGlobal(ctx context.Context, opts ...RequestOption) (*APIKey, error) {
-	path := "/v1/account/global_api_key:rotate"
-	var out APIKey
-	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
 
 func (s *apiKeysService) List(ctx context.Context, params *APIKeyListParams, opts ...RequestOption) (*Page[APIKey], error) {
 	if params == nil {
@@ -317,12 +207,9 @@ func (s *apiKeysService) List(ctx context.Context, params *APIKeyListParams, opt
 	if err != nil {
 		return nil, err
 	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys", segWorkspaceID)
+	path := "/v1/account/api_keys"
 	q := url.Values{}
+	q.Set("workspaceId", workspaceID)
 	if params.Limit != nil {
 		q.Set("limit", strconv.FormatInt(int64(*params.Limit), 10))
 	}
@@ -365,15 +252,7 @@ func (s *apiKeysService) Create(ctx context.Context, params *APIKeyCreateParams,
 	if params == nil {
 		params = &APIKeyCreateParams{}
 	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys", segWorkspaceID)
+	path := "/v1/account/api_keys"
 	body := map[string]any{}
 	if params.Metadata != nil {
 		body["metadata"] = params.Metadata
@@ -388,23 +267,12 @@ func (s *apiKeysService) Create(ctx context.Context, params *APIKeyCreateParams,
 	return &out, nil
 }
 
-func (s *apiKeysService) Retrieve(ctx context.Context, id string, params *APIKeyRetrieveParams, opts ...RequestOption) (*APIKey, error) {
-	if params == nil {
-		params = &APIKeyRetrieveParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
+func (s *apiKeysService) Retrieve(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error) {
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s", segID)
 	var out APIKey
 	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
@@ -412,23 +280,12 @@ func (s *apiKeysService) Retrieve(ctx context.Context, id string, params *APIKey
 	return &out, nil
 }
 
-func (s *apiKeysService) Delete(ctx context.Context, id string, params *APIKeyDeleteParams, opts ...RequestOption) error {
-	if params == nil {
-		params = &APIKeyDeleteParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return err
-	}
+func (s *apiKeysService) Delete(ctx context.Context, id string, opts ...RequestOption) error {
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s", segID)
 	return s.core.do(ctx, "DELETE", path, nil, nil, nil, opts...)
 }
 
@@ -436,19 +293,11 @@ func (s *apiKeysService) Update(ctx context.Context, id string, params *APIKeyUp
 	if params == nil {
 		params = &APIKeyUpdateParams{}
 	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s", segID)
 	body := map[string]any{}
 	if params.Metadata != nil {
 		body["metadata"] = params.Metadata
@@ -466,23 +315,30 @@ func (s *apiKeysService) Update(ctx context.Context, id string, params *APIKeyUp
 	return &out, nil
 }
 
-func (s *apiKeysService) Disable(ctx context.Context, id string, params *APIKeyDisableParams, opts ...RequestOption) (*APIKey, error) {
+func (s *apiKeysService) AddWorkspace(ctx context.Context, id string, params *APIKeyAddWorkspaceParams, opts ...RequestOption) (*APIKey, error) {
 	if params == nil {
-		params = &APIKeyDisableParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
+		params = &APIKeyAddWorkspaceParams{}
 	}
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s:disable", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s:addWorkspace", segID)
+	body := map[string]any{}
+	body["workspaceId"] = params.WorkspaceID
+	var out APIKey
+	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *apiKeysService) Disable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error) {
+	segID, err := pathSegment("id", id)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/account/api_keys/%s:disable", segID)
 	var out APIKey
 	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
@@ -490,23 +346,12 @@ func (s *apiKeysService) Disable(ctx context.Context, id string, params *APIKeyD
 	return &out, nil
 }
 
-func (s *apiKeysService) Enable(ctx context.Context, id string, params *APIKeyEnableParams, opts ...RequestOption) (*APIKey, error) {
-	if params == nil {
-		params = &APIKeyEnableParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
-	}
+func (s *apiKeysService) Enable(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error) {
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s:enable", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s:enable", segID)
 	var out APIKey
 	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
@@ -514,23 +359,43 @@ func (s *apiKeysService) Enable(ctx context.Context, id string, params *APIKeyEn
 	return &out, nil
 }
 
-func (s *apiKeysService) Rotate(ctx context.Context, id string, params *APIKeyRotateParams, opts ...RequestOption) (*APIKey, error) {
+func (s *apiKeysService) RemoveWorkspace(ctx context.Context, id string, params *APIKeyRemoveWorkspaceParams, opts ...RequestOption) (*APIKey, error) {
 	if params == nil {
-		params = &APIKeyRotateParams{}
-	}
-	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
-	if err != nil {
-		return nil, err
-	}
-	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
-	if err != nil {
-		return nil, err
+		params = &APIKeyRemoveWorkspaceParams{}
 	}
 	segID, err := pathSegment("id", id)
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/v1/workspaces/%s/api_keys/%s:rotate", segWorkspaceID, segID)
+	path := fmt.Sprintf("/v1/account/api_keys/%s:removeWorkspace", segID)
+	body := map[string]any{}
+	body["workspaceId"] = params.WorkspaceID
+	var out APIKey
+	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *apiKeysService) Reveal(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error) {
+	segID, err := pathSegment("id", id)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/account/api_keys/%s:reveal", segID)
+	var out APIKey
+	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (s *apiKeysService) Rotate(ctx context.Context, id string, opts ...RequestOption) (*APIKey, error) {
+	segID, err := pathSegment("id", id)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/account/api_keys/%s:rotate", segID)
 	var out APIKey
 	if err := s.core.do(ctx, "POST", path, nil, nil, &out, opts...); err != nil {
 		return nil, err
