@@ -32,6 +32,8 @@ func (s *MemoryLayersSuite) TestList() {
 		AgentID("sample").
 		EpisodicKeyPrefix("sample").
 		Labels("sample").
+		TenantID("sample").
+		SubjectID("sample").
 		SortOrder("sample").
 		IncludeInfo(true).
 		ToParams())
@@ -54,6 +56,8 @@ func (s *MemoryLayersSuite) TestList() {
 			AgentID("sample").
 			EpisodicKeyPrefix("sample").
 			Labels("sample").
+			TenantID("sample").
+			SubjectID("sample").
 			SortOrder("sample").
 			IncludeInfo(true).
 			ToParams())
@@ -71,6 +75,8 @@ func (s *MemoryLayersSuite) TestCreate() {
 		WorkspaceID("sample").
 		Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
 		Spec(&cadenya.MemoryLayerSpecParam{Type: cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC")}).
+		Tenant(&cadenya.TenantAssertion{ID: "sample"}).
+		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -83,6 +89,8 @@ func (s *MemoryLayersSuite) TestCreate() {
 		_, err := client.MemoryLayers().Create(ctx, (&cadenya.MemoryLayerCreateBuilder{}).
 			Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
 			Spec(&cadenya.MemoryLayerSpecParam{Type: cadenya.MemoryLayerSpecType("MEMORY_LAYER_TYPE_EPISODIC")}).
+			Tenant(&cadenya.TenantAssertion{ID: "sample"}).
+			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())

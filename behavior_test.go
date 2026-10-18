@@ -171,21 +171,19 @@ func TestMutationRetryPolicy(t *testing.T) {
 		client := newTestClient(t, server.URL, cadenya.WithMaxRetries(2))
 		ctx := context.Background()
 		_, err := client.APIKeys().Create(ctx, (&cadenya.APIKeyCreateBuilder{}).
-			WorkspaceID("sample").
 			Metadata(&cadenya.CreateAccountResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.APIKeySpecParam{}).
+			Spec(&cadenya.APIKeySpecParam{AllWorkspaces: true, WorkspaceAssignments: []cadenya.APIKeyWorkspaceAssignment{cadenya.APIKeyWorkspaceAssignment{WorkspaceID: "sample"}}}).
 			ToParams())
 		require.Error(t, err)
 		require.Equal(t, int32(1), hits.Load())
 	})
 	t.Run("the CALLER opts one call in via WithRequestRetries", func(t *testing.T) {
-		server, hits, _ := sequenceServer(t, retryable, cannedResponse{status: 200, contentType: "application/json", body: `{"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{"system":true,"token":"sample"},"state":"STATE_ENABLED"}`})
+		server, hits, _ := sequenceServer(t, retryable, cannedResponse{status: 200, contentType: "application/json", body: `{"metadata":{"accountId":"sample","externalId":"sample","id":"sample","labels":{},"name":"sample","profileId":"sample"},"spec":{"allWorkspaces":true,"default":true,"token":"sample","workspaceAssignments":[{"workspaceId":"sample"}]},"state":"STATE_ENABLED"}`})
 		client := newTestClient(t, server.URL)
 		ctx := context.Background()
 		_, err := client.APIKeys().Create(ctx, (&cadenya.APIKeyCreateBuilder{}).
-			WorkspaceID("sample").
 			Metadata(&cadenya.CreateAccountResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.APIKeySpecParam{}).
+			Spec(&cadenya.APIKeySpecParam{AllWorkspaces: true, WorkspaceAssignments: []cadenya.APIKeyWorkspaceAssignment{cadenya.APIKeyWorkspaceAssignment{WorkspaceID: "sample"}}}).
 			ToParams(), cadenya.WithRequestRetries(2))
 		require.NoError(t, err)
 		require.Equal(t, int32(2), hits.Load())

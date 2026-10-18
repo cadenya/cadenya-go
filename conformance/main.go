@@ -53,22 +53,6 @@ func main() {
 		_, err := client.Accounts().RotateWebhookSigningKey(ctx)
 		return err
 	})
-	run("GlobalAPIKeyService_GetGlobalAPIKey", func() error {
-		_, err := client.APIKeys().RetrieveGlobal(ctx)
-		return err
-	})
-	run("GlobalAPIKeyService_DisableGlobalAPIKey", func() error {
-		_, err := client.APIKeys().DisableGlobal(ctx)
-		return err
-	})
-	run("GlobalAPIKeyService_EnableGlobalAPIKey", func() error {
-		_, err := client.APIKeys().EnableGlobal(ctx)
-		return err
-	})
-	run("GlobalAPIKeyService_RotateGlobalAPIKey", func() error {
-		_, err := client.APIKeys().RotateGlobal(ctx)
-		return err
-	})
 	run("APIKeyService_ListAPIKeys", func() error {
 		page, err := client.APIKeys().List(ctx, decode[sdk.APIKeyListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","workspaceId":"sample"}`))
 		if err != nil {
@@ -84,30 +68,42 @@ func main() {
 		return nil
 	})
 	run("APIKeyService_CreateAPIKey", func() error {
-		_, err := client.APIKeys().Create(ctx, decode[sdk.APIKeyCreateParams](`{"metadata":{"name":"sample"},"spec":{},"workspaceId":"sample"}`))
+		_, err := client.APIKeys().Create(ctx, decode[sdk.APIKeyCreateParams](`{"metadata":{"name":"sample"},"spec":{"allWorkspaces":true,"workspaceAssignments":[{"workspaceId":"sample"}]}}`))
 		return err
 	})
 	run("APIKeyService_GetAPIKey", func() error {
-		_, err := client.APIKeys().Retrieve(ctx, "sample", decode[sdk.APIKeyRetrieveParams](`{"workspaceId":"sample"}`))
+		_, err := client.APIKeys().Retrieve(ctx, "sample")
 		return err
 	})
 	run("APIKeyService_DeleteAPIKey", func() error {
-		return client.APIKeys().Delete(ctx, "sample", decode[sdk.APIKeyDeleteParams](`{"workspaceId":"sample"}`))
+		return client.APIKeys().Delete(ctx, "sample")
 	})
 	run("APIKeyService_UpdateAPIKey", func() error {
-		_, err := client.APIKeys().Update(ctx, "sample", decode[sdk.APIKeyUpdateParams](`{"metadata":{"name":"sample"},"spec":{},"updateMask":"sample","workspaceId":"sample"}`))
+		_, err := client.APIKeys().Update(ctx, "sample", decode[sdk.APIKeyUpdateParams](`{"metadata":{"name":"sample"},"spec":{"allWorkspaces":true,"workspaceAssignments":[{"workspaceId":"sample"}]},"updateMask":"sample"}`))
+		return err
+	})
+	run("APIKeyService_AddAPIKeyWorkspace", func() error {
+		_, err := client.APIKeys().AddWorkspace(ctx, "sample", decode[sdk.APIKeyAddWorkspaceParams](`{"workspaceId":"sample"}`))
 		return err
 	})
 	run("APIKeyService_DisableAPIKey", func() error {
-		_, err := client.APIKeys().Disable(ctx, "sample", decode[sdk.APIKeyDisableParams](`{"workspaceId":"sample"}`))
+		_, err := client.APIKeys().Disable(ctx, "sample")
 		return err
 	})
 	run("APIKeyService_EnableAPIKey", func() error {
-		_, err := client.APIKeys().Enable(ctx, "sample", decode[sdk.APIKeyEnableParams](`{"workspaceId":"sample"}`))
+		_, err := client.APIKeys().Enable(ctx, "sample")
+		return err
+	})
+	run("APIKeyService_RemoveAPIKeyWorkspace", func() error {
+		_, err := client.APIKeys().RemoveWorkspace(ctx, "sample", decode[sdk.APIKeyRemoveWorkspaceParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("APIKeyService_RevealAPIKey", func() error {
+		_, err := client.APIKeys().Reveal(ctx, "sample")
 		return err
 	})
 	run("APIKeyService_RotateAPIKey", func() error {
-		_, err := client.APIKeys().Rotate(ctx, "sample", decode[sdk.APIKeyRotateParams](`{"workspaceId":"sample"}`))
+		_, err := client.APIKeys().Rotate(ctx, "sample")
 		return err
 	})
 	run("WorkspaceAdminService_ListProfiles", func() error {
@@ -173,6 +169,35 @@ func main() {
 	})
 	run("WorkspaceAdminService_RemoveWorkspaceMember", func() error {
 		return client.WorkspaceAdmin().RemoveMember(ctx, "sample", decode[sdk.WorkspaceAdminRemoveMemberParams](`{"workspaceId":"sample"}`))
+	})
+	run("TrustedEndpointService_ListTrustedEndpoints", func() error {
+		page, err := client.TrustedEndpoints().List(ctx, decode[sdk.TrustedEndpointListParams](`{"cursor":"sample","labels":"sample","limit":1}`))
+		if err != nil {
+			return err
+		}
+		items, err := page.All(ctx)
+		if err != nil {
+			return err
+		}
+		if len(items) != 2 {
+			return fmt.Errorf("expected 2 items across pages, got %d", len(items))
+		}
+		return nil
+	})
+	run("TrustedEndpointService_CreateTrustedEndpoint", func() error {
+		_, err := client.TrustedEndpoints().Create(ctx, decode[sdk.TrustedEndpointCreateParams](`{"metadata":{"name":"sample"},"spec":{"host":"sample"}}`))
+		return err
+	})
+	run("TrustedEndpointService_GetTrustedEndpoint", func() error {
+		_, err := client.TrustedEndpoints().Retrieve(ctx, "sample")
+		return err
+	})
+	run("TrustedEndpointService_DeleteTrustedEndpoint", func() error {
+		return client.TrustedEndpoints().Delete(ctx, "sample")
+	})
+	run("TrustedEndpointService_VerifyTrustedEndpoint", func() error {
+		_, err := client.TrustedEndpoints().Verify(ctx, decode[sdk.TrustedEndpointVerifyParams](`{"url":"sample"}`))
+		return err
 	})
 	run("ProfilesService_Whoami", func() error {
 		_, err := client.Profiles().Whoami(ctx)
@@ -467,7 +492,7 @@ func main() {
 		return client.Models().SwapOnVariations(ctx, decode[sdk.ModelSwapOnVariationsParams](`{"modelSwaps":[{}],"workspaceId":"sample"}`))
 	})
 	run("MemoryService_ListMemoryLayers", func() error {
-		page, err := client.MemoryLayers().List(ctx, decode[sdk.MemoryLayerListParams](`{"agentId":"sample","cursor":"sample","episodicKeyPrefix":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","type":"MEMORY_LAYER_TYPE_EPISODIC","workspaceId":"sample"}`))
+		page, err := client.MemoryLayers().List(ctx, decode[sdk.MemoryLayerListParams](`{"agentId":"sample","cursor":"sample","episodicKeyPrefix":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","subjectId":"sample","tenantId":"sample","type":"MEMORY_LAYER_TYPE_EPISODIC","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -481,7 +506,7 @@ func main() {
 		return nil
 	})
 	run("MemoryService_CreateMemoryLayer", func() error {
-		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"workspaceId":"sample"}`))
+		_, err := client.MemoryLayers().Create(ctx, decode[sdk.MemoryLayerCreateParams](`{"metadata":{"name":"sample"},"spec":{"type":"MEMORY_LAYER_TYPE_EPISODIC"},"subject":{"id":"sample"},"tenant":{"id":"sample"},"workspaceId":"sample"}`))
 		return err
 	})
 	run("MemoryService_GetMemoryLayer", func() error {

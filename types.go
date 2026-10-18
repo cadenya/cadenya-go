@@ -323,11 +323,11 @@ const (
 	APIKeyStateStateDisabled    APIKeyState = "STATE_DISABLED"
 )
 
-// An API key. Every key belongs to exactly one workspace and is managed via
+// An API key. Keys belong to the account and are managed by account
 //
-//	the workspace-scoped API key routes. The only exception is the
-//	system-managed global account key, which spans all workspaces and is
-//	managed via the account global_api_key routes.
+//	administrators. A key reaches the workspaces it is assigned to, or every
+//	workspace (present and future) when all_workspaces is set. Its scopes are
+//	the same in every workspace it reaches.
 type APIKey struct {
 	Metadata *AccountResourceMetadata `json:"metadata"`
 	Spec     *APIKeySpec              `json:"spec"`
@@ -341,6 +341,8 @@ type APIKey struct {
 type APIKeyInfo struct {
 	// The profile that created the key.
 	CreatedBy *Profile `json:"createdBy,omitempty"`
+	// The workspaces the key can currently reach, with their names.
+	Workspaces []AccountResourceMetadata `json:"workspaces,omitempty"`
 }
 
 // Configuration for an API key.
@@ -354,18 +356,50 @@ type APIKeySpec struct {
 	//  resource:verb string (e.g. "objectives:manage").
 	//
 	//  Resources: agents, objectives, tools, memory, api_keys, workspaces,
-	//  widgets, widget_sessions, secrets, account.
+	//  widgets, widget_sessions, tenants, endpoints (trusted endpoints),
+	//  secrets, account.
 	//  Verbs: read and manage, where manage implies read — a stored scope set
 	//  is normalized to drop "x:read" when "x:manage" is present. The secrets
 	//  and account resources support only manage. "*" is an explicit
 	//  full-access grant.
 	//
+	//  api_keys also has the verb admin ("api_keys:admin"), which implies
+	//  manage. It is required to create or change a key that reaches every
+	//  workspace, and to manage keys created by other members; without it a
+	//  caller manages only its own keys.
+	//
+	//  Some scopes depend on another: "tools:manage" cannot be granted
+	//  without "secrets:manage", because tool set headers and base URLs
+	//  resolve workspace secrets ({{ secrets.NAME }}) before the source is
+	//  validated, synced, or called. A set that holds a scope without its
+	//  dependency is rejected as invalid.
+	//
 	//  Scopes are deny-by-default: a key with an empty list can call only
 	//  scope-free endpoints. Full access is always an explicit "*" grant.
 	Permissions []string `json:"permissions,omitempty"`
-	// True when this key is managed by the system (i.e. the auto-provisioned
-	//  global account key). System keys cannot be deleted but can be rotated.
-	System bool `json:"system"`
+	// When true the key reaches every workspace in the account, including
+	//  workspaces created later, and workspace_assignments is ignored on
+	//  requests. Reads then list every workspace the key currently reaches.
+	AllWorkspaces bool `json:"allWorkspaces"`
+	// Complete set of workspaces the key is assigned to. Order has no meaning
+	//  and duplicates are collapsed. On create, at least one assignment is
+	//  required unless all_workspaces is set. On update, selecting
+	//  spec.workspace_assignments in update_mask replaces the entire set. Use
+	//  the :addWorkspace and :removeWorkspace actions to change one workspace.
+	WorkspaceAssignments []APIKeyWorkspaceAssignment `json:"workspaceAssignments"`
+	// True for the account's default key, created at signup with the external
+	//  ID "default" and all_workspaces. Retrieve it with
+	//  /v1/account/api_keys/external_id:default; a NotFound response means it
+	//  was deleted. Output only.
+	Default bool `json:"default"`
+}
+
+// A workspace an API key is assigned to. The same shape is accepted in a spec
+//
+//	and returned on reads.
+type APIKeyWorkspaceAssignment struct {
+	// Canonical workspace ID, or the `external_id:<value>` form.
+	WorkspaceID string `json:"workspaceId"`
 }
 
 // An account, the top-level organizational unit. Contains workspaces and
@@ -425,6 +459,14 @@ type ActivateAgentPoolRequest struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 	// AgentPool ID. Accepts the canonical `apool_…` form or the `external_id:<value>` form.
 	ID *string `json:"id,omitempty"`
+}
+
+type AddAPIKeyWorkspaceRequest struct {
+	// The API key to assign the workspace to. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+	// The workspace to assign. Accepts the canonical ID or the
+	//  `external_id:<value>` form.
+	WorkspaceID string `json:"workspaceId"`
 }
 
 // Attach a single tool, tool set, sub-agent, or agent pool to a variation. Exactly one
@@ -784,9 +826,10 @@ type AgentSpec struct {
 	//  Use this option when you want structured data to be created by your objectives.
 	OutputDefinition map[string]any `json:"outputDefinition,omitempty"`
 	// Enable episodic memory for objectives created for this agent.
-	//  When true, objective creation requires an episodic_memory key and the
-	//  system finds or creates a memory layer for that (agent, key) pair, letting
-	//  the agent store and retrieve memories across objectives that share the key.
+	//  When true, objective creation requires an episodic_memory key (unless
+	//  always_include_subject_memories covers it) and the system finds or creates
+	//  a memory layer for that (agent, tenant, subject, key), letting the agent
+	//  store and retrieve memories across objectives that share them.
 	//  Memory is agent-level so all variations of the agent share the same layers.
 	EnableEpisodicMemory *bool `json:"enableEpisodicMemory,omitempty"`
 	// How long episodic memories should be retained.
@@ -794,6 +837,19 @@ type AgentSpec struct {
 	//  stored entries expire this long after they are written.
 	//  If not set, episodic memories are retained indefinitely.
 	EpisodicMemoryTtl *int32 `json:"episodicMemoryTtl,omitempty"`
+	// Always load the asserted subject's memories. Requires
+	//  enable_episodic_memory. When an objective asserts a subject:
+	//
+	//  * Every memory layer scoped to that subject loads into the cascade,
+	//    followed by the tenant's layers that have no subject (tenant-wide
+	//    defaults). They rank below the objective's own memory_cascade
+	//    references and above the variation's layers.
+	//  * The episodic_memory key becomes optional. Without one, the agent stores
+	//    memories in a system-managed episodic layer for (agent, tenant, subject),
+	//    so it remembers the person across objectives with no key from the
+	//    caller. With one, the keyed layer receives writes and the subject's
+	//    other layers, including that keyless one, still load beneath it.
+	AlwaysIncludeSubjectMemories *bool `json:"alwaysIncludeSubjectMemories,omitempty"`
 }
 
 // AgentVariation resource
@@ -1038,12 +1094,50 @@ type ArchiveWidgetRequest struct {
 type AssistantMessage struct {
 	Content   *string             `json:"content,omitempty"`
 	ToolCalls []AssistantToolCall `json:"toolCalls"`
+	// Token usage of the LLM completion that produced this message. Unset on
+	//  messages recorded before usage was tracked per completion.
+	Usage *TokenUsage `json:"usage,omitempty"`
+	// The model that produced this message, as resolved at call time. A
+	//  variation's model can change while an objective runs, so the objective's
+	//  config snapshot does not answer this on its own.
+	Model *ResourceMetadata `json:"model,omitempty"`
 }
 
 type AssistantToolCall struct {
 	Tool         *CallableTool `json:"tool,omitempty"`
 	Arguments    string        `json:"arguments"`
 	FunctionName string        `json:"functionName"`
+	// The ID of the objective tool call record created for this call. Matches
+	//  tool_call_id on the ToolCalled, ToolApprovalRequested, ToolResult and
+	//  ToolError events that follow. Empty on assistant messages recorded
+	//  before this field existed.
+	ToolCallID *string `json:"toolCallId,omitempty"`
+}
+
+type AutoModeConfigPassingMode string
+
+const (
+	AutoModeConfigPassingModePassingModeUnspecified AutoModeConfigPassingMode = "PASSING_MODE_UNSPECIFIED"
+	AutoModeConfigPassingModePassingModeAll         AutoModeConfigPassingMode = "PASSING_MODE_ALL"
+	AutoModeConfigPassingModePassingModeNone        AutoModeConfigPassingMode = "PASSING_MODE_NONE"
+	AutoModeConfigPassingModePassingModeMost        AutoModeConfigPassingMode = "PASSING_MODE_MOST"
+)
+
+// AutoModeConfig configures the questions and passing mode for automatic approval.
+type AutoModeConfig struct {
+	Questions   []AutoModeQuestion        `json:"questions"`
+	PassingMode AutoModeConfigPassingMode `json:"passingMode"`
+	// Optional guidance returned to the agent when the decision thresholds fail.
+	//  When empty, a default denial message is used. Client errors never use this message.
+	FailureMessage *string `json:"failureMessage,omitempty"`
+}
+
+// AutoModeQuestion defines a question and confidence threshold for automatic approval.
+type AutoModeQuestion struct {
+	// Question is the prompt evaluated by the decision model.
+	Question string `json:"question"`
+	// Threshold is the confidence score that the decision model must exceed to pass.
+	Threshold float32 `json:"threshold"`
 }
 
 // BareMetadata contains the minimal metadata for a resource: the ID and an
@@ -1291,6 +1385,15 @@ type Config_MCP struct {
 type Config_OpenAPI struct {
 	Path   *string `json:"path,omitempty"`
 	Method *string `json:"method,omitempty"`
+	// The server URL this operation's requests are sent to when the tool set has
+	//  no base_url, resolved from the spec on every sync: the operation's
+	//  servers, else its path's, else the spec's top-level servers (the entry
+	//  named by the tool set's server_name, else the first), with server
+	//  variables set to their defaults and a relative URL resolved against the
+	//  spec URL. A spec without servers resolves to the spec URL's origin.
+	//  Empty when it cannot be resolved, such as a relative server in an
+	//  uploaded spec. Set by sync.
+	ServerURL *string `json:"serverUrl,omitempty"`
 }
 
 // ContextLengths is the measured character length of each distinct component
@@ -1424,8 +1527,6 @@ type CreateAIProviderKeyRequest struct {
 type CreateAPIKeyRequest struct {
 	Metadata *CreateAccountResourceMetadata `json:"metadata"`
 	Spec     *APIKeySpec                    `json:"spec"`
-	// The workspace this API key belongs to (path).
-	WorkspaceID *string `json:"workspaceId,omitempty"`
 }
 
 // CreateAccountResourceMetadata contains the user-provided fields for creating
@@ -1649,6 +1750,14 @@ type CreateMemoryLayerRequest struct {
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
 	Metadata    *CreateResourceMetadata `json:"metadata"`
 	Spec        *MemoryLayerSpec        `json:"spec"`
+	// Optional tenant assertion: the customer's org or company identifier for
+	//  the end users this layer serves. Upserts the tenant record, the same way
+	//  as on CreateObjectiveRequest, so a layer can be prepared for a tenant
+	//  before any of its objectives exist.
+	Tenant *TenantAssertion `json:"tenant,omitempty"`
+	// Optional subject assertion: the person within the tenant this layer
+	//  serves. Requires `tenant`.
+	Subject *SubjectAssertion `json:"subject,omitempty"`
 }
 
 // Create model request. The model is created on the given AI provider key with
@@ -1797,6 +1906,11 @@ type CreateToolSetSecretRequest struct {
 	Spec      *ToolSetSecretSpec      `json:"spec"`
 }
 
+type CreateTrustedEndpointRequest struct {
+	Metadata *CreateAccountResourceMetadata `json:"metadata"`
+	Spec     *TrustedEndpointSpec           `json:"spec"`
+}
+
 type CreateUploadRequest struct {
 	// Workspace ID.
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
@@ -1901,9 +2015,7 @@ type DenyToolCallRequest struct {
 }
 
 type DisableAPIKeyRequest struct {
-	// The workspace the API key belongs to (path).
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	// The API key to disable.
+	// The API key to disable. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
 	ID *string `json:"id,omitempty"`
 }
 
@@ -1916,9 +2028,7 @@ type DisableModelRequest struct {
 }
 
 type EnableAPIKeyRequest struct {
-	// The workspace the API key belongs to (path).
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	// The API key to enable.
+	// The API key to enable. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
 	ID *string `json:"id,omitempty"`
 }
 
@@ -2097,6 +2207,11 @@ type ListToolSetsResponse struct {
 type ListToolsResponse struct {
 	Items      []Tool     `json:"items"`
 	Pagination *PageModel `json:"pagination,omitempty"`
+}
+
+type ListTrustedEndpointsResponse struct {
+	Items      []TrustedEndpoint `json:"items"`
+	Pagination *PageModel        `json:"pagination,omitempty"`
 }
 
 // List widget sessions response.
@@ -2317,6 +2432,11 @@ type MemoryLayerInfo struct {
 	// For episodic layers, the metadata of the agent the layer belongs to
 	//  (resolved from MemoryLayerSpec.agent_id). Unset for non-episodic layers.
 	Agent *ResourceMetadata `json:"agent,omitempty"`
+	// The tenant this layer belongs to (resolved from MemoryLayerSpec.tenant_id).
+	Tenant *TenantReference `json:"tenant,omitempty"`
+	// The subject this layer belongs to (resolved from
+	//  MemoryLayerSpec.subject_id).
+	Subject *SubjectReference `json:"subject,omitempty"`
 }
 
 type MemoryLayerSpecType string
@@ -2347,6 +2467,15 @@ type MemoryLayerSpec struct {
 	// Server-set on episodic layers: the caller-supplied episodic key the layer
 	//  was created for. Unset for non-episodic layers.
 	EpisodicKey string `json:"episodicKey"`
+	// The tenant this layer belongs to: asserted on the objectives that use an
+	//  episodic layer, or on CreateMemoryLayerRequest for a layer created ahead of
+	//  time. Unset when none was asserted. Episodic layers are scoped by agent,
+	//  tenant, subject and episodic key, so the same key under different tenants
+	//  never shares memory.
+	TenantID *string `json:"tenantId,omitempty"`
+	// The subject (person within the tenant) this layer belongs to, asserted the
+	//  same way as tenant_id. Unset when none was asserted.
+	SubjectID *string `json:"subjectId,omitempty"`
 }
 
 // MemoryRead is emitted each time the agent resolves a key against the
@@ -2806,11 +2935,21 @@ type ObjectiveDiagnostics struct {
 // Episodic is used to configure the episodic memory for the objective
 type ObjectiveEpisodicConfig struct {
 	// The caller-supplied episodic key. Objectives created with the same key
-	//  (for the same agent) share one episodic memory layer.
+	//  (for the same agent, tenant and subject) share one episodic memory layer.
+	//  Empty on a response when the agent's always_include_subject_memories let
+	//  the objective rely on its subject instead of a key.
 	Key string `json:"key"`
 	// The episodic memory layer resolved (created or reused) for this
-	//  objective's key. Populated by the system at objective creation.
+	//  objective's key, or for its subject when no key was given. The agent's
+	//  store_memory writes go here. Populated by the system at objective creation.
 	MemoryLayerID string `json:"memoryLayerId"`
+	// Layers loaded because the agent has always_include_subject_memories on and
+	//  the objective asserted a subject: the subject's layers, then its tenant's
+	//  layers that have no subject, in resolution order and excluding
+	//  memory_layer_id. They sit after Objective.memory_cascade and before the
+	//  variation's layers in effective_memory_cascade. Snapshotted at creation,
+	//  and capped at 25 layers.
+	IncludedMemoryLayerIds []string `json:"includedMemoryLayerIds,omitempty"`
 }
 
 type ObjectiveError struct {
@@ -3229,8 +3368,9 @@ type ObjectiveInfo struct {
 	TotalIterations     int32    `json:"totalIterations"`
 	CreatedBy           *Profile `json:"createdBy"`
 	// The effective memory cascade at objective creation time: the
-	//  episodic layer (when present), then Objective.memory_cascade, then
-	//  the variation's baseline layers by ascending position. Order is
+	//  episodic layer (when present), then Objective.memory_cascade, then the
+	//  subject and tenant layers in episodic_memory.included_memory_layer_ids,
+	//  then the variation's baseline layers by ascending position. Order is
 	//  resolution order — index 0 is the most specific and is consulted
 	//  first; the first layer containing a key wins. Returned on reads so
 	//  clients can see exactly what the objective resolves against without
@@ -3466,6 +3606,8 @@ type ObjectiveToolCallData struct {
 	StatusChangedBy *Profile `json:"statusChangedBy,omitempty"`
 	// List of resolved secrets used by the tool call
 	ResolvedSecrets []ResolvedSecret `json:"resolvedSecrets"`
+	// Snapshot of a completed auto-mode evaluation; absent for unevaluated calls.
+	DecisionScores *ToolCallDecisionScores `json:"decisionScores,omitempty"`
 }
 
 type ObjectiveToolCallInfo struct {
@@ -3852,6 +3994,14 @@ type Reasoning struct {
 	Content string `json:"content"`
 }
 
+type RemoveAPIKeyWorkspaceRequest struct {
+	// The API key to remove the workspace from. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+	// The workspace to remove. Accepts the canonical ID or the
+	//  `external_id:<value>` form.
+	WorkspaceID string `json:"workspaceId"`
+}
+
 // Detach a target by its foreign key. Removing an unassigned target returns
 //
 //	NotFound. The parent variation must exist and be accessible.
@@ -4096,6 +4246,11 @@ type ResumeAgentScheduleRequest struct {
 	ID *string `json:"id,omitempty"`
 }
 
+type RevealAPIKeyRequest struct {
+	// The API key whose token to reveal. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
+	ID *string `json:"id,omitempty"`
+}
+
 // Revoke widget session request.
 type RevokeWidgetSessionRequest struct {
 	// Workspace ID.
@@ -4105,10 +4260,7 @@ type RevokeWidgetSessionRequest struct {
 }
 
 type RotateAPIKeyRequest struct {
-	// The workspace the API key belongs to (path).
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	// The API key to rotate. A new token is issued and any existing token is
-	//  invalidated.
+	// The API key to rotate. A new token is issued and any existing token is invalidated. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
 	ID *string `json:"id,omitempty"`
 }
 
@@ -4514,7 +4666,9 @@ type SwapModelOnVariationsRequest_ModelSwap struct {
 	CurrentModelID *string `json:"currentModelId,omitempty"`
 	// The model to move variations to. Accepts an id or "external_id:" slug.
 	NextModelID *string `json:"nextModelId,omitempty"`
-	// Whether to disable the current model after the swap.
+	// Whether to disable the current model after the swap. Disabling a model
+	//  requires the models:manage scope in addition to agents:manage; a request
+	//  that sets this without it is denied before any swap starts.
 	DisableCurrentAfterSwap *bool `json:"disableCurrentAfterSwap,omitempty"`
 }
 
@@ -4609,6 +4763,26 @@ type TenantReference struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// TokenUsage reports the tokens one LLM completion consumed, as the model's
+//
+//	provider reported them.
+type TokenUsage struct {
+	// Total input tokens, including tokens read from or written to the
+	//  provider's prompt cache.
+	InputTokens int32 `json:"inputTokens"`
+	// Input tokens served from the provider's prompt cache. Unset when the
+	//  provider reported none or does not report them.
+	CacheReadInputTokens *int32 `json:"cacheReadInputTokens,omitempty"`
+	// Input tokens written to the provider's prompt cache. Unset when the
+	//  provider reported none or does not report them.
+	CacheWriteInputTokens *int32 `json:"cacheWriteInputTokens,omitempty"`
+	// Total output tokens, including reasoning tokens.
+	OutputTokens int32 `json:"outputTokens"`
+	// Output tokens spent on reasoning. Unset when the provider reported none
+	//  or does not report them separately.
+	ReasoningOutputTokens *int32 `json:"reasoningOutputTokens,omitempty"`
+}
+
 // The current lifecycle state of the tool. Output only. Use the :omit and
 //
 //	:restore actions to transition; tool set syncs may also update it.
@@ -4638,6 +4812,25 @@ type ToolApprovalRequested struct {
 type ToolApproved struct {
 	// The ID of the objective tool call record that was approved via the ApproveToolCall RPC.
 	ToolCallID string `json:"toolCallId"`
+}
+
+// ToolCallDecisionScore records a confidence score and its threshold result.
+type ToolCallDecisionScore struct {
+	// The raw confidence score, in the inclusive range [0, 1].
+	Score float64 `json:"score"`
+	// Whether this score passed its question's threshold under the selected mode.
+	//  Equality never passes; None requires a lower score, All and Most a higher one.
+	Passed bool `json:"passed"`
+}
+
+// ToolCallDecisionScores records a completed automatic approval evaluation.
+type ToolCallDecisionScores struct {
+	// The complete policy as it was configured at evaluation time.
+	AutoMode *AutoModeConfig `json:"autoMode"`
+	// One result per question, in the same order as auto_mode.questions.
+	Scores []ToolCallDecisionScore `json:"scores"`
+	// Whether the results satisfied the policy's passing mode.
+	Approved bool `json:"approved"`
 }
 
 type ToolCalled struct {
@@ -4784,6 +4977,9 @@ type ToolOverlay struct {
 	//  supplies this policy wins. If none supplies it, arguments stay private.
 	//  Disabled overlays never participate.
 	WidgetArgumentExposure *ToolOverlay_WidgetArgumentExposure `json:"widgetArgumentExposure,omitempty"`
+	// Optional automatic approval configuration. Omit to disable auto mode.
+	//  The last enabled, matching overlay that supplies a policy wins.
+	AutoMode *AutoModeConfig `json:"autoMode,omitempty"`
 }
 
 // A pre-call action. Parameter actions rewrite the tool's parameter
@@ -5693,6 +5889,38 @@ func (u *ToolSpec_Config) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("ToolSpec_Config: unknown type %q", probe.Tag)
 }
 
+// A host that tool sets in the account may send requests to.
+//
+//	Tool sets attach their configured credentials, such as secrets rendered
+//	into headers, to every request they make. Every outbound tool set request
+//	(source validation, sync, preview and tool calls, including redirects) is
+//	checked against the account's trusted endpoints after all templates are
+//	resolved, and a request to any other host is refused. This keeps a tool
+//	set or a pinned parameter from pointing those credentials at a host the
+//	account never chose.
+type TrustedEndpoint struct {
+	Metadata *AccountResourceMetadata `json:"metadata"`
+	Spec     *TrustedEndpointSpec     `json:"spec"`
+	Info     *TrustedEndpointInfo     `json:"info,omitempty"`
+}
+
+type TrustedEndpointInfo struct {
+	// The profile that added the trusted endpoint.
+	CreatedBy *Profile `json:"createdBy,omitempty"`
+}
+
+type TrustedEndpointSpec struct {
+	// The trusted host, with an optional port (default 443). Either an exact
+	//  host such as "api.stripe.com", or a wildcard covering exactly one label,
+	//  such as "*.acme.com", which matches "t1.acme.com" but not "acme.com" or
+	//  "a.t1.acme.com". A scheme, path or credentials are not allowed. The host
+	//  must be fully qualified and end in a known top-level domain (.com, .io),
+	//  and neither it nor a wildcard's domain may be a public suffix such as
+	//  "com", "co.uk" or "vercel.app".
+	//  The host is normalized (lowercased, converted to ASCII) when saved.
+	Host string `json:"host"`
+}
+
 // Restore an archived pool to INACTIVE; activate it separately to route requests.
 type UnarchiveAgentPoolRequest struct {
 	// Workspace ID.
@@ -5749,13 +5977,13 @@ type UpdateAIProviderKeyRequest struct {
 }
 
 type UpdateAPIKeyRequest struct {
-	// The workspace the API key belongs to (path).
-	WorkspaceID *string `json:"workspaceId,omitempty"`
-	// The API key to update.
+	// The API key to update. Accepts the canonical `apikey_…` form or the `external_id:<value>` form.
 	ID       *string                        `json:"id,omitempty"`
 	Metadata *UpdateAccountResourceMetadata `json:"metadata,omitempty"`
 	Spec     *APIKeySpec                    `json:"spec,omitempty"`
-	// Fields to update.
+	// Fields to update. Selecting spec.workspace_assignments replaces the whole
+	//  set; selecting spec.all_workspaces turns the all-workspaces grant on or
+	//  off. Turning it off keeps the workspaces the key currently reaches.
 	UpdateMask *string `json:"updateMask,omitempty"`
 }
 
@@ -6156,6 +6384,32 @@ type VariationMemoryLayerAssignment struct {
 	//  must be unique within a variation. Explicitly required in a full spec;
 	//  only AddAgentVariationMemoryLayer can choose an append position for you.
 	Position int32 `json:"position"`
+}
+
+type VerifyTrustedEndpointRequest struct {
+	// The URL a tool set would send requests to, such as an MCP server URL or
+	//  an OpenAPI specification URL. A bare host is also accepted. Only its host
+	//  and port are checked.
+	URL string `json:"url"`
+}
+
+type VerifyTrustedEndpointResponseResult string
+
+const (
+	VerifyTrustedEndpointResponseResultResultUnspecified VerifyTrustedEndpointResponseResult = "RESULT_UNSPECIFIED"
+	VerifyTrustedEndpointResponseResultResultTrusted     VerifyTrustedEndpointResponseResult = "RESULT_TRUSTED"
+	VerifyTrustedEndpointResponseResultResultUntrusted   VerifyTrustedEndpointResponseResult = "RESULT_UNTRUSTED"
+	VerifyTrustedEndpointResponseResultResultTemplated   VerifyTrustedEndpointResponseResult = "RESULT_TEMPLATED"
+)
+
+type VerifyTrustedEndpointResponse struct {
+	Result VerifyTrustedEndpointResponseResult `json:"result"`
+	// The normalized host, with a port when it is not 443, that was checked.
+	//  Empty when the result is RESULT_TEMPLATED.
+	Host string `json:"host"`
+	// The trusted endpoint that matched, when the result is RESULT_TRUSTED. Unset
+	//  for a host Cadenya trusts for every account.
+	TrustedEndpoint *TrustedEndpoint `json:"trustedEndpoint,omitempty"`
 }
 
 // VertexConfig configures the Google Cloud project and location used by the
@@ -7306,15 +7560,37 @@ type APIKeySpecParam struct {
 	//  resource:verb string (e.g. "objectives:manage").
 	//
 	//  Resources: agents, objectives, tools, memory, api_keys, workspaces,
-	//  widgets, widget_sessions, secrets, account.
+	//  widgets, widget_sessions, tenants, endpoints (trusted endpoints),
+	//  secrets, account.
 	//  Verbs: read and manage, where manage implies read — a stored scope set
 	//  is normalized to drop "x:read" when "x:manage" is present. The secrets
 	//  and account resources support only manage. "*" is an explicit
 	//  full-access grant.
 	//
+	//  api_keys also has the verb admin ("api_keys:admin"), which implies
+	//  manage. It is required to create or change a key that reaches every
+	//  workspace, and to manage keys created by other members; without it a
+	//  caller manages only its own keys.
+	//
+	//  Some scopes depend on another: "tools:manage" cannot be granted
+	//  without "secrets:manage", because tool set headers and base URLs
+	//  resolve workspace secrets ({{ secrets.NAME }}) before the source is
+	//  validated, synced, or called. A set that holds a scope without its
+	//  dependency is rejected as invalid.
+	//
 	//  Scopes are deny-by-default: a key with an empty list can call only
 	//  scope-free endpoints. Full access is always an explicit "*" grant.
 	Permissions []string `json:"permissions,omitempty"`
+	// When true the key reaches every workspace in the account, including
+	//  workspaces created later, and workspace_assignments is ignored on
+	//  requests. Reads then list every workspace the key currently reaches.
+	AllWorkspaces bool `json:"allWorkspaces"`
+	// Complete set of workspaces the key is assigned to. Order has no meaning
+	//  and duplicates are collapsed. On create, at least one assignment is
+	//  required unless all_workspaces is set. On update, selecting
+	//  spec.workspace_assignments in update_mask replaces the entire set. Use
+	//  the :addWorkspace and :removeWorkspace actions to change one workspace.
+	WorkspaceAssignments []APIKeyWorkspaceAssignment `json:"workspaceAssignments"`
 }
 
 // AddAgentVariationAssignmentRequestParam is the request-direction oneOf view; at most one variant is non-nil.
@@ -7405,6 +7681,13 @@ func (u *AddAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) err
 	return fmt.Errorf("AddAgentVariationAssignmentRequestParam: unknown type %q", probe.Tag)
 }
 
+// Config_OpenAPIParam is the request-direction view of Config_OpenAPI:
+// server-owned (readOnly) fields are not accepted as input.
+type Config_OpenAPIParam struct {
+	Path   *string `json:"path,omitempty"`
+	Method *string `json:"method,omitempty"`
+}
+
 // CreateAgentVariationRequestParam is the request-direction view of CreateAgentVariationRequest:
 // server-owned (readOnly) fields are not accepted as input.
 type CreateAgentVariationRequestParam struct {
@@ -7425,7 +7708,9 @@ type MemoryLayerSpecParam struct {
 // server-owned (readOnly) fields are not accepted as input.
 type ObjectiveEpisodicConfigParam struct {
 	// The caller-supplied episodic key. Objectives created with the same key
-	//  (for the same agent) share one episodic memory layer.
+	//  (for the same agent, tenant and subject) share one episodic memory layer.
+	//  Empty on a response when the agent's always_include_subject_memories let
+	//  the objective rely on its subject instead of a key.
 	Key string `json:"key"`
 }
 
@@ -7517,6 +7802,116 @@ func (u *RemoveAgentVariationAssignmentRequestParam) UnmarshalJSON(data []byte) 
 	return fmt.Errorf("RemoveAgentVariationAssignmentRequestParam: unknown type %q", probe.Tag)
 }
 
+// ToolSpecParam is the request-direction view of ToolSpec:
+// server-owned (readOnly) fields are not accepted as input.
+type ToolSpecParam struct {
+	Description      string `json:"description"`
+	RequiresApproval bool   `json:"requiresApproval"`
+	// The tool's JSON Schema, as handed to the LLM. Required, but may be the
+	//  empty object `{}` for a tool that takes no arguments. Requiring it rather
+	//  than defaulting it means a misspelled field name (`inputSchema`, say) is a
+	//  400 instead of a silently parameterless tool.
+	Parameters map[string]any `json:"parameters"`
+	// Configuration for this specific tool. Its transport is derived from the
+	//  tool set adapter, while details such as endpoint and method are stored on
+	//  the tool itself.
+	//
+	//  Required, and exactly one adapter must be set.
+	Config *ToolSpec_ConfigParam `json:"config"`
+	// The name provided to the LLM, which may differ from the metadata.name on the tool.
+	//  LLMs have specific length and format requirements, and tool set sources may not comply
+	//  with them, so Cadenya does its best to format names into a usable format.
+	LlmToolName *string `json:"llmToolName,omitempty"`
+}
+
+// ToolSpec_ConfigParam is the request-direction oneOf view; at most one variant is non-nil.
+type ToolSpec_ConfigParam struct {
+	HTTP    *ToolSpec_Config_HTTP         `json:"-"`
+	MCP     *ToolSpec_Config_MCP          `json:"-"`
+	OpenAPI *ToolSpec_Config_OpenAPIParam `json:"-"`
+	Bare    *ToolSpec_Config_Bare         `json:"-"`
+}
+
+func (u ToolSpec_ConfigParam) MarshalJSON() ([]byte, error) {
+	var chosen any
+	count := 0
+	if u.HTTP != nil {
+		chosen = u.HTTP
+		count++
+	}
+	if u.MCP != nil {
+		chosen = u.MCP
+		count++
+	}
+	if u.OpenAPI != nil {
+		chosen = u.OpenAPI
+		count++
+	}
+	if u.Bare != nil {
+		chosen = u.Bare
+		count++
+	}
+	if count == 0 {
+		return []byte("{}"), nil
+	}
+	if count > 1 {
+		return nil, fmt.Errorf("ToolSpec_ConfigParam: exactly one variant must be set, got %d", count)
+	}
+	return json.Marshal(chosen)
+}
+
+// NewToolSpec_ConfigParamHTTP returns a ToolSpec_ConfigParam with the HTTP variant selected.
+func NewToolSpec_ConfigParamHTTP(v ToolSpec_Config_HTTP) ToolSpec_ConfigParam {
+	v.Type = "http"
+	return ToolSpec_ConfigParam{HTTP: &v}
+}
+
+// NewToolSpec_ConfigParamMCP returns a ToolSpec_ConfigParam with the MCP variant selected.
+func NewToolSpec_ConfigParamMCP(v ToolSpec_Config_MCP) ToolSpec_ConfigParam {
+	v.Type = "mcp"
+	return ToolSpec_ConfigParam{MCP: &v}
+}
+
+// NewToolSpec_ConfigParamOpenAPI returns a ToolSpec_ConfigParam with the OpenAPI variant selected.
+func NewToolSpec_ConfigParamOpenAPI(v ToolSpec_Config_OpenAPIParam) ToolSpec_ConfigParam {
+	v.Type = "openapi"
+	return ToolSpec_ConfigParam{OpenAPI: &v}
+}
+
+// NewToolSpec_ConfigParamBare returns a ToolSpec_ConfigParam with the Bare variant selected.
+func NewToolSpec_ConfigParamBare(v ToolSpec_Config_Bare) ToolSpec_ConfigParam {
+	v.Type = "bare"
+	return ToolSpec_ConfigParam{Bare: &v}
+}
+
+func (u *ToolSpec_ConfigParam) UnmarshalJSON(data []byte) error {
+	*u = ToolSpec_ConfigParam{}
+	var probe struct {
+		Tag string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &probe); err != nil {
+		return err
+	}
+	if probe.Tag == "" {
+		return nil
+	}
+	switch probe.Tag {
+	case "http":
+		u.HTTP = new(ToolSpec_Config_HTTP)
+		return json.Unmarshal(data, u.HTTP)
+	case "mcp":
+		u.MCP = new(ToolSpec_Config_MCP)
+		return json.Unmarshal(data, u.MCP)
+	case "openapi":
+		u.OpenAPI = new(ToolSpec_Config_OpenAPIParam)
+		return json.Unmarshal(data, u.OpenAPI)
+	case "bare":
+		u.Bare = new(ToolSpec_Config_Bare)
+		return json.Unmarshal(data, u.Bare)
+	}
+	return fmt.Errorf("ToolSpec_ConfigParam: unknown type %q", probe.Tag)
+}
+
 // WidgetSessionSpecParam is the request-direction view of WidgetSessionSpec:
 // server-owned (readOnly) fields are not accepted as input.
 type WidgetSessionSpecParam struct {
@@ -7546,6 +7941,13 @@ type WidgetSessionSpecParam struct {
 	//  the session creates. See ToolSetSpec.overlays for binding pinned keys to
 	//  nested or differently named parameters.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
+}
+
+// ToolSpec_Config_OpenAPIParam is the request-direction view of ToolSpec_Config_OpenAPI:
+// server-owned (readOnly) fields are not accepted as input.
+type ToolSpec_Config_OpenAPIParam struct {
+	Type    string               `json:"type"`
+	OpenAPI *Config_OpenAPIParam `json:"openapi"`
 }
 
 // AddAgentVariationAssignmentRequest_ToolIDParam is the request-direction view of AddAgentVariationAssignmentRequest_ToolID:

@@ -19,6 +19,8 @@ type MemoryLayerListParams struct {
 	AgentID           *string                            `json:"agentId,omitempty"`
 	EpisodicKeyPrefix *string                            `json:"episodicKeyPrefix,omitempty"`
 	Labels            *string                            `json:"labels,omitempty"`
+	TenantID          *string                            `json:"tenantId,omitempty"`
+	SubjectID         *string                            `json:"subjectId,omitempty"`
 	SortOrder         *string                            `json:"sortOrder,omitempty"`
 	IncludeInfo       *bool                              `json:"includeInfo,omitempty"`
 }
@@ -73,6 +75,16 @@ func (b *MemoryLayerListBuilder) Labels(v string) *MemoryLayerListBuilder {
 	return b
 }
 
+func (b *MemoryLayerListBuilder) TenantID(v string) *MemoryLayerListBuilder {
+	b.params.TenantID = &v
+	return b
+}
+
+func (b *MemoryLayerListBuilder) SubjectID(v string) *MemoryLayerListBuilder {
+	b.params.SubjectID = &v
+	return b
+}
+
 func (b *MemoryLayerListBuilder) SortOrder(v string) *MemoryLayerListBuilder {
 	b.params.SortOrder = &v
 	return b
@@ -93,6 +105,8 @@ type MemoryLayerCreateParams struct {
 	WorkspaceID *string                 `json:"workspaceId,omitempty"`
 	Metadata    *CreateResourceMetadata `json:"metadata"`
 	Spec        *MemoryLayerSpecParam   `json:"spec"`
+	Tenant      *TenantAssertion        `json:"tenant,omitempty"`
+	Subject     *SubjectAssertion       `json:"subject,omitempty"`
 }
 
 // MemoryLayerCreateBuilder builds a MemoryLayerCreateParams fluently.
@@ -112,6 +126,16 @@ func (b *MemoryLayerCreateBuilder) Metadata(v *CreateResourceMetadata) *MemoryLa
 
 func (b *MemoryLayerCreateBuilder) Spec(v *MemoryLayerSpecParam) *MemoryLayerCreateBuilder {
 	b.params.Spec = v
+	return b
+}
+
+func (b *MemoryLayerCreateBuilder) Tenant(v *TenantAssertion) *MemoryLayerCreateBuilder {
+	b.params.Tenant = v
+	return b
+}
+
+func (b *MemoryLayerCreateBuilder) Subject(v *SubjectAssertion) *MemoryLayerCreateBuilder {
+	b.params.Subject = v
 	return b
 }
 
@@ -261,6 +285,12 @@ func (s *memoryLayersService) List(ctx context.Context, params *MemoryLayerListP
 	if params.Labels != nil {
 		q.Set("labels", (*params.Labels))
 	}
+	if params.TenantID != nil {
+		q.Set("tenantId", (*params.TenantID))
+	}
+	if params.SubjectID != nil {
+		q.Set("subjectId", (*params.SubjectID))
+	}
 	if params.SortOrder != nil {
 		q.Set("sortOrder", (*params.SortOrder))
 	}
@@ -303,6 +333,12 @@ func (s *memoryLayersService) Create(ctx context.Context, params *MemoryLayerCre
 	}
 	if params.Spec != nil {
 		body["spec"] = params.Spec
+	}
+	if params.Tenant != nil {
+		body["tenant"] = params.Tenant
+	}
+	if params.Subject != nil {
+		body["subject"] = params.Subject
 	}
 	var out MemoryLayer
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {

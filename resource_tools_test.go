@@ -72,7 +72,7 @@ func (s *ToolsSuite) TestCreate() {
 	result, err := client.ToolSets().Tools().Create(ctx, "sample", (&cadenya.ToolCreateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.ToolSpec{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_Config{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
+		Spec(&cadenya.ToolSpecParam{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_ConfigParam{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -84,7 +84,7 @@ func (s *ToolsSuite) TestCreate() {
 		ctx := context.Background()
 		_, err := client.ToolSets().Tools().Create(ctx, "sample", (&cadenya.ToolCreateBuilder{}).
 			Metadata(&cadenya.CreateResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.ToolSpec{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_Config{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
+			Spec(&cadenya.ToolSpecParam{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_ConfigParam{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -144,7 +144,7 @@ func (s *ToolsSuite) TestUpdate() {
 	result, err := client.ToolSets().Tools().Update(ctx, "sample", "sample", (&cadenya.ToolUpdateBuilder{}).
 		WorkspaceID("sample").
 		Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
-		Spec(&cadenya.ToolSpec{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_Config{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
+		Spec(&cadenya.ToolSpecParam{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_ConfigParam{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
 		UpdateMask("sample").
 		ToParams())
 	s.Require().NoError(err)
@@ -157,7 +157,7 @@ func (s *ToolsSuite) TestUpdate() {
 		ctx := context.Background()
 		_, err := client.ToolSets().Tools().Update(ctx, "sample", "sample", (&cadenya.ToolUpdateBuilder{}).
 			Metadata(&cadenya.UpdateResourceMetadata{Name: "sample"}).
-			Spec(&cadenya.ToolSpec{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_Config{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
+			Spec(&cadenya.ToolSpecParam{Description: "sample", RequiresApproval: true, Parameters: map[string]any{}, Config: &cadenya.ToolSpec_ConfigParam{HTTP: &cadenya.ToolSpec_Config_HTTP{Type: "http", HTTP: &cadenya.Config_HTTP{RequestMethod: cadenya.ConfigHTTPRequestMethod("GET")}}}}).
 			UpdateMask("sample").
 			ToParams())
 		s.Require().NoError(err)
