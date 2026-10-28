@@ -564,7 +564,7 @@ func main() {
 		return nil
 	})
 	run("ObjectiveService_CreateObjective", func() error {
-		_, err := client.Objectives().Create(ctx, decode[sdk.ObjectiveCreateParams](`{"agentId":"sample","episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
+		_, err := client.Objectives().Create(ctx, decode[sdk.ObjectiveCreateParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("ObjectiveService_GetObjective", func() error {
@@ -604,7 +604,7 @@ func main() {
 		return nil
 	})
 	run("ObjectiveEventStreamsService_StreamObjectiveEvents", func() error {
-		stream, err := client.Objectives().StreamEvents(ctx, "sample", decode[sdk.ObjectiveStreamEventsParams](`{"workspaceId":"sample"}`))
+		stream, err := client.Objectives().StreamEvents(ctx, "sample", decode[sdk.ObjectiveStreamEventsParams](`{"includeDeltas":true,"workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -717,7 +717,7 @@ func main() {
 		return err
 	})
 	run("ObjectiveEventStreamsService_CreateAndStreamObjective", func() error {
-		stream, err := client.Objectives().CreateAndStream(ctx, decode[sdk.ObjectiveCreateAndStreamParams](`{"agentId":"sample","episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{"externalId":"sample"},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
+		stream, err := client.Objectives().CreateAndStream(ctx, decode[sdk.ObjectiveCreateAndStreamParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"includeDeltas":true,"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{"externalId":"sample"},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}

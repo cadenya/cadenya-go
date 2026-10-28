@@ -4,6 +4,13 @@
       "request": {
         "body": {
           "agentId": "sample",
+          "clientTools": {
+            "definitions": [
+              {
+                "name": "sample"
+              }
+            ]
+          },
           "episodicMemory": {
             "key": "sample"
           },

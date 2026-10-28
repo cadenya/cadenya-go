@@ -237,6 +237,7 @@ func TestStreamCancellationStopsPromptly(t *testing.T) {
 	defer cancel()
 	stream, err := client.Objectives().StreamEvents(ctx, "sample", (&cadenya.ObjectiveStreamEventsBuilder{}).
 		WorkspaceID("sample").
+		IncludeDeltas(true).
 		ToParams())
 	require.NoError(t, err)
 	defer stream.Close()

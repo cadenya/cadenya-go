@@ -128,6 +128,7 @@ type ObjectiveCreateParams struct {
 	Tenant               *TenantAssertion                `json:"tenant,omitempty"`
 	Subject              *SubjectAssertion               `json:"subject,omitempty"`
 	PinnedParameters     map[string]string               `json:"pinnedParameters,omitempty"`
+	ClientTools          *ClientTools                    `json:"clientTools,omitempty"`
 }
 
 // ObjectiveCreateBuilder builds a ObjectiveCreateParams fluently.
@@ -197,6 +198,11 @@ func (b *ObjectiveCreateBuilder) Subject(v *SubjectAssertion) *ObjectiveCreateBu
 
 func (b *ObjectiveCreateBuilder) PinnedParameters(v map[string]string) *ObjectiveCreateBuilder {
 	b.params.PinnedParameters = v
+	return b
+}
+
+func (b *ObjectiveCreateBuilder) ClientTools(v *ClientTools) *ObjectiveCreateBuilder {
+	b.params.ClientTools = v
 	return b
 }
 
@@ -353,7 +359,8 @@ func (b *ObjectiveListEventsBuilder) ToParams() *ObjectiveListEventsParams {
 }
 
 type ObjectiveStreamEventsParams struct {
-	WorkspaceID *string `json:"workspaceId,omitempty"`
+	WorkspaceID   *string `json:"workspaceId,omitempty"`
+	IncludeDeltas *bool   `json:"includeDeltas,omitempty"`
 }
 
 // ObjectiveStreamEventsBuilder builds a ObjectiveStreamEventsParams fluently.
@@ -363,6 +370,11 @@ type ObjectiveStreamEventsBuilder struct {
 
 func (b *ObjectiveStreamEventsBuilder) WorkspaceID(v string) *ObjectiveStreamEventsBuilder {
 	b.params.WorkspaceID = &v
+	return b
+}
+
+func (b *ObjectiveStreamEventsBuilder) IncludeDeltas(v bool) *ObjectiveStreamEventsBuilder {
+	b.params.IncludeDeltas = &v
 	return b
 }
 
@@ -804,6 +816,8 @@ type ObjectiveCreateAndStreamParams struct {
 	Tenant               *TenantAssertion                          `json:"tenant,omitempty"`
 	Subject              *SubjectAssertion                         `json:"subject,omitempty"`
 	PinnedParameters     map[string]string                         `json:"pinnedParameters,omitempty"`
+	ClientTools          *ClientTools                              `json:"clientTools,omitempty"`
+	IncludeDeltas        *bool                                     `json:"includeDeltas,omitempty"`
 }
 
 // ObjectiveCreateAndStreamBuilder builds a ObjectiveCreateAndStreamParams fluently.
@@ -873,6 +887,16 @@ func (b *ObjectiveCreateAndStreamBuilder) Subject(v *SubjectAssertion) *Objectiv
 
 func (b *ObjectiveCreateAndStreamBuilder) PinnedParameters(v map[string]string) *ObjectiveCreateAndStreamBuilder {
 	b.params.PinnedParameters = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) ClientTools(v *ClientTools) *ObjectiveCreateAndStreamBuilder {
+	b.params.ClientTools = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) IncludeDeltas(v bool) *ObjectiveCreateAndStreamBuilder {
+	b.params.IncludeDeltas = &v
 	return b
 }
 
@@ -1055,6 +1079,9 @@ func (s *objectivesService) Create(ctx context.Context, params *ObjectiveCreateP
 	if params.PinnedParameters != nil {
 		body["pinnedParameters"] = params.PinnedParameters
 	}
+	if params.ClientTools != nil {
+		body["clientTools"] = params.ClientTools
+	}
 	var out Objective
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
 		return nil, err
@@ -1230,8 +1257,12 @@ func (s *objectivesService) StreamEvents(ctx context.Context, objectiveID string
 		return nil, err
 	}
 	path := fmt.Sprintf("/v1/workspaces/%s/objectives/%s/events:stream", segWorkspaceID, segObjectiveID)
+	q := url.Values{}
+	if params.IncludeDeltas != nil {
+		q.Set("includeDeltas", strconv.FormatBool(*params.IncludeDeltas))
+	}
 	rc := buildRequestConfig(opts)
-	resp, err := s.core.rawConfig(ctx, "GET", path, nil, nil, true, rc)
+	resp, err := s.core.rawConfig(ctx, "GET", path, q, nil, true, rc)
 	if err != nil {
 		return nil, err
 	}
@@ -1243,7 +1274,7 @@ func (s *objectivesService) StreamEvents(ctx context.Context, objectiveID string
 		} else {
 			rc2.headers.Del("Last-Event-ID")
 		}
-		return s.core.rawConfig(ctx, "GET", path, nil, nil, true, &rc2)
+		return s.core.rawConfig(ctx, "GET", path, q, nil, true, &rc2)
 	}
 	if rc.reconnect != nil && !*rc.reconnect {
 		_reconnect = nil
@@ -1768,6 +1799,12 @@ func (s *objectivesService) CreateAndStream(ctx context.Context, params *Objecti
 	}
 	if params.PinnedParameters != nil {
 		body["pinnedParameters"] = params.PinnedParameters
+	}
+	if params.ClientTools != nil {
+		body["clientTools"] = params.ClientTools
+	}
+	if params.IncludeDeltas != nil {
+		body["includeDeltas"] = params.IncludeDeltas
 	}
 	rc := buildRequestConfig(opts)
 	resp, err := s.core.rawConfig(ctx, "POST", path, nil, body, true, rc)

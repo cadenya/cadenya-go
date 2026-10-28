@@ -89,6 +89,7 @@ func (s *ObjectivesSuite) TestCreate() {
 		Tenant(&cadenya.TenantAssertion{ID: "sample"}).
 		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 		PinnedParameters(map[string]string{}).
+		ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -111,6 +112,7 @@ func (s *ObjectivesSuite) TestCreate() {
 			Tenant(&cadenya.TenantAssertion{ID: "sample"}).
 			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 			PinnedParameters(map[string]string{}).
+			ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -242,6 +244,7 @@ func (s *ObjectivesSuite) TestStreamEvents() {
 	ctx := context.Background()
 	stream, err := client.Objectives().StreamEvents(ctx, "sample", (&cadenya.ObjectiveStreamEventsBuilder{}).
 		WorkspaceID("sample").
+		IncludeDeltas(true).
 		ToParams())
 	s.Require().NoError(err)
 	count := 0
@@ -258,6 +261,7 @@ func (s *ObjectivesSuite) TestStreamEvents() {
 		client := newTestClient(s.T(), server.URL)
 		ctx := context.Background()
 		stream, err := client.Objectives().StreamEvents(ctx, "sample", (&cadenya.ObjectiveStreamEventsBuilder{}).
+			IncludeDeltas(true).
 			ToParams())
 		s.Require().NoError(err)
 		for stream.Next() {
@@ -662,6 +666,8 @@ func (s *ObjectivesSuite) TestCreateAndStream() {
 		Tenant(&cadenya.TenantAssertion{ID: "sample"}).
 		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 		PinnedParameters(map[string]string{}).
+		ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+		IncludeDeltas(true).
 		ToParams())
 	s.Require().NoError(err)
 	count := 0
@@ -690,6 +696,8 @@ func (s *ObjectivesSuite) TestCreateAndStream() {
 			Tenant(&cadenya.TenantAssertion{ID: "sample"}).
 			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 			PinnedParameters(map[string]string{}).
+			ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+			IncludeDeltas(true).
 			ToParams())
 		s.Require().NoError(err)
 		for stream.Next() {
