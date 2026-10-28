@@ -4,11 +4,19 @@
       "request": {
         "body": {
           "agentId": "sample",
+          "clientTools": {
+            "definitions": [
+              {
+                "name": "sample"
+              }
+            ]
+          },
           "episodicMemory": {
             "key": "sample"
           },
           "firstUserMessage": "sample",
           "firstUserMessageData": {},
+          "includeDeltas": true,
           "memoryCascade": [
             {
               "memoryLayerId": "sample"

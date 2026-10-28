@@ -1021,6 +1021,13 @@ type AgentVariationSpec_ModelConfig struct {
 	//  whenever the model has the capability; false opts this variation
 	//  out; true is an explicit opt-in (equivalent to unset).
 	CachingEnabled *bool `json:"cachingEnabled,omitempty"`
+	// Token streaming. Requires the model's "streaming" capability.
+	//  Presence-tracked tri-state: unset means the default — completions
+	//  stream whenever the model has the capability, so live streams that
+	//  set includeDeltas receive text as it is generated; false opts this
+	//  variation out (for example, for a provider credential that is not
+	//  allowed to stream); true is an explicit opt-in (equivalent to unset).
+	StreamingEnabled *bool `json:"streamingEnabled,omitempty"`
 }
 
 // ProgressiveDiscovery is used to indicate that the agent should automatically discover tools that are not explicitly assigned to it.
@@ -1101,6 +1108,41 @@ type AssistantMessage struct {
 	//  variation's model can change while an objective runs, so the objective's
 	//  config snapshot does not answer this on its own.
 	Model *ResourceMetadata `json:"model,omitempty"`
+	// Identifies the LLM completion that produced this message. Streamed
+	//  AssistantMessageDelta fragments carry the same value. Empty on messages
+	//  recorded before completions were identified.
+	CompletionID *string `json:"completionId,omitempty"`
+}
+
+// AssistantMessageDelta is a fragment of assistant text as the model generates
+//
+//	it. It is transient: delivered only on live streams that opt in with
+//	includeDeltas, never stored in event history or delivered to webhooks, and
+//	its dlt_ event ID is not a reconnect cursor.
+//
+//	A stream delivers a completion's fragments only when it can deliver all of
+//	them: it must receive the first fragment (offset 0), and once a fragment is
+//	missing it sends no more for that completion. A client that connects in the
+//	middle of a completion therefore sees no fragments for it and renders the
+//	durable AssistantMessage when it arrives. Fragments always arrive after the
+//	event whose sequence is after_sequence.
+//
+//	Concatenate the fragments that share a completion_id in arrival order. The
+//	durable AssistantMessage that follows carries the same completion_id and is
+//	authoritative: replace the accumulated text with it. A retried completion
+//	gets a new completion_id, so drop fragments whose completion_id never
+//	receives a final message.
+type AssistantMessageDelta struct {
+	// Identifies the LLM completion this fragment belongs to.
+	CompletionID string `json:"completionId"`
+	// The text generated since the previous fragment for this completion.
+	Text string `json:"text"`
+	// The objective's latest committed event sequence when the completion
+	//  started. The fragment is delivered after the event with this sequence.
+	AfterSequence int32 `json:"afterSequence"`
+	// Where this fragment starts within the completion's assistant text, in
+	//  UTF-8 bytes. The first fragment of a completion has offset 0.
+	Offset int32 `json:"offset"`
 }
 
 type AssistantToolCall struct {
@@ -1303,6 +1345,14 @@ type Capability_StopSequences struct {
 	Limit int32 `json:"limit"`
 }
 
+// Token streaming (ModelConfig.streaming_enabled). Advertised only where
+//
+//	Cadenya streams completions for the model's provider. When the
+//	capability is present, streaming defaults to ON — a variation opts out
+//	by setting streaming_enabled to false.
+type Capability_Streaming struct {
+}
+
 // Sampling temperature (ModelConfig.temperature).
 type Capability_Temperature struct {
 }
@@ -1313,6 +1363,38 @@ type Capability_TopK struct {
 
 // Nucleus sampling (ModelConfig.top_p).
 type Capability_TopP struct {
+}
+
+// A tool defined by the caller when an objective is created and executed by
+//
+//	the caller. Cadenya stores it as a bare tool in the agent's client tools
+//	tool set and hands each call back over the event stream (a ToolCalled
+//	event with the call waiting for content); the caller reports the result
+//	with SetToolCallContent. Only the client tools sent with a create request
+//	are loaded into that objective.
+type ClientToolDefinition struct {
+	// The function name the model calls, also the name callers match calls
+	//  on. Letters, digits, "_" and "-", at most 64 characters, neither starting
+	//  nor ending with "_". A client tool takes precedence over a tool from the
+	//  agent variation with the same function name; names reserved by
+	//  Cadenya-provided tools are rejected.
+	Name string `json:"name"`
+	// What the tool does, shown to the model.
+	Description *string `json:"description,omitempty"`
+	// JSON Schema for the tool's arguments. Omitted means the tool takes no
+	//  arguments.
+	Parameters map[string]any `json:"parameters,omitempty"`
+	// When true, each call waits for ApproveToolCall before it is handed to
+	//  the caller to execute.
+	RequiresApproval *bool `json:"requiresApproval,omitempty"`
+}
+
+// The tools a caller defines and executes for one objective, and the
+//
+//	settings that apply to them.
+type ClientTools struct {
+	// The tool definitions. Names must be unique within the list.
+	Definitions []ClientToolDefinition `json:"definitions"`
 }
 
 // Compact objective request. Compaction is queued for a busy agent loop and starts immediately for a waiting objective.
@@ -1589,7 +1671,8 @@ type CreateAgentVariationRequest struct {
 // The request body for creating an objective and streaming its events.
 //
 //	Accepts everything Create objective accepts, and additionally requires
-//	`metadata.externalId`, which is the idempotency key for the stream.
+//	`metadata.externalId`, which is the idempotency key for the stream, and
+//	accepts the stream-only `includeDeltas` flag.
 type CreateAndStreamObjectiveRequest struct {
 	WorkspaceID string `json:"workspaceId"`
 	AgentID     string `json:"agentId"`
@@ -1649,6 +1732,17 @@ type CreateAndStreamObjectiveRequest struct {
 	//  (ToolSetSpec.overlays) can bind pinned keys to nested paths, differently
 	//  named parameters, or a subset of tools.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
+	// Tools the caller defines and executes for this objective. Each
+	//  definition is upserted into the agent's client tools tool set, and only
+	//  the definitions listed here are loaded into this objective, always in
+	//  its context window. A client tool replaces a variation tool with the
+	//  same function name.
+	ClientTools *ClientTools `json:"clientTools,omitempty"`
+	// Also stream transient assistantMessageDelta and reasoningDelta events:
+	//  text fragments as the model generates them, ahead of the durable
+	//  assistantMessage and reasoning events. Off by default. Applies only to
+	//  the stream, so Create objective has no equivalent field.
+	IncludeDeltas *bool `json:"includeDeltas,omitempty"`
 }
 
 // Objective metadata, with an external ID that is required here because
@@ -1840,6 +1934,12 @@ type CreateObjectiveRequest struct {
 	//  (ToolSetSpec.overlays) can bind pinned keys to nested paths, differently
 	//  named parameters, or a subset of tools.
 	PinnedParameters map[string]string `json:"pinnedParameters,omitempty"`
+	// Tools the caller defines and executes for this objective. Each
+	//  definition is upserted into the agent's client tools tool set, and only
+	//  the definitions listed here are loaded into this objective, always in
+	//  its context window. A client tool replaces a variation tool with the
+	//  same function name.
+	ClientTools *ClientTools `json:"clientTools,omitempty"`
 }
 
 type CreateObjectiveRequest_Secret struct {
@@ -2653,6 +2753,7 @@ type ModelSpec_Capability struct {
 	MaxOutputTokens *ModelSpec_Capability_MaxOutputTokens `json:"-"`
 	Reasoning       *ModelSpec_Capability_Reasoning       `json:"-"`
 	Caching         *ModelSpec_Capability_Caching         `json:"-"`
+	Streaming       *ModelSpec_Capability_Streaming       `json:"-"`
 }
 
 func (u ModelSpec_Capability) MarshalJSON() ([]byte, error) {
@@ -2684,6 +2785,10 @@ func (u ModelSpec_Capability) MarshalJSON() ([]byte, error) {
 	}
 	if u.Caching != nil {
 		chosen = u.Caching
+		count++
+	}
+	if u.Streaming != nil {
+		chosen = u.Streaming
 		count++
 	}
 	if count == 0 {
@@ -2737,6 +2842,12 @@ func NewModelSpec_CapabilityCaching(v ModelSpec_Capability_Caching) ModelSpec_Ca
 	return ModelSpec_Capability{Caching: &v}
 }
 
+// NewModelSpec_CapabilityStreaming returns a ModelSpec_Capability with the Streaming variant selected.
+func NewModelSpec_CapabilityStreaming(v ModelSpec_Capability_Streaming) ModelSpec_Capability {
+	v.Type = "streaming"
+	return ModelSpec_Capability{Streaming: &v}
+}
+
 func (u *ModelSpec_Capability) UnmarshalJSON(data []byte) error {
 	*u = ModelSpec_Capability{}
 	var probe struct {
@@ -2770,6 +2881,9 @@ func (u *ModelSpec_Capability) UnmarshalJSON(data []byte) error {
 	case "caching":
 		u.Caching = new(ModelSpec_Capability_Caching)
 		return json.Unmarshal(data, u.Caching)
+	case "streaming":
+		u.Streaming = new(ModelSpec_Capability_Streaming)
+		return json.Unmarshal(data, u.Streaming)
 	}
 	return fmt.Errorf("ModelSpec_Capability: unknown type %q", probe.Tag)
 }
@@ -2959,7 +3073,8 @@ type ObjectiveError struct {
 
 type ObjectiveEvent struct {
 	// Durable events use objevt_ IDs, the only IDs accepted as reconnect
-	//  cursors. Live-only heartbeats use hb_ IDs and have no SSE id: field.
+	//  cursors. Live-only heartbeats use hb_ IDs and live-only text deltas use
+	//  dlt_ IDs; neither has an SSE id: field.
 	Metadata        *OperationMetadata  `json:"metadata"`
 	Data            *ObjectiveEventData `json:"data"`
 	ContextWindowID string              `json:"contextWindowId"`
@@ -2974,6 +3089,10 @@ type ObjectiveEvent struct {
 	//  so the work interval is [started_at, started_at + duration]. The
 	//  event's created_at remains the time the event was persisted.
 	StartedAt *time.Time `json:"startedAt,omitempty"`
+	// The event's commit-ordered position in its objective, starting at 1.
+	//  Sequences are per objective and gapless. History and stream backlogs
+	//  return events in sequence order. Unset on live-only heartbeats.
+	Sequence *int32 `json:"sequence,omitempty"`
 }
 
 // ObjectiveEventData is a oneOf union; at most one variant is non-nil. All variants
@@ -3000,6 +3119,8 @@ type ObjectiveEventData struct {
 	StateChanged           *ObjectiveEventData_StateChanged           `json:"-"`
 	Heartbeat              *ObjectiveEventData_Heartbeat              `json:"-"`
 	Interrupted            *ObjectiveEventData_Interrupted            `json:"-"`
+	AssistantMessageDelta  *ObjectiveEventData_AssistantMessageDelta  `json:"-"`
+	ReasoningDelta         *ObjectiveEventData_ReasoningDelta         `json:"-"`
 }
 
 func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
@@ -3087,6 +3208,14 @@ func (u ObjectiveEventData) MarshalJSON() ([]byte, error) {
 	}
 	if u.Interrupted != nil {
 		chosen = u.Interrupted
+		count++
+	}
+	if u.AssistantMessageDelta != nil {
+		chosen = u.AssistantMessageDelta
+		count++
+	}
+	if u.ReasoningDelta != nil {
+		chosen = u.ReasoningDelta
 		count++
 	}
 	if count == 0 {
@@ -3224,6 +3353,18 @@ func NewObjectiveEventDataInterrupted(v ObjectiveEventData_Interrupted) Objectiv
 	return ObjectiveEventData{Interrupted: &v}
 }
 
+// NewObjectiveEventDataAssistantMessageDelta returns a ObjectiveEventData with the AssistantMessageDelta variant selected.
+func NewObjectiveEventDataAssistantMessageDelta(v ObjectiveEventData_AssistantMessageDelta) ObjectiveEventData {
+	v.Type = "assistantMessageDelta"
+	return ObjectiveEventData{AssistantMessageDelta: &v}
+}
+
+// NewObjectiveEventDataReasoningDelta returns a ObjectiveEventData with the ReasoningDelta variant selected.
+func NewObjectiveEventDataReasoningDelta(v ObjectiveEventData_ReasoningDelta) ObjectiveEventData {
+	v.Type = "reasoningDelta"
+	return ObjectiveEventData{ReasoningDelta: &v}
+}
+
 func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	*u = ObjectiveEventData{}
 	var probe struct {
@@ -3299,6 +3440,12 @@ func (u *ObjectiveEventData) UnmarshalJSON(data []byte) error {
 	case "interrupted":
 		u.Interrupted = new(ObjectiveEventData_Interrupted)
 		return json.Unmarshal(data, u.Interrupted)
+	case "assistantMessageDelta":
+		u.AssistantMessageDelta = new(ObjectiveEventData_AssistantMessageDelta)
+		return json.Unmarshal(data, u.AssistantMessageDelta)
+	case "reasoningDelta":
+		u.ReasoningDelta = new(ObjectiveEventData_ReasoningDelta)
+		return json.Unmarshal(data, u.ReasoningDelta)
 	}
 	return fmt.Errorf("ObjectiveEventData: unknown type %q", probe.Tag)
 }
@@ -3351,6 +3498,10 @@ type ObjectiveFinalized struct {
 //	to webhooks. Its hb_ event ID is not a reconnect cursor. Heartbeats do not
 //	change objective state or promise progress from the model.
 type ObjectiveHeartbeat struct {
+	// The objective's latest committed event sequence when the pulse was
+	//  emitted. A stream that has not yet delivered this sequence is missing
+	//  events and reads them from history.
+	LastSequence *int32 `json:"lastSequence,omitempty"`
 }
 
 // ObjectiveInfo provides read-only aggregated statistics about an objective's execution
@@ -3432,8 +3583,9 @@ type ObjectiveQueuedAction struct {
 // ObjectiveQueuedActionData is a oneOf union; at most one variant is non-nil. All variants
 // nil means the union was unset (protobuf empty/default) in the response.
 type ObjectiveQueuedActionData struct {
-	UserMessage *ObjectiveQueuedActionData_UserMessage `json:"-"`
-	Compaction  *ObjectiveQueuedActionData_Compaction  `json:"-"`
+	UserMessage     *ObjectiveQueuedActionData_UserMessage     `json:"-"`
+	Compaction      *ObjectiveQueuedActionData_Compaction      `json:"-"`
+	SubAgentUpdated *ObjectiveQueuedActionData_SubAgentUpdated `json:"-"`
 }
 
 func (u ObjectiveQueuedActionData) MarshalJSON() ([]byte, error) {
@@ -3445,6 +3597,10 @@ func (u ObjectiveQueuedActionData) MarshalJSON() ([]byte, error) {
 	}
 	if u.Compaction != nil {
 		chosen = u.Compaction
+		count++
+	}
+	if u.SubAgentUpdated != nil {
+		chosen = u.SubAgentUpdated
 		count++
 	}
 	if count == 0 {
@@ -3468,6 +3624,12 @@ func NewObjectiveQueuedActionDataCompaction(v ObjectiveQueuedActionData_Compacti
 	return ObjectiveQueuedActionData{Compaction: &v}
 }
 
+// NewObjectiveQueuedActionDataSubAgentUpdated returns a ObjectiveQueuedActionData with the SubAgentUpdated variant selected.
+func NewObjectiveQueuedActionDataSubAgentUpdated(v ObjectiveQueuedActionData_SubAgentUpdated) ObjectiveQueuedActionData {
+	v.Type = "subAgentUpdated"
+	return ObjectiveQueuedActionData{SubAgentUpdated: &v}
+}
+
 func (u *ObjectiveQueuedActionData) UnmarshalJSON(data []byte) error {
 	*u = ObjectiveQueuedActionData{}
 	var probe struct {
@@ -3486,6 +3648,9 @@ func (u *ObjectiveQueuedActionData) UnmarshalJSON(data []byte) error {
 	case "compaction":
 		u.Compaction = new(ObjectiveQueuedActionData_Compaction)
 		return json.Unmarshal(data, u.Compaction)
+	case "subAgentUpdated":
+		u.SubAgentUpdated = new(ObjectiveQueuedActionData_SubAgentUpdated)
+		return json.Unmarshal(data, u.SubAgentUpdated)
 	}
 	return fmt.Errorf("ObjectiveQueuedActionData: unknown type %q", probe.Tag)
 }
@@ -3992,6 +4157,28 @@ type Reasoning struct {
 	// The reasoning text. May be a verbatim chain of thought or a
 	//  provider-generated summary depending on the model.
 	Content string `json:"content"`
+	// Identifies the LLM completion that produced this reasoning. Streamed
+	//  ReasoningDelta fragments carry the same value. Empty on reasoning
+	//  recorded before completions were identified.
+	CompletionID *string `json:"completionId,omitempty"`
+}
+
+// ReasoningDelta is a fragment of reasoning text as the model generates it.
+//
+//	It follows the same transient delivery rules as AssistantMessageDelta; the
+//	durable Reasoning event with the same completion_id is authoritative.
+type ReasoningDelta struct {
+	// Identifies the LLM completion this fragment belongs to.
+	CompletionID string `json:"completionId"`
+	// The reasoning text generated since the previous fragment for this
+	//  completion.
+	Text string `json:"text"`
+	// The objective's latest committed event sequence when the completion
+	//  started. The fragment is delivered after the event with this sequence.
+	AfterSequence int32 `json:"afterSequence"`
+	// Where this fragment starts within the completion's reasoning text, in
+	//  UTF-8 bytes. The first fragment of a completion has offset 0.
+	Offset int32 `json:"offset"`
 }
 
 type RemoveAPIKeyWorkspaceRequest struct {
@@ -4597,6 +4784,8 @@ const (
 	SubAgentUpdatedStatusStatusCompleted   SubAgentUpdatedStatus = "STATUS_COMPLETED"
 	SubAgentUpdatedStatusStatusFailed      SubAgentUpdatedStatus = "STATUS_FAILED"
 	SubAgentUpdatedStatusStatusCancelled   SubAgentUpdatedStatus = "STATUS_CANCELLED"
+	SubAgentUpdatedStatusStatusWaiting     SubAgentUpdatedStatus = "STATUS_WAITING"
+	SubAgentUpdatedStatusStatusTimedOut    SubAgentUpdatedStatus = "STATUS_TIMED_OUT"
 )
 
 type SubAgentUpdated struct {
@@ -4807,11 +4996,23 @@ type Tool struct {
 type ToolApprovalRequested struct {
 	// The ID of the objective tool call record. Use this ID with the ApproveToolCall or DenyToolCall RPCs to approve or deny the tool call.
 	ToolCallID string `json:"toolCallId"`
+	// The tool awaiting approval.
+	Tool *CallableTool `json:"tool,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName.
+	LlmToolName string `json:"llmToolName"`
+	// The arguments the tool will be called with once approved.
+	Arguments map[string]any `json:"arguments,omitempty"`
 }
 
 type ToolApproved struct {
 	// The ID of the objective tool call record that was approved via the ApproveToolCall RPC.
 	ToolCallID string `json:"toolCallId"`
+	// The tool that was approved.
+	Tool *CallableTool `json:"tool,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName.
+	LlmToolName string `json:"llmToolName"`
 }
 
 // ToolCallDecisionScore records a confidence score and its threshold result.
@@ -4849,6 +5050,10 @@ type ToolCalled struct {
 	//  public widget events. This records the resolved policy at call time so
 	//  consumers do not need to re-evaluate the tool set's current overlays.
 	ArgumentsExposedInWidgets *bool `json:"argumentsExposedInWidgets,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName. It can differ from the tool's own
+	//  name, which Cadenya sanitizes for the model.
+	LlmToolName string `json:"llmToolName"`
 }
 
 type ToolDenied struct {
@@ -4856,12 +5061,22 @@ type ToolDenied struct {
 	ToolCallID string `json:"toolCallId"`
 	// The memo provided by the reviewer when denying the tool call. This is passed to the agent to provide further instructions.
 	Memo string `json:"memo"`
+	// The tool that was denied.
+	Tool *CallableTool `json:"tool,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName.
+	LlmToolName string `json:"llmToolName"`
 }
 
 type ToolError struct {
 	// The ID of the objective tool call record that encountered an error during execution.
 	ToolCallID string `json:"toolCallId"`
 	Message    string `json:"message"`
+	// The tool that failed.
+	Tool *CallableTool `json:"tool,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName.
+	LlmToolName string `json:"llmToolName"`
 }
 
 type ToolInfo struct {
@@ -5171,8 +5386,14 @@ type ToolOverlay_WidgetArgumentExposure struct {
 
 type ToolResult struct {
 	ToolCallID string `json:"toolCallId"`
-	// The content returned by the tool.
+	// The content returned by the tool. Live streams carry it too, with media
+	//  blocks as short-lived signed URLs, exactly as ListObjectiveEvents does.
 	Result *ObjectiveToolCallResult `json:"result"`
+	// The tool that returned the result.
+	Tool *CallableTool `json:"tool,omitempty"`
+	// The name the model called the tool by, as it appears in the assistant
+	//  message's toolCalls[].functionName.
+	LlmToolName string `json:"llmToolName"`
 }
 
 // The current lifecycle state of the tool set. Output only. Tool sets are
@@ -5196,6 +5417,12 @@ type ToolSet struct {
 	//  created STATE_ACTIVE; use the :archive and :unarchive actions to
 	//  transition between states.
 	State ToolSetState `json:"state"`
+	// Set when this is the agent's client tools tool set: the bare tool set
+	//  Cadenya manages to hold the client tools sent when objectives for that
+	//  agent are created. Such a tool set is read-only: it cannot be updated,
+	//  archived, deleted, have tools added or changed, or be assigned to a
+	//  variation. Output only.
+	ClientToolsAgentID *string `json:"clientToolsAgentId,omitempty"`
 }
 
 // ToolSetAdapter is a oneOf union; at most one variant is non-nil. All variants
@@ -6462,6 +6689,8 @@ const (
 	WebhookDeliveryDataEventTypeObjectiveEventTypeStateChanged           WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeHeartbeat              WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
 	WebhookDeliveryDataEventTypeObjectiveEventTypeInterrupted            WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_INTERRUPTED"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeAssistantMessageDelta  WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE_DELTA"
+	WebhookDeliveryDataEventTypeObjectiveEventTypeReasoningDelta         WebhookDeliveryDataEventType = "OBJECTIVE_EVENT_TYPE_REASONING_DELTA"
 )
 
 type WebhookDeliveryData struct {
@@ -7108,25 +7337,51 @@ type ObjectiveEventData_Interrupted struct {
 	Interrupted *ObjectiveInterrupted `json:"interrupted"`
 }
 
+type ObjectiveEventData_AssistantMessageDelta struct {
+	Type                  string                 `json:"type"`
+	AssistantMessageDelta *AssistantMessageDelta `json:"assistantMessageDelta"`
+}
+
+type ObjectiveEventData_ReasoningDelta struct {
+	Type           string          `json:"type"`
+	ReasoningDelta *ReasoningDelta `json:"reasoningDelta"`
+}
+
 type CallableTool_Tool struct {
 	Type string            `json:"type"`
 	Tool *ResourceMetadata `json:"tool"`
+	// Whether the tool is a client tool: one the caller defined when creating
+	//  the objective and executes itself, reporting each result with
+	//  SetToolCallContent.
+	ClientTool *bool `json:"clientTool,omitempty"`
 }
 
 type CallableTool_Agent struct {
 	Type  string            `json:"type"`
 	Agent *ResourceMetadata `json:"agent"`
+	// Whether the tool is a client tool: one the caller defined when creating
+	//  the objective and executes itself, reporting each result with
+	//  SetToolCallContent.
+	ClientTool *bool `json:"clientTool,omitempty"`
 }
 
 type CallableTool_CadenyaProvidedTool struct {
 	Type                string            `json:"type"`
 	CadenyaProvidedTool *ResourceMetadata `json:"cadenyaProvidedTool"`
+	// Whether the tool is a client tool: one the caller defined when creating
+	//  the objective and executes itself, reporting each result with
+	//  SetToolCallContent.
+	ClientTool *bool `json:"clientTool,omitempty"`
 }
 
 type CallableTool_AgentPool struct {
 	Type string `json:"type"`
 	// Agent pool responsible for routing this call to a member agent.
 	AgentPool *ResourceMetadata `json:"agentPool"`
+	// Whether the tool is a client tool: one the caller defined when creating
+	//  the objective and executes itself, reporting each result with
+	//  SetToolCallContent.
+	ClientTool *bool `json:"clientTool,omitempty"`
 }
 
 type MemoryEntryCreateSpec_Content struct {
@@ -7160,6 +7415,13 @@ type ObjectiveQueuedActionData_Compaction struct {
 	Type string `json:"type"`
 	// A compaction of the conversation run before the next assistant turn.
 	Compaction *QueuedCompaction `json:"compaction"`
+}
+
+type ObjectiveQueuedActionData_SubAgentUpdated struct {
+	Type string `json:"type"`
+	// A sub-agent stopped running; the parent reads the notice before its next
+	//  assistant turn.
+	SubAgentUpdated *SubAgentUpdated `json:"subAgentUpdated"`
 }
 
 type ContinueObjectiveResponse_Event struct {
@@ -7367,6 +7629,11 @@ type ModelSpec_Capability_Caching struct {
 	Caching *Capability_Caching `json:"caching"`
 }
 
+type ModelSpec_Capability_Streaming struct {
+	Type      string                `json:"type"`
+	Streaming *Capability_Streaming `json:"streaming"`
+}
+
 type CreateAndStreamObjectiveResponse_Objective struct {
 	Type string `json:"type"`
 	// The objective. Sent exactly once, as the first message. On a repeated
@@ -7378,7 +7645,8 @@ type CreateAndStreamObjectiveResponse_Objective struct {
 type CreateAndStreamObjectiveResponse_Event struct {
 	Type string `json:"type"`
 	// An objective event, identical to the payloads Stream objective events
-	//  yields — including transient hb_ heartbeats.
+	//  yields — including transient hb_ heartbeats, and dlt_ text deltas when
+	//  includeDeltas is set.
 	Event *ObjectiveEvent `json:"event"`
 }
 
@@ -7460,6 +7728,8 @@ const (
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeStateChanged           AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_STATE_CHANGED"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeHeartbeat              AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_HEARTBEAT"
 	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeInterrupted            AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_INTERRUPTED"
+	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeAssistantMessageDelta  AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_ASSISTANT_MESSAGE_DELTA"
+	AgentServiceListAgentWebhookDeliveriesEventTypeObjectiveEventTypeReasoningDelta         AgentServiceListAgentWebhookDeliveriesEventType = "OBJECTIVE_EVENT_TYPE_REASONING_DELTA"
 )
 
 type MemoryServiceListMemoryLayersType string
