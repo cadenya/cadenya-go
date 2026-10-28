@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/cadenya/cadenya-go/compare/v1.8.0...v1.9.0) (2026-10-28)
+
+
+### Features
+
+* accept client tools when an objective is created ([5cacb84](https://github.com/cadenya/cadenya-go/commit/5cacb84c2532ab8a8895f15868b697d25c22b920))
+
 ## [1.8.0](https://github.com/cadenya/cadenya-go/compare/v1.7.0...v1.8.0) (2026-10-18)
 
 
