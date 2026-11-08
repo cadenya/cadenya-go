@@ -216,6 +216,7 @@
   "testdata/golden/WorkspaceSecretService_GetWorkspaceSecret.json",
   "testdata/golden/WorkspaceSecretService_ListWorkspaceSecrets.json",
   "testdata/golden/WorkspaceSecretService_UpdateWorkspaceSecret.json",
+  "testdata/golden/WorkspaceService_GetTemporaryWorkspace.json",
   "testdata/golden/WorkspaceService_ListWorkspaces.json",
   "types.go",
   "webhooks_test.go",

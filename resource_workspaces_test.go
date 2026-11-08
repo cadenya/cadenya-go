@@ -35,3 +35,14 @@ func (s *WorkspacesSuite) TestList() {
 	s.Require().Len(items, 2)
 	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
 }
+
+func (s *WorkspacesSuite) TestRetrieveTemporary() {
+	g := loadGolden(s.T(), "WorkspaceService_GetTemporaryWorkspace")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	result, err := client.Workspaces().RetrieveTemporary(ctx, "sample")
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+}
