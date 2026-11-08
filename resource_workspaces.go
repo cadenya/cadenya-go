@@ -4,6 +4,7 @@ package cadenya
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -56,6 +57,8 @@ func (b *WorkspaceListBuilder) ToParams() *WorkspaceListParams {
 type WorkspaceResources interface {
 	// List workspaces
 	List(ctx context.Context, params *WorkspaceListParams, opts ...RequestOption) (*Page[Workspace], error)
+	// Get temporary workspace claim status
+	RetrieveTemporary(ctx context.Context, workspaceID string, opts ...RequestOption) (*TemporaryWorkspace, error)
 }
 
 type workspacesService struct{ core *core }
@@ -98,4 +101,17 @@ func (s *workspacesService) List(ctx context.Context, params *WorkspaceListParam
 		return s.List(ctx, &p, opts...)
 	}
 	return newPage(out.Items, nextCursor, fetch), nil
+}
+
+func (s *workspacesService) RetrieveTemporary(ctx context.Context, workspaceID string, opts ...RequestOption) (*TemporaryWorkspace, error) {
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/temporary", segWorkspaceID)
+	var out TemporaryWorkspace
+	if err := s.core.do(ctx, "GET", path, nil, nil, &out, opts...); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

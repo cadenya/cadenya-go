@@ -169,6 +169,11 @@ List workspaces
 ```go
 client.Workspaces().List(ctx context.Context, params *WorkspaceListParams, opts ...RequestOption) (*Page[Workspace], error)
 ```
+Get temporary workspace claim status
+
+```go
+client.Workspaces().RetrieveTemporary(ctx context.Context, workspaceID string, opts ...RequestOption) (*TemporaryWorkspace, error)
+```
 
 ## agent_pools
 
