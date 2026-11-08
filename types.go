@@ -296,6 +296,7 @@ const (
 	AIProviderKeySpecProviderAIProviderOpenAICompatible AIProviderKeySpecProvider = "AI_PROVIDER_OPENAI_COMPATIBLE"
 	AIProviderKeySpecProviderAIProviderVertex           AIProviderKeySpecProvider = "AI_PROVIDER_VERTEX"
 	AIProviderKeySpecProviderAIProviderBedrock          AIProviderKeySpecProvider = "AI_PROVIDER_BEDROCK"
+	AIProviderKeySpecProviderAIProviderDemo             AIProviderKeySpecProvider = "AI_PROVIDER_DEMO"
 )
 
 type AIProviderKeySpec struct {
@@ -836,7 +837,8 @@ type AgentSpec struct {
 	//  Each new objective slides the layer's expiry forward by this duration, and
 	//  stored entries expire this long after they are written.
 	//  If not set, episodic memories are retained indefinitely.
-	EpisodicMemoryTtl *int32 `json:"episodicMemoryTtl,omitempty"`
+	//  A duration string in seconds, such as "604800s".
+	EpisodicMemoryTtl *string `json:"episodicMemoryTtl,omitempty"`
 	// Always load the asserted subject's memories. Requires
 	//  enable_episodic_memory. When an objective asserts a subject:
 	//
@@ -4891,6 +4893,37 @@ type SyncStarted struct {
 	Message string `json:"message"`
 }
 
+// Claim state. PENDING while the claimant's account is set up, then
+//
+//	CLAIMED.
+type TemporaryWorkspaceState string
+
+const (
+	TemporaryWorkspaceStateStateUnspecified TemporaryWorkspaceState = "STATE_UNSPECIFIED"
+	TemporaryWorkspaceStateStateUnclaimed   TemporaryWorkspaceState = "STATE_UNCLAIMED"
+	TemporaryWorkspaceStateStatePending     TemporaryWorkspaceState = "STATE_PENDING"
+	TemporaryWorkspaceStateStateClaimed     TemporaryWorkspaceState = "STATE_CLAIMED"
+	TemporaryWorkspaceStateStateExpired     TemporaryWorkspaceState = "STATE_EXPIRED"
+)
+
+// TemporaryWorkspace is the claim status of a workspace created without an
+//
+//	account. A temporary workspace is permanently deleted at expires_at unless
+//	a person claims it first.
+type TemporaryWorkspace struct {
+	// The temporary workspace.
+	WorkspaceID string `json:"workspaceId"`
+	// Claim state. PENDING while the claimant's account is set up, then
+	//  CLAIMED.
+	State TemporaryWorkspaceState `json:"state"`
+	// When the workspace is deleted unless claimed. Unset once claimed.
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+	// When the claim was made. Set while PENDING and once CLAIMED.
+	ClaimedAt *time.Time `json:"claimedAt,omitempty"`
+	// How long clients waiting for a claim should wait between polls.
+	PollInterval string `json:"pollInterval"`
+}
+
 // The current lifecycle state of the tenant. Output only.
 type TenantState string
 
@@ -5602,7 +5635,8 @@ type ToolSetAdapter_AttributeFilter struct {
 type ToolSetAdapter_Bare struct {
 	// How long to wait for content to be set before the tool call errors.
 	//  If unset, the call waits indefinitely.
-	ContentTimeout *int32 `json:"contentTimeout,omitempty"`
+	//  A duration string in seconds, such as "3600s".
+	ContentTimeout *string `json:"contentTimeout,omitempty"`
 }
 
 type ToolSetAdapter_HTTP struct {
@@ -6932,6 +6966,9 @@ type Workspace struct {
 	Status WorkspaceStatus `json:"status"`
 	// The workspace information
 	Info *WorkspaceInfo `json:"info,omitempty"`
+	// When a temporary workspace is permanently deleted unless claimed. Unset
+	//  for every other workspace, and once a temporary workspace is claimed.
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 }
 
 // WorkspaceInfo returns counts

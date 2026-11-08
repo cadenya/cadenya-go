@@ -217,6 +217,10 @@ func main() {
 		}
 		return nil
 	})
+	run("WorkspaceService_GetTemporaryWorkspace", func() error {
+		_, err := client.Workspaces().RetrieveTemporary(ctx, "sample")
+		return err
+	})
 	run("AgentPoolService_ListAgentPools", func() error {
 		page, err := client.AgentPools().List(ctx, decode[sdk.AgentPoolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"AGENT_POOL_STATE_ACTIVE","workspaceId":"sample"}`))
 		if err != nil {
