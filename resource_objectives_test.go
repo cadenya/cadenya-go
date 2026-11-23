@@ -90,6 +90,7 @@ func (s *ObjectivesSuite) TestCreate() {
 		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 		PinnedParameters(map[string]string{}).
 		ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+		SystemPrompt("sample").
 		ToParams())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -113,6 +114,7 @@ func (s *ObjectivesSuite) TestCreate() {
 			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 			PinnedParameters(map[string]string{}).
 			ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+			SystemPrompt("sample").
 			ToParams())
 		s.Require().NoError(err)
 		s.Require().Equal(int32(1), hits.Load())
@@ -667,6 +669,7 @@ func (s *ObjectivesSuite) TestCreateAndStream() {
 		Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 		PinnedParameters(map[string]string{}).
 		ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+		SystemPrompt("sample").
 		IncludeDeltas(true).
 		ToParams())
 	s.Require().NoError(err)
@@ -697,6 +700,7 @@ func (s *ObjectivesSuite) TestCreateAndStream() {
 			Subject(&cadenya.SubjectAssertion{ID: "sample"}).
 			PinnedParameters(map[string]string{}).
 			ClientTools(&cadenya.ClientTools{Definitions: []cadenya.ClientToolDefinition{cadenya.ClientToolDefinition{Name: "sample"}}}).
+			SystemPrompt("sample").
 			IncludeDeltas(true).
 			ToParams())
 		s.Require().NoError(err)

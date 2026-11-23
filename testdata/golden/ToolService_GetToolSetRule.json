@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/tool_sets/sample/rules/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"disabled\":true,\"id\":\"sample\",\"name\":\"sample\",\"position\":1,\"when\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

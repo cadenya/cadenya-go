@@ -207,6 +207,26 @@ func (b *ToolSetArchiveBuilder) ToParams() *ToolSetArchiveParams {
 	return &p
 }
 
+type ToolSetSyncParams struct {
+	WorkspaceID *string `json:"workspaceId,omitempty"`
+}
+
+// ToolSetSyncBuilder builds a ToolSetSyncParams fluently.
+type ToolSetSyncBuilder struct {
+	params ToolSetSyncParams
+}
+
+func (b *ToolSetSyncBuilder) WorkspaceID(v string) *ToolSetSyncBuilder {
+	b.params.WorkspaceID = &v
+	return b
+}
+
+// ToParams returns the built params, ready to pass to the SDK method.
+func (b *ToolSetSyncBuilder) ToParams() *ToolSetSyncParams {
+	p := b.params
+	return &p
+}
+
 type ToolSetUnarchiveParams struct {
 	WorkspaceID *string `json:"workspaceId,omitempty"`
 }
@@ -355,6 +375,8 @@ type ToolSetResources interface {
 	Update(ctx context.Context, id string, params *ToolSetUpdateParams, opts ...RequestOption) (*ToolSet, error)
 	// Archive a tool set
 	Archive(ctx context.Context, id string, params *ToolSetArchiveParams, opts ...RequestOption) (*ToolSet, error)
+	// Sync a tool set
+	Sync(ctx context.Context, id string, params *ToolSetSyncParams, opts ...RequestOption) error
 	// Unarchive a tool set
 	Unarchive(ctx context.Context, id string, params *ToolSetUnarchiveParams, opts ...RequestOption) (*ToolSet, error)
 	// List tool set events
@@ -363,6 +385,8 @@ type ToolSetResources interface {
 	RetrieveOpenAPISpec(ctx context.Context, toolSetID string, params *ToolSetRetrieveOpenAPISpecParams, opts ...RequestOption) (*GetToolSetOpenAPISpecResponse, error)
 	// List tool set usage
 	ListUsage(ctx context.Context, toolSetID string, params *ToolSetListUsageParams, opts ...RequestOption) (*Page[ToolSetUsage], error)
+	// Rules returns the nested rules resource group.
+	Rules() ToolSetRuleResources
 	// Secrets returns the nested secrets resource group.
 	Secrets() ToolSetSecretResources
 	// Tools returns the nested tools resource group.
@@ -372,6 +396,8 @@ type ToolSetResources interface {
 type toolSetsService struct{ core *core }
 
 var _ ToolSetResources = (*toolSetsService)(nil)
+
+func (s *toolSetsService) Rules() ToolSetRuleResources { return &toolSetRulesService{core: s.core} }
 
 func (s *toolSetsService) Secrets() ToolSetSecretResources {
 	return &toolSetSecretsService{core: s.core}
@@ -561,6 +587,26 @@ func (s *toolSetsService) Archive(ctx context.Context, id string, params *ToolSe
 		return nil, err
 	}
 	return &out, nil
+}
+
+func (s *toolSetsService) Sync(ctx context.Context, id string, params *ToolSetSyncParams, opts ...RequestOption) error {
+	if params == nil {
+		params = &ToolSetSyncParams{}
+	}
+	workspaceID, err := s.core.resolveDefault("workspaceId", "CADENYA_WORKSPACE_ID", params.WorkspaceID)
+	if err != nil {
+		return err
+	}
+	segWorkspaceID, err := pathSegment("workspaceId", workspaceID)
+	if err != nil {
+		return err
+	}
+	segID, err := pathSegment("id", id)
+	if err != nil {
+		return err
+	}
+	path := fmt.Sprintf("/v1/workspaces/%s/tool_sets/%s:sync", segWorkspaceID, segID)
+	return s.core.do(ctx, "POST", path, nil, nil, nil, opts...)
 }
 
 func (s *toolSetsService) Unarchive(ctx context.Context, id string, params *ToolSetUnarchiveParams, opts ...RequestOption) (*ToolSet, error) {

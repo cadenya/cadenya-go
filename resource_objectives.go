@@ -129,6 +129,7 @@ type ObjectiveCreateParams struct {
 	Subject              *SubjectAssertion               `json:"subject,omitempty"`
 	PinnedParameters     map[string]string               `json:"pinnedParameters,omitempty"`
 	ClientTools          *ClientTools                    `json:"clientTools,omitempty"`
+	SystemPrompt         *string                         `json:"systemPrompt,omitempty"`
 }
 
 // ObjectiveCreateBuilder builds a ObjectiveCreateParams fluently.
@@ -203,6 +204,11 @@ func (b *ObjectiveCreateBuilder) PinnedParameters(v map[string]string) *Objectiv
 
 func (b *ObjectiveCreateBuilder) ClientTools(v *ClientTools) *ObjectiveCreateBuilder {
 	b.params.ClientTools = v
+	return b
+}
+
+func (b *ObjectiveCreateBuilder) SystemPrompt(v string) *ObjectiveCreateBuilder {
+	b.params.SystemPrompt = &v
 	return b
 }
 
@@ -817,6 +823,7 @@ type ObjectiveCreateAndStreamParams struct {
 	Subject              *SubjectAssertion                         `json:"subject,omitempty"`
 	PinnedParameters     map[string]string                         `json:"pinnedParameters,omitempty"`
 	ClientTools          *ClientTools                              `json:"clientTools,omitempty"`
+	SystemPrompt         *string                                   `json:"systemPrompt,omitempty"`
 	IncludeDeltas        *bool                                     `json:"includeDeltas,omitempty"`
 }
 
@@ -892,6 +899,11 @@ func (b *ObjectiveCreateAndStreamBuilder) PinnedParameters(v map[string]string) 
 
 func (b *ObjectiveCreateAndStreamBuilder) ClientTools(v *ClientTools) *ObjectiveCreateAndStreamBuilder {
 	b.params.ClientTools = v
+	return b
+}
+
+func (b *ObjectiveCreateAndStreamBuilder) SystemPrompt(v string) *ObjectiveCreateAndStreamBuilder {
+	b.params.SystemPrompt = &v
 	return b
 }
 
@@ -1081,6 +1093,9 @@ func (s *objectivesService) Create(ctx context.Context, params *ObjectiveCreateP
 	}
 	if params.ClientTools != nil {
 		body["clientTools"] = params.ClientTools
+	}
+	if params.SystemPrompt != nil {
+		body["systemPrompt"] = params.SystemPrompt
 	}
 	var out Objective
 	if err := s.core.do(ctx, "POST", path, nil, body, &out, opts...); err != nil {
@@ -1802,6 +1817,9 @@ func (s *objectivesService) CreateAndStream(ctx context.Context, params *Objecti
 	}
 	if params.ClientTools != nil {
 		body["clientTools"] = params.ClientTools
+	}
+	if params.SystemPrompt != nil {
+		body["systemPrompt"] = params.SystemPrompt
 	}
 	if params.IncludeDeltas != nil {
 		body["includeDeltas"] = params.IncludeDeltas

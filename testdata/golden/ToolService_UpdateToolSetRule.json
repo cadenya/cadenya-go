@@ -1,0 +1,25 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "actions": {},
+          "description": "sample",
+          "disabled": true,
+          "name": "sample",
+          "position": 1,
+          "updateMask": "sample",
+          "when": "sample"
+        },
+        "method": "PATCH",
+        "path": "/v1/workspaces/sample/tool_sets/sample/rules/sample",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"disabled\":true,\"id\":\"sample\",\"name\":\"sample\",\"position\":1,\"when\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}
