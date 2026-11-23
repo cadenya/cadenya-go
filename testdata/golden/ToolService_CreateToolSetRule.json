@@ -1,0 +1,24 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": {
+          "actions": {},
+          "description": "sample",
+          "disabled": true,
+          "name": "sample",
+          "position": 1,
+          "when": "sample"
+        },
+        "method": "POST",
+        "path": "/v1/workspaces/sample/tool_sets/sample/rules",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"disabled\":true,\"id\":\"sample\",\"name\":\"sample\",\"position\":1,\"when\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

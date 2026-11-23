@@ -18,7 +18,6 @@ type ToolListParams struct {
 	Names            []string                     `json:"names,omitempty"`
 	States           []ToolServiceListToolsStates `json:"states,omitempty"`
 	RequiresApproval *bool                        `json:"requiresApproval,omitempty"`
-	Overlays         []string                     `json:"overlays,omitempty"`
 	Labels           *string                      `json:"labels,omitempty"`
 	SortOrder        *string                      `json:"sortOrder,omitempty"`
 	IncludeInfo      *bool                        `json:"includeInfo,omitempty"`
@@ -66,11 +65,6 @@ func (b *ToolListBuilder) States(v ...ToolServiceListToolsStates) *ToolListBuild
 
 func (b *ToolListBuilder) RequiresApproval(v bool) *ToolListBuilder {
 	b.params.RequiresApproval = &v
-	return b
-}
-
-func (b *ToolListBuilder) Overlays(v ...string) *ToolListBuilder {
-	b.params.Overlays = v
 	return b
 }
 
@@ -305,9 +299,6 @@ func (s *toolsService) List(ctx context.Context, toolSetID string, params *ToolL
 	}
 	if params.RequiresApproval != nil {
 		q.Set("requiresApproval", strconv.FormatBool(*params.RequiresApproval))
-	}
-	for _, item := range params.Overlays {
-		q.Add("overlays", (item))
 	}
 	if params.Labels != nil {
 		q.Set("labels", (*params.Labels))

@@ -31,7 +31,6 @@ func (s *ToolsSuite) TestList() {
 		Names("sample").
 		States(cadenya.ToolServiceListToolsStates("STATE_AVAILABLE")).
 		RequiresApproval(true).
-		Overlays("sample").
 		Labels("sample").
 		SortOrder("sample").
 		IncludeInfo(true).
@@ -54,7 +53,6 @@ func (s *ToolsSuite) TestList() {
 			Names("sample").
 			States(cadenya.ToolServiceListToolsStates("STATE_AVAILABLE")).
 			RequiresApproval(true).
-			Overlays("sample").
 			Labels("sample").
 			SortOrder("sample").
 			IncludeInfo(true).

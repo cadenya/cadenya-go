@@ -169,6 +169,11 @@ List workspaces
 ```go
 client.Workspaces().List(ctx context.Context, params *WorkspaceListParams, opts ...RequestOption) (*Page[Workspace], error)
 ```
+Get temporary workspace claim status
+
+```go
+client.Workspaces().RetrieveTemporary(ctx context.Context, workspaceID string, opts ...RequestOption) (*TemporaryWorkspace, error)
+```
 
 ## agent_pools
 
@@ -670,6 +675,11 @@ Archive a tool set
 ```go
 client.ToolSets().Archive(ctx context.Context, id string, params *ToolSetArchiveParams, opts ...RequestOption) (*ToolSet, error)
 ```
+Sync a tool set
+
+```go
+client.ToolSets().Sync(ctx context.Context, id string, params *ToolSetSyncParams, opts ...RequestOption) error
+```
 Unarchive a tool set
 
 ```go
@@ -689,6 +699,34 @@ List tool set usage
 
 ```go
 client.ToolSets().ListUsage(ctx context.Context, toolSetID string, params *ToolSetListUsageParams, opts ...RequestOption) (*Page[ToolSetUsage], error)
+```
+
+## tool_sets.rules
+
+List tool set rules
+
+```go
+client.ToolSets().Rules().List(ctx context.Context, toolSetID string, params *ToolSetRuleListParams, opts ...RequestOption) (*ListToolSetRulesResponse, error)
+```
+Create a tool set rule
+
+```go
+client.ToolSets().Rules().Create(ctx context.Context, toolSetID string, params *ToolSetRuleCreateParams, opts ...RequestOption) (*ToolRule, error)
+```
+Get a tool set rule by ID
+
+```go
+client.ToolSets().Rules().Retrieve(ctx context.Context, toolSetID string, id string, params *ToolSetRuleRetrieveParams, opts ...RequestOption) (*ToolRule, error)
+```
+Delete a tool set rule
+
+```go
+client.ToolSets().Rules().Delete(ctx context.Context, toolSetID string, id string, params *ToolSetRuleDeleteParams, opts ...RequestOption) error
+```
+Update a tool set rule
+
+```go
+client.ToolSets().Rules().Update(ctx context.Context, toolSetID string, id string, params *ToolSetRuleUpdateParams, opts ...RequestOption) (*ToolRule, error)
 ```
 
 ## tool_sets.secrets

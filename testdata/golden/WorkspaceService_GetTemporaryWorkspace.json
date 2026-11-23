@@ -1,0 +1,17 @@
+{
+  "interactions": [
+    {
+      "request": {
+        "body": null,
+        "method": "GET",
+        "path": "/v1/workspaces/sample/temporary",
+        "query": {}
+      },
+      "response": {
+        "body": "{\"pollInterval\":\"sample\",\"state\":\"STATE_UNCLAIMED\",\"workspaceId\":\"sample\"}",
+        "contentType": "application/json",
+        "status": 200
+      }
+    }
+  ]
+}

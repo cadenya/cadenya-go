@@ -217,6 +217,10 @@ func main() {
 		}
 		return nil
 	})
+	run("WorkspaceService_GetTemporaryWorkspace", func() error {
+		_, err := client.Workspaces().RetrieveTemporary(ctx, "sample")
+		return err
+	})
 	run("AgentPoolService_ListAgentPools", func() error {
 		page, err := client.AgentPools().List(ctx, decode[sdk.AgentPoolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","state":"AGENT_POOL_STATE_ACTIVE","workspaceId":"sample"}`))
 		if err != nil {
@@ -564,7 +568,7 @@ func main() {
 		return nil
 	})
 	run("ObjectiveService_CreateObjective", func() error {
-		_, err := client.Objectives().Create(ctx, decode[sdk.ObjectiveCreateParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
+		_, err := client.Objectives().Create(ctx, decode[sdk.ObjectiveCreateParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPrompt":"sample","systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
 		return err
 	})
 	run("ObjectiveService_GetObjective", func() error {
@@ -717,7 +721,7 @@ func main() {
 		return err
 	})
 	run("ObjectiveEventStreamsService_CreateAndStreamObjective", func() error {
-		stream, err := client.Objectives().CreateAndStream(ctx, decode[sdk.ObjectiveCreateAndStreamParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"includeDeltas":true,"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{"externalId":"sample"},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
+		stream, err := client.Objectives().CreateAndStream(ctx, decode[sdk.ObjectiveCreateAndStreamParams](`{"agentId":"sample","clientTools":{"definitions":[{"name":"sample"}]},"episodicMemory":{"key":"sample"},"firstUserMessage":"sample","firstUserMessageData":{},"includeDeltas":true,"memoryCascade":[{"memoryLayerId":"sample"}],"metadata":{"externalId":"sample"},"pinnedParameters":{},"secrets":[{}],"subject":{"id":"sample"},"systemPrompt":"sample","systemPromptData":{},"tenant":{"id":"sample"},"variationId":"sample","workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}
@@ -806,6 +810,9 @@ func main() {
 		_, err := client.ToolSets().Archive(ctx, "sample", decode[sdk.ToolSetArchiveParams](`{"workspaceId":"sample"}`))
 		return err
 	})
+	run("ToolService_SyncToolSet", func() error {
+		return client.ToolSets().Sync(ctx, "sample", decode[sdk.ToolSetSyncParams](`{"workspaceId":"sample"}`))
+	})
 	run("ToolService_UnarchiveToolSet", func() error {
 		_, err := client.ToolSets().Unarchive(ctx, "sample", decode[sdk.ToolSetUnarchiveParams](`{"workspaceId":"sample"}`))
 		return err
@@ -842,6 +849,25 @@ func main() {
 		}
 		return nil
 	})
+	run("ToolService_ListToolSetRules", func() error {
+		_, err := client.ToolSets().Rules().List(ctx, "sample", decode[sdk.ToolSetRuleListParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ToolService_CreateToolSetRule", func() error {
+		_, err := client.ToolSets().Rules().Create(ctx, "sample", decode[sdk.ToolSetRuleCreateParams](`{"actions":{},"description":"sample","disabled":true,"name":"sample","position":1,"when":"sample","workspaceId":"sample"}`))
+		return err
+	})
+	run("ToolService_GetToolSetRule", func() error {
+		_, err := client.ToolSets().Rules().Retrieve(ctx, "sample", "sample", decode[sdk.ToolSetRuleRetrieveParams](`{"workspaceId":"sample"}`))
+		return err
+	})
+	run("ToolService_DeleteToolSetRule", func() error {
+		return client.ToolSets().Rules().Delete(ctx, "sample", "sample", decode[sdk.ToolSetRuleDeleteParams](`{"workspaceId":"sample"}`))
+	})
+	run("ToolService_UpdateToolSetRule", func() error {
+		_, err := client.ToolSets().Rules().Update(ctx, "sample", "sample", decode[sdk.ToolSetRuleUpdateParams](`{"actions":{},"description":"sample","disabled":true,"name":"sample","position":1,"updateMask":"sample","when":"sample","workspaceId":"sample"}`))
+		return err
+	})
 	run("ToolService_ListToolSetSecrets", func() error {
 		page, err := client.ToolSets().Secrets().List(ctx, "sample", decode[sdk.ToolSetSecretListParams](`{"cursor":"sample","includeInfo":true,"limit":1,"prefix":"sample","query":"sample","sortOrder":"sample","workspaceId":"sample"}`))
 		if err != nil {
@@ -872,7 +898,7 @@ func main() {
 		return err
 	})
 	run("ToolService_ListTools", func() error {
-		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"overlays":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_AVAILABLE"],"workspaceId":"sample"}`))
+		page, err := client.ToolSets().Tools().List(ctx, "sample", decode[sdk.ToolListParams](`{"cursor":"sample","includeInfo":true,"labels":"sample","limit":1,"names":["sample"],"prefix":"sample","query":"sample","requiresApproval":true,"sortOrder":"sample","states":["STATE_AVAILABLE"],"workspaceId":"sample"}`))
 		if err != nil {
 			return err
 		}

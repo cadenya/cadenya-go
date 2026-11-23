@@ -182,6 +182,28 @@ func (s *ToolSetsSuite) TestArchive() {
 	})
 }
 
+func (s *ToolSetsSuite) TestSync() {
+	g := loadGolden(s.T(), "ToolService_SyncToolSet")
+	server, served := goldenServer(s.T(), g)
+	client := newTestClient(s.T(), server.URL)
+	ctx := context.Background()
+	err := client.ToolSets().Sync(ctx, "sample", (&cadenya.ToolSetSyncBuilder{}).
+		WorkspaceID("sample").
+		ToParams())
+	s.Require().NoError(err)
+	s.Require().Equal(int32(len(g.Interactions)), served.Load(), "request count")
+
+	s.Run("workspace_id falls back to the client default", func() {
+		server, hits := pathServer(s.T(), "/v1/workspaces/default_workspace_id/tool_sets/sample:sync", g.Interactions[0].Response)
+		client := newTestClient(s.T(), server.URL)
+		ctx := context.Background()
+		err := client.ToolSets().Sync(ctx, "sample", (&cadenya.ToolSetSyncBuilder{}).
+			ToParams())
+		s.Require().NoError(err)
+		s.Require().Equal(int32(1), hits.Load())
+	})
+}
+
 func (s *ToolSetsSuite) TestUnarchive() {
 	g := loadGolden(s.T(), "ToolService_UnarchiveToolSet")
 	server, served := goldenServer(s.T(), g)
