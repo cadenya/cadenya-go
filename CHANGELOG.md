@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/cadenya/cadenya-go/compare/v1.9.0...v1.10.0) (2026-11-23)
+
+
+### Features
+
+* tool set rules, tool set sync, and iteration ids on objective events ([#111](https://github.com/cadenya/cadenya-go/issues/111)) ([c36b557](https://github.com/cadenya/cadenya-go/commit/c36b557f6776d3ac4d70d6512544df4cb1836ddb))
+
 ## [1.9.0](https://github.com/cadenya/cadenya-go/compare/v1.8.0...v1.9.0) (2026-10-28)
 
 
